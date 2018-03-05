@@ -23,8 +23,7 @@ for session in dirlist:
     for dirs, subdir, files in os.walk(directoryAudio):
         #print('Directory: ',dirs)
         for Afile in files:
-            x=4
-            #print('Current File: ',Afile)
+            print('Current File: ',Afile)
             #getSpetrumFromAudio
             #getnextFrame
             #NNModel
