@@ -2,13 +2,13 @@ import scipy
 from scipy import signal
 from scipy.io.wavfile import read
 from scipy.fftpack import rfft
+from scipy.fftpack import fft
 import matplotlib.pyplot as plt 
 import numpy as np 
 
-'''
-Input: path for the file
-Output: array of the mono information and the sample rate 
-'''
+
+#Input: path for the file
+#Output: array of the mono information and the sample rate 
 def getArrayFromAudio(audioFileName):
     print('****START of function getArrayFromAudio')
     
@@ -18,20 +18,15 @@ def getArrayFromAudio(audioFileName):
     stereoAudio = inputAudio[1]
     
     #TRASFORM IN MONO
-    monoAudio = np.int32(np.random.rand(len(stereoAudio),1))
-    i = 0
-    while i < len(stereoAudio):
-        x = stereoAudio[i]
-        monoAudio[i] = x[1]
-        i += 1    
+    monoAudio = (stereoAudio[:,0] + stereoAudio[:,1]) / 2  
     
     #PRINT RESULT
     print('Sampling frequency: ',sampleRate)
-    print('Stereo audio data: ',stereoAudio)
-    print('Mono audio data: ',monoAudio)
+    print('Stereo audio data: ',stereoAudio[0:1024])
+    print('Mono audio data: ',monoAudio[0:1024])
     
     #PLOT THE AUDIO ARRAY
-    plt.plot(monoAudio[:]) #plot the first 1024 samples
+    plt.plot(monoAudio)
     plt.xlabel('Time (samples)')
     plt.ylabel('Amplitude')
     plt.title(audioFileName)
@@ -40,51 +35,58 @@ def getArrayFromAudio(audioFileName):
     print('****End of function getArrayFromAudio')
     return monoAudio, sampleRate
 
-'''
-Input: array of the mono info, frame size choosen
-Output: array of object containing frame info [[[a b c]][[d e f]]...] example for frame of size 3
-'''    
+
+#INPUT: array of the mono info, sampleRate, frame size choosen
+#Output: list of chunks containing frame info, [[[a b c]][[d e f]]...] example for frame of size 3 
 def getFrameArray(monoAudio, sampleRate, frameSize):
     print('****Start of method getFrameArray')
     
-    #resto = len(monoAudio)%frameSize #frame to discard to avoid error
-    #considLen = (len(monoAudio)-resto)/frameSize
-    #allFrame = np.int32(np.random.rand(np.int32(considLen),1)) #each position in a set of frames
-    #print('allFrame: ', allFrame)
+    #DIVIDE ARRAY IN CHUNKS: each chunks of a frame size of samples
     allFrame=[]
-    
-    print('Mono: ', monoAudio)
-    print('Sample rate: ', sampleRate)
-    
     i = 0
     while i < len(monoAudio):
         x = monoAudio[i:i+frameSize]
         allFrame.append(x)
         i += frameSize+1
         
+    #PRINT RESULTS
+    print('Mono first 1024 samples: ', monoAudio[0:1024])
+    print('Sample rate: ', sampleRate)
+    print('Frame size: ', frameSize)     
     print('All Frame[0]',allFrame[0])
     
     print('****End of method getFrameArray')          
     return allFrame
    
-     
-def getSpectrumFrameArray(arrayAudio):
+   
+#INPUT: the frame chunks list array     
+#OUTPUT: the fft list of each frame chunks
+def getSpectrumFrameArray(allFrame):
     print('****Start of method getSpectrumFromArray')
     
-    #COMPUTE FFT
-    mags = abs(rfft(arrayAudio))
-    mags = 20 * scipy.log10(mags)#Convert to dB
-    mags -= max(mags)#Normalise to 0 dB max
+    #COMPUTE FFT: for each frame window chunks we will obtain a magnitude fft chunks
+    allFrameFFT = []
+    i = 0
+    while i < len(allFrame):
+        mags = abs(rfft(allFrame[i]))
+        mags = 20 * scipy.log10(mags)#Convert to dB
+        mags -= max(mags)#Normalise to 0 dB max
+        allFrameFFT.append(mags)
+        #fft_out = fft(allFrame[i])
+        #plt.plot(allFrame[i], np.abs(fft_out))
+        #plt.show()
+        i += 1
+        
     
-    #PLOT GRAPH
-    plt.plot(mags)
+    #PLOT GRAPH: example for first frame window
+    plt.plot(allFrameFFT[0])
     plt.ylabel("Magnitude (dB)")
     plt.xlabel("Frequency Bin")
     plt.title("Spectrum")
     plt.show()
     
     print('****End of method getSpectrumFromArray')
-    return mags
+    return allFrameFFT
 
     
         

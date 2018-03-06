@@ -12,7 +12,7 @@ def RNNModel(In):
     print('****End of method RNNModel')
 
 
-def FFNNModelTraining(x_data, yTrainData):
+def FFNNModel(x_data, yTrainData):
     print('****Start of method FFNNModel')
     
     #STARTING SITUATION

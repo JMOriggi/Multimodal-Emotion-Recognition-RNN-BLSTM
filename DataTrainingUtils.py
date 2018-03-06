@@ -15,13 +15,13 @@ class DataTrainingUtils:
     def setDataCorpus():
         print('****Start of method setDataCorpus')
         
-        #Get all the sessions directory name from the main root
+        #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
         dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
         #print('All Sessions',dirlist)
         
         #Create a unique txt file for each Session in witch we can find all the training output for each sentence.
         #The output file is placed in the root folder.
-        #The output training file content will have the format: SessionTypeName, AudioFileName, CatOutput, ValOutput.
+        #The output training file content will have the format: AudioFileName, CatOutput, ValOutput.
         for session in dirlist:
             print('Parsing: ',session)
             #Create directory path for the emotion results for the current session
@@ -72,20 +72,42 @@ class DataTrainingUtils:
         
     def getOutputDataFromAudio(self, audioFileName):
         print('****Start of method getOutputFromAudio')
+        
         #print(audioFileName)
+        
+        #TAKE THE OUTPUT TRAINING INFO FROM TRAINING DATA FILE PREVIOUSLY GENERATED
         onlyfiles = [f for f in os.listdir(mainRoot) if os.path.isfile(os.path.join(mainRoot, f))]
         for file in onlyfiles:
             if file.split('.')[1] == 'txt':
-                #print('Current file: ',file)
                 with open(os.path.join(mainRoot, file), 'r') as inputfile:
                     for lines in inputfile:
                         if lines.split(';')[0] == audioFileName:
                             output = lines
                             break
         
+        #CREATE OUTPUT VARIABLES
         emo = output.split(';')[1]
         val = output.split(';')[2]
-        text = output.split(';')[3]                  
+        text = output.split(';')[3] 
+        if  emo == 'ext': 
+            code = 1
+        if  emo == 'ang':    
+            code = 2
+        if  emo == 'fru': 
+            code = 3
+        if  emo == 'sad': 
+            code = 4
+        if  emo == 'sur': 
+            code = 5 
+        if  emo == 'neu': 
+            code = 6 
+        if  emo == 'xxx': 
+            code = 7 
+        if  emo == 'other': 
+            code = 8 
+        if  emo == 'test': 
+            code = 9     
+                       
         print('****End of method getOutputFromAudio')                
-        return output, emo, val, text
+        return code, output, emo, val, text
       

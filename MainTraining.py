@@ -26,17 +26,19 @@ for session in dirlist:
             print('Current File: ',Afile)
             
             #READ AUDIO FILE: tranform it in a redable array in spectrum
-            x1 = aud.getArrayFromAudio(Afile)
-            x2 = aud.getFrameArray(x1)
-            input = aud.getSpectrumFrameArray(x2)
+            arrayAudio, sampleRate = aud.getArrayFromAudio(Afile)
+            allFrame = aud.getFrameArray(arrayAudio, sampleRate, 1024)
+            allFrameFFT = aud.getSpectrumFrameArray(allFrame)
+            print('Returned first frame fft: ', allFrameFFT[0])
            
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
-            output, emo, val, text = trainData.getOutputDataFromAudio('Ses04F_script01_1_M019')
+            y_code, output, emo, val, text = trainData.getOutputDataFromAudio('Ses04F_script01_1_M019')
             print('---Coresponding output for Audio Ses04F_script01_1_M019---')
             print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text) 
+            print('Emo Label code: ', y_code)
            
             #FEED THE NN
-            y = nn.FFNNModel(input, output)
+            y = nn.FFNNModel(allFrameFFT, y_code)
             
             
             
