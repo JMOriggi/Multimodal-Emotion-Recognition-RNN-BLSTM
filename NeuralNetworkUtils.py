@@ -1,28 +1,39 @@
-#Classe contente tutte le funzionalità legate al funzionamento della NN.
-#Propone vari modelli di NN, e permette l'estrazione per il salvataggio dei weight che definiscono la rete.
-
-
-#import tensorflow 
+import tensorflow as tf
 import numpy as np
 
+    
+def FFModel(In):
+    print('****Start of method FFModel')
+    print('****End of method FFModel')
+
+    
+def RNNModel(In):
+    print('****Start of method RNNModel')
+    print('****End of method RNNModel')
 
 
-class NeuralNetworkUtils:
+def FFNNModel(x_data, yTrainData):
+    print('****Start of method FFNNModel')
     
-    def __init__(self):
-        print('****Initiate Class NeuralNetworkUtils')
+    #NETWORK DEFINITION: we define the biases, weights, and outputs of our synapses as tensors variable
+    b = tf.Variable(tf.zeros(1))#a 1 value matrix initialized with 0
+    W = tf.Variable(tf.random_uniform([1,2],-1,1))#W as weight or synapses matrix of 1 row and 2 collumns (collumns correspond to the number of input present) initialized as random number
+    y = tf.matmul(W,x_data) + b #Output data: input times weight add a bias
+    
+    #TRAINING SETTINGS: Gradient descent time! to minimize the error
+    error = tf.reduce_mean(tf.square(y - yTrainData))#Define the error function as the mean square error
+    optimizer = tf.train.GradientDescentOptimizer(0.5)#Associate the optimizer functionas a gradient descent function, 0.5 is the learning rate, the error step
+    train = optimizer.minimize(error) #We want to minimize the error with the prevously define function, we define another funciton to do that
+    
+    #INITIALIZE SESSION FOR TENSORFLOW
+    init = tf.global_variables_initializer()
+    sess = tf.Session()#Create a session, that is an event where we compute what we are trying to compute
+    sess.run(init)#the session will be run with all the tf variables
+    
+    print('****Start of method FFNNModel')
+    
+def SaveWeights(Model):
+    print('****Start of method SaveWeights')
+    print('****End of method SaveWeights')        
     
     
-    def FFModel(self,In):
-        print('****Start of method FFModel')
-        print('****End of method FFModel')
-    
-        
-    def RNNModel(self,In):
-        print('****Start of method RNNModel')
-        print('****End of method RNNModel')
-    
-        
-    def SaveWeights(self,Model):
-        print('****Start of method SaveWeights')
-        print('****End of method SaveWeights')        

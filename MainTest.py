@@ -1,24 +1,20 @@
-from DataTrainingUtils import DataTrainingUtils
+#TEST DATA TRAINING CLASS
+#from DataTrainingUtils import DataTrainingUtils
 #trainData = DataTrainingUtils()
 #trainData.setDataCorpus()
 #output, emo, val, text = trainData.getOutputDataFromAudio('Ses04F_script01_1_M019')
 #print('---Coresponding output for Audio Ses04F_script01_1_M019---')
 #print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text)            
  
+    
  
-            
-from scipy.io.wavfile import read
-import matplotlib.pyplot as plt
+#TEST AUDIO CLASS     
+import AudioUtils as aud
+audioFileName ='file.wav'
+arrayAudio, sampleRate = aud.getArrayFromAudio(audioFileName)
 
-# read audio samples
-input_data = read("flute.wav")
-audio = input_data[1]
-# plot the first 1024 samples
-plt.plot(audio[0:1024])
-# label the axes
-plt.ylabel("Amplitude")
-plt.xlabel("Time (samples)")
-# set the title
-plt.title("Flute Sample")
-# display the plot
-plt.show()             
+allFrame = aud.getFrameArray(arrayAudio, sampleRate, 10)
+
+#arrayFFT = aud.getSpectrumFrameArray(arrayAudio)
+#print('Returned: ', arrayFFT)
+

@@ -1,3 +1,7 @@
+#The input matrix: rows==number of differents inputs / columns == lenght of each inputs.
+#The weight matrix: rows == number of neurons / columns == number of entry for each neurons (corresponding to the number of inputs). 
+
+
 import tensorflow as tf
 import numpy as np
 

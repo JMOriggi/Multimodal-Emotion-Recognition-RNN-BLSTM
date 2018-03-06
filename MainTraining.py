@@ -2,19 +2,19 @@
 
 import os
 from DataTrainingUtils import DataTrainingUtils
-from AudioUtils import AudioUtils
-from NeuralNetworkUtils import NeuralNetworkUtils
+import AudioUtils as aud
+import NeuralNetworkUtils as nn
 
-
+#SET VARIABLES AND CLASSES
 mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
 dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
 trainData = DataTrainingUtils()
-audioUtils = AudioUtils()
-NN = NeuralNetworkUtils()
 
+#CREATE TRAINING OUTPUT DATA FILE
+trainData.setDataCorpus()
 
-#trainData.setDataCorpus()
-
+#MAIN ROUTINE: load one after the other all the audio files for each session
+#for session in dirlist[0]:
 for session in dirlist:
     currentSessionPathText = os.path.join(mainRoot, session)
     currentSessionPathText += '\Sentences_audio'
@@ -24,15 +24,22 @@ for session in dirlist:
         #print('Directory: ',dirs)
         for Afile in files:
             print('Current File: ',Afile)
-            #getSpetrumFromAudio
-            #getnextFrame
-            #NNModel
-            #x= NN output
-            #y=getOutputDataFromAudio
-            #LossError(x-y)
             
-#output, emo, val, text = trainData.getOutputDataFromAudio('Ses04F_script01_1_M019')
-#print('---Coresponding output for Audio Ses04F_script01_1_M019---')
-#print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text) 
+            #READ AUDIO FILE: tranform it in a redable array in spectrum
+            x1 = aud.getArrayFromAudio(Afile)
+            x2 = aud.getFrameArray(x1)
+            input = aud.getSpectrumFrameArray(x2)
+           
+            #READ TRAINING OUTPUT DATA: corresponding to that audio file
+            output, emo, val, text = trainData.getOutputDataFromAudio('Ses04F_script01_1_M019')
+            print('---Coresponding output for Audio Ses04F_script01_1_M019---')
+            print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text) 
+           
+            #FEED THE NN
+            y = nn.FFNNModel(input, output)
+            
+            
+            
+
 
 

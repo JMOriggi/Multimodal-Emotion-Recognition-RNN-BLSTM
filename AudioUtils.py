@@ -1,42 +1,84 @@
-#Classe contente tutte le funzionalità legate al funzionamento della NN.
-#Propone vari modelli di NN, e permette l'estrazione per il salvataggio dei weight che definiscono la rete.
-
-
+import scipy
 from scipy import signal
-from scipy.io import wavfile
+from scipy.io.wavfile import read
+from scipy.fftpack import rfft
+import matplotlib.pyplot as plt 
+import numpy as np 
 
 
-
-
-class AudioUtils:
+def getArrayFromAudio(audioFileName):
+    print('****START of function getArrayFromAudio')
     
-    def __init__(self):
-        print('****Initiate Class AudioUtils')
+    #READ THE WAV FILE
+    inputAudio = read(audioFileName)
+    sampleRate = inputAudio[0]
+    stereoAudio = inputAudio[1]
     
+    #TRASFORM IN MONO
+    monoAudio = np.int32(np.random.rand(len(stereoAudio),1))
+    i = 0
+    while i < len(stereoAudio):
+        x = stereoAudio[i]
+        monoAudio[i] = x[1]
+        i += 1    
     
-    def getSpectrumFromAudio(self,In):
-        print('****Start of method getSpectrumFromAudio')
-        #filename = "file.wav"
-        #audData = scipy.io.wavfile.read(filename)
-        #print(audData)
+    #PRINT RESULT
+    print('Sampling frequency: ',sampleRate)
+    print('Stereo audio data: ',stereoAudio)
+    print('Mono audio data: ',monoAudio)
+    
+    #PLOT THE AUDIO ARRAY
+    plt.plot(monoAudio[:]) #plot the first 1024 samples
+    plt.xlabel('Time (samples)')
+    plt.ylabel('Amplitude')
+    plt.title(audioFileName)
+    plt.show() #display the plot
+
+    print('****End of function getArrayFromAudio')
+    return monoAudio, sampleRate
+
+    
+def getFrameArray(monoAudio, sampleRate, frameSize):
+    print('****Start of method getFrameArray')
+    
+    resto = len(monoAudio)%frameSize #frame to discard to avoid error
+    considLen = (len(monoAudio)-resto)/frameSize
+    allFrame = np.int32(np.random.rand(np.int32(considLen),1)) #each position in a set of frames
+    print('allFrame: ', allFrame)
+    print('mono: ', monoAudio)
+    
+    i = 0
+    y = 0
+    while i < len(monoAudio):
+        print(monoAudio[i:i+frameSize])
+        x = monoAudio[i:i+frameSize]
+        allFrame[y] = x 
+        i += frameSize+1
+        y += 1
         
-        #sample_rate, samples = wavfile.read('file.wav')
-        #frequencies, times, spectogram = signal.spectrogram(samples, sample_rate)
-        
-        #plt.imshow(spectogram)
-        #plt.pcolormesh(times, frequencies, spectogram)
-        #plt.ylabel('Frequency [Hz]')
-        #plt.xlabel('Time [sec]')
-        #plt.show()
-        print('****End of method getSpectrumFromAudio')
+    print('All Frame',allFrame)
     
-        
-    def plotSpectrum(self,In):
-        print('****Start of method plotSpectrum')
-        print('****End of method plotSpectrum')
+    print('****End of method getFrameArray')          
+    return allFrame
+   
+     
+def getSpectrumFrameArray(arrayAudio):
+    print('****Start of method getSpectrumFromArray')
     
-        
-    def getNextFrame(self,Model):
-        print('****Start of method getNextFrame')
-        print('****End of method getNextFrame')  
+    #COMPUTE FFT
+    mags = abs(rfft(arrayAudio))
+    mags = 20 * scipy.log10(mags)#Convert to dB
+    mags -= max(mags)#Normalise to 0 dB max
+    
+    #PLOT GRAPH
+    plt.plot(mags)
+    plt.ylabel("Magnitude (dB)")
+    plt.xlabel("Frequency Bin")
+    plt.title("Spectrum")
+    plt.show()
+    
+    print('****End of method getSpectrumFromArray')
+    return mags
 
+    
+        
