@@ -12,8 +12,12 @@ def RNNModel(In):
     print('****End of method RNNModel')
 
 
-def FFNNModel(x_data, yTrainData):
+def FFNNModelTraining(x_data, yTrainData):
     print('****Start of method FFNNModel')
+    
+    #STARTING SITUATION
+    print('Input: ', x_data)
+    print('Output training data: ', yTrainData)
     
     #NETWORK DEFINITION: we define the biases, weights, and outputs of our synapses as tensors variable
     b = tf.Variable(tf.zeros(1))#a 1 value matrix initialized with 0
@@ -30,7 +34,16 @@ def FFNNModel(x_data, yTrainData):
     sess = tf.Session()#Create a session, that is an event where we compute what we are trying to compute
     sess.run(init)#the session will be run with all the tf variables
     
+    #TRAINING SESSION ROUTINE: 200 iterations of training
+    print('Output Before run',sess.run(y))
+    for step in range(0,300):
+        sess.run(train)
+        if step % 20 == 0: #print every 20 step
+            print('STEP: ',step,', error: ',sess.run(error),', weights: ',sess.run(W),', bias: ',sess.run(b))
+    print('Output After run',sess.run(y))
+
     print('****Start of method FFNNModel')
+ 
     
 def SaveWeights(Model):
     print('****Start of method SaveWeights')
