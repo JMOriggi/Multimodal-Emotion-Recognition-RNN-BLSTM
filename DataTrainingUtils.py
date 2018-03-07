@@ -70,7 +70,6 @@ def getOutputDataFromAudio(audioFileName):
     #TAKE THE OUTPUT TRAINING INFO FROM TRAINING DATA FILE PREVIOUSLY GENERATED
     onlyfiles = [f for f in os.listdir(mainRoot) if os.path.isfile(os.path.join(mainRoot, f))]
     for file in onlyfiles:
-        print('a', file)
         if file.split('.')[1] == 'txt':
             with open(os.path.join(mainRoot, file), 'r') as inputfile:
                 for lines in inputfile:
