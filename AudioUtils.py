@@ -6,7 +6,6 @@ from scipy.fftpack import fft
 import matplotlib.pyplot as plt 
 import numpy as np 
 
-
 #Input: path for the file
 #Output: array of the mono information and the sample rate 
 def getArrayFromAudio(audioFileName):
