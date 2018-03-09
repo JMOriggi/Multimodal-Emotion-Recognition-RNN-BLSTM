@@ -30,19 +30,22 @@ for session in dirlist:
             arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath)
             allFrame = aud.getFrameArray(arrayAudio, sampleRate, 1024)
             allFrameFFT = aud.getSpectrumFrameArray(allFrame)
-            print('Returned first frame fft: ', allFrameFFT[0])
+            #print('Returned first frame fft: ', allFrameFFT)
            
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
             #y_code, output, emo, val, text = trainData.getOutputDataFromAudio('Ses04F_script01_1_M019')
             #print('---Coresponding output for Audio Ses04F_script01_1_M019---')
             y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
             print('---Coresponding output for Audio ', Afile)
-            print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text) 
-            print('Emo Label code: ', y_code)
+            print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code)
            
             #FEED THE NN
-            #y = nn.FFNNModel(allFrameFFT, y_code)
+            y = nn.FFNNModel(allFrameFFT, y_code)
             
+            #RESET TO NULL ARRAYS
+            #arrayAudio = []
+            #allFrame = []
+            #allFrameFFT = []
             
             
 

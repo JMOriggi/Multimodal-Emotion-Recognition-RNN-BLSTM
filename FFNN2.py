@@ -10,6 +10,7 @@ import numpy as np
 #generate a matrix of random number with 2 row (2 inputs) and 100 values (length of each input)
 x_data = np.float32(np.random.rand(2,10))
 print('Input: ',x_data)
+print('Type input: ',type(x_data))
 
 #TRAINING OUTPUT DATA: simulating with 1 neurone of 2 inputs
 #Simulation with known weight, usually we don't know the weights we only have the output and input for training.

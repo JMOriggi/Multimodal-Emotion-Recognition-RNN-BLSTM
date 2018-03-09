@@ -21,8 +21,9 @@ def getArrayFromAudio(audioFileName):
     
     #PRINT RESULT
     print('Sampling frequency: ',sampleRate)
-    print('Stereo audio data: ',stereoAudio[0:1024])
-    print('Mono audio data: ',monoAudio[0:1024])
+    print('Stereo audio data (first 1024 samples): ',stereoAudio[0:1024])
+    print('Mono audio data (first 1024 samples): ',monoAudio[0:1024])
+    print('Mono audio matrix structure: ',monoAudio.shape)
     
     #PLOT THE AUDIO ARRAY
     plt.plot(monoAudio)
@@ -32,7 +33,7 @@ def getArrayFromAudio(audioFileName):
     plt.show() #display the plot
 
     print('****End of function getArrayFromAudio')
-    return monoAudio, sampleRate
+    return np.array(monoAudio), sampleRate
 
 
 #INPUT: array of the mono info, sampleRate, frame size choosen
@@ -53,9 +54,11 @@ def getFrameArray(monoAudio, sampleRate, frameSize):
     print('Sample rate: ', sampleRate)
     print('Frame size: ', frameSize)     
     print('All Frame[0]',allFrame[0])
+    print('size row: ',len(allFrame))
+    print('size collums: ',len(allFrame[0]))
     
     print('****End of method getFrameArray')          
-    return allFrame
+    return np.array(allFrame)
    
    
 #INPUT: the frame chunks list array     
@@ -65,15 +68,13 @@ def getSpectrumFrameArray(allFrame):
     
     #COMPUTE FFT: for each frame window chunks we will obtain a magnitude fft chunks
     allFrameFFT = []
+    mags = []
     i = 0
     while i < len(allFrame):
         mags = abs(rfft(allFrame[i]))
         mags = 20 * scipy.log10(mags)#Convert to dB
         mags -= max(mags)#Normalise to 0 dB max
         allFrameFFT.append(mags)
-        #fft_out = fft(allFrame[i])
-        #plt.plot(allFrame[i], np.abs(fft_out))
-        #plt.show()
         i += 1
         
     
@@ -84,8 +85,14 @@ def getSpectrumFrameArray(allFrame):
     plt.title("Spectrum")
     plt.show()
     
+    #allFrameFFT = [arr.tolist() for arr in allFrameFFT]
+    #print('####: ',allFrameFFT)
+    print('size row: ',len(allFrameFFT))
+    print('size collums: ',len(allFrameFFT[0]))
+    
+    
     print('****End of method getSpectrumFromArray')
-    return allFrameFFT
+    return np.array(allFrameFFT)
 
     
         

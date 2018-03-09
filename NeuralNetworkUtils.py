@@ -12,17 +12,24 @@ def RNNModel(In):
     print('****End of method RNNModel')
 
 
-def FFNNModel(x_data, yTrainData):
+#INPUT: must be an array where each row is an input; 
+def FFNNModel(x_data1, yTrainData):
     print('****Start of method FFNNModel')
+    
+    #TRASFORM INPUT TO ACCEPTED FORM: input alla rete deve avere forma [[.. .. ..]] quindi una matrice 1xN
+    N = len(x_data1[0])
+    x_data = x_data1[0].reshape((1,N))
     
     #STARTING SITUATION
     print('Input: ', x_data)
+    print('Type input: ',type(x_data))
+    print('Shape input: ',np.shape(x_data))
     print('Output training data: ', yTrainData)
     
     #NETWORK DEFINITION: we define the biases, weights, and outputs of our synapses as tensors variable
     b = tf.Variable(tf.zeros(1))#a 1 value matrix initialized with 0
-    W = tf.Variable(tf.random_uniform([1,2],-1,1))#W as weight or synapses matrix of 1 row and 2 collumns (collumns correspond to the number of input present) initialized as random number
-    y = tf.matmul(W,x_data) + b #Output data: input times weight add a bias
+    W = tf.Variable(tf.random_uniform([1,1],-1,1))#W as weight or synapses matrix of 1 row and 2 collumns (collumns correspond to the number of input present) initialized as random number
+    y = tf.matmul(W,np.float32(x_data)) + b #Output data: input times weight add a bias
     
     #TRAINING SETTINGS: Gradient descent time! to minimize the error
     error = tf.reduce_mean(tf.square(y - yTrainData))#Define the error function as the mean square error
