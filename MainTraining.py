@@ -29,8 +29,11 @@ for session in dirlist:
             #READ AUDIO FILE: tranform it in a redable array in spectrum
             arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath)
             allFrame = aud.getFrameArray(arrayAudio, sampleRate, 1024)
+            print('allFrame: ', allFrame)
+            print('allFrame type: ', type(allFrame))
             allFrameFFT = aud.getSpectrumFrameArray(allFrame)
-            #print('Returned first frame fft: ', allFrameFFT)
+            print('allFrameFFT: ', allFrameFFT)
+            print('allFrameFFT type: ', type(allFrameFFT))
            
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
             #y_code, output, emo, val, text = trainData.getOutputDataFromAudio('Ses04F_script01_1_M019')

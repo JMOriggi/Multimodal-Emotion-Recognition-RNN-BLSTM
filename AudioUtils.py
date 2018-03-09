@@ -33,7 +33,7 @@ def getArrayFromAudio(audioFileName):
     plt.show() #display the plot
 
     print('****End of function getArrayFromAudio')
-    return np.array(monoAudio), sampleRate
+    return monoAudio, sampleRate
 
 
 #INPUT: array of the mono info, sampleRate, frame size choosen
@@ -58,7 +58,7 @@ def getFrameArray(monoAudio, sampleRate, frameSize):
     print('size collums: ',len(allFrame[0]))
     
     print('****End of method getFrameArray')          
-    return np.array(allFrame)
+    return allFrame
    
    
 #INPUT: the frame chunks list array     
@@ -92,7 +92,7 @@ def getSpectrumFrameArray(allFrame):
     
     
     print('****End of method getSpectrumFromArray')
-    return np.array(allFrameFFT)
+    return allFrameFFT
 
     
         
