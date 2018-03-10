@@ -45,10 +45,6 @@ for session in dirlist:
             #FEED THE NN
             y = nn.FFNNModel(allFrameFFT, y_code)
             
-            #RESET TO NULL ARRAYS
-            #arrayAudio = []
-            #allFrame = []
-            #allFrameFFT = []
             
             
 

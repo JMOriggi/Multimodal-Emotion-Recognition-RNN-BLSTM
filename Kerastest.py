@@ -41,17 +41,14 @@ print('x_test shape:', x_test.shape)
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
+#SET THE MODEL: LSTM(output, inputShape=type of input matrix very important)
 model = Sequential()
-model.add(Embedding(max_features, 128, input_length=maxlen))
-model.add(Bidirectional(LSTM(64)))
-model.add(Dropout(0.5))
-model.add(Dense(1, activation='sigmoid'))
-
-# try using different optimizers and different optimizer configs
-model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+model.add(LSTM(1, input_shape=(1, 1024)))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 print('Train...')
-model.fit(x_train, y_train,
-          batch_size=batch_size,
-          epochs=4,
-          validation_data=[x_test, y_test])'''
+model.fit(x_train, y_train, batch_size=batch_size,epochs=4,validation_data=[x_test, y_test])'''
+
+
+
+
