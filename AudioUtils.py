@@ -6,8 +6,8 @@ from scipy.fftpack import fft
 import matplotlib.pyplot as plt 
 import numpy as np 
 
-#Input: path for the file
-#Output: array of the mono information and the sample rate 
+#INPUT: path for the file
+#OUTPUT: array of the mono information and the sample rate 
 def getArrayFromAudio(audioFileName):
     print('****START of function getArrayFromAudio')
     
@@ -62,7 +62,7 @@ def getFrameArray(monoAudio, sampleRate, frameSize):
    
    
 #INPUT: the frame chunks list array     
-#OUTPUT: the fft list of each frame chunks
+#OUTPUT: the fft list of each frame chunks, same format of the input
 def getSpectrumFrameArray(allFrame):
     print('****Start of method getSpectrumFromArray')
     
@@ -86,9 +86,9 @@ def getSpectrumFrameArray(allFrame):
     plt.show()
     
     #allFrameFFT = [arr.tolist() for arr in allFrameFFT]
-    #print('####: ',allFrameFFT)
-    print('size row: ',len(allFrameFFT))
-    print('size collums: ',len(allFrameFFT[0]))
+    #print('allFrameFFT: ',allFrameFFT)
+    print('allFrameFFT size row: ',len(allFrameFFT))
+    print('allFrameFFT size collums: ',len(allFrameFFT[0]))
     
     
     print('****End of method getSpectrumFromArray')

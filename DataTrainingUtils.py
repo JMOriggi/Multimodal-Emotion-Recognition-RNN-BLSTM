@@ -1,10 +1,10 @@
 #Se cambia posizione cartella modificare SOLO la root e mantenere struttura cartelle uguale.
-#Struttura da mantenere: Corpus-->Session1,2,3,4,5-->EmoEvaluation,Sentences_audio,Transcriptions
+#Struttura da mantenere: Corpus--> TrainOutput.txt Session1,2,3,4,5-->EmoEvaluation,Sentences_audio,Transcriptions
 
 import os
 
-#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
 mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus')
+#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
 
 def setDataCorpus():
     print('****Start of method setDataCorpus')
@@ -13,27 +13,26 @@ def setDataCorpus():
     dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
     #print('All Sessions',dirlist)
     
-    #Create a unique txt file for each Session in witch we can find all the training output for each sentence.
-    #The output file is placed in the root folder.
-    #The output training file content will have the format: AudioFileName, CatOutput, ValOutput.
+    #CREATE A UNIQUE TXT FILE FOR EACH SESSION WITH ALL THE TRAINING OUTPUT RESULT FOR EACH AUDIO FILE
+    #The output file is placed in the root folder and the content will have the format: AudioFileName, CatOutput, ValOutput.
     for session in dirlist:
         print('Parsing: ',session)
-        #Create directory path for the emotion results for the current session
+        #COMPOSE DIRECTORY PATH FOR THE EMOTION RESULTS FILE FOR THE CURRENT SESSION
         currentSessionPathEmo = os.path.join(mainRoot, session)
         currentSessionPathEmo += '\EmoEvaluation'
         directoryEmo = os.path.normpath(currentSessionPathEmo)
         #print('Current directory Emotion: ',directoryEmo)
         
-        #Create directory path for the sentence transcription for the current session
+        #COMPOSE DIRECTORY PATH FOR THE SENTENCE TRANSCRIPTION FILE FOR THE CURRENT SESSION
         currentSessionPathText = os.path.join(mainRoot, session)
         currentSessionPathText += '\Transcriptions'
         directoryText = os.path.normpath(currentSessionPathText)
         #print('Current directory Transcription: ',directoryText)
         
-        #Parse all the txt file and create the output file
+        #PARSE ALL THE TEXT FILE AND CREATE A STANDARDIZE OUTPUT FILE
+        outputfile = open(mainRoot+'\TrainOutput'+session+'.txt', 'a')
         #outputfile = open(os.path.join(mainRoot, session)+'\TrainOutput'+session+'.txt', 'a')
         #outputfile = open('TrainOutput'+session+'.txt', 'a')
-        outputfile = open(mainRoot+'\TrainOutput'+session+'.txt', 'a')
         for dirs, subdir, files in os.walk(directoryEmo):
             #print('All File in: ',files)
             for file in files:
@@ -46,7 +45,7 @@ def setDataCorpus():
                             parselines = lines.split()[3]+';'+lines.split()[4]+';'+lines.split()[5]+lines.split()[6]+lines.split()[7]
                             #print(lines.split()[3])
                             
-                            #for each line find the corresponding transcription sentence
+                            #FOR EACH LINE FIND THE CORRESPONDING TRANSCRIPTION SENTENCE IN THE TRANSCRIPTION FILE
                             for dirs2, subdir2, files2 in os.walk(directoryText):
                                 for file2 in files2:
                                     if file2 == file:
@@ -57,8 +56,8 @@ def setDataCorpus():
                                                     transcription = transcription.split('\n')[0]
                                                     #print('Transcription: ',transcription)
                                                     break
-                            #outputfile.writelines(file.split('.')[0]+','+parselines+','+'{'+transcription+'}'+'\n')
                             outputfile.writelines(parselines+';'+'{'+transcription+'}'+'\n')
+                            #outputfile.writelines(file.split('.')[0]+','+parselines+','+'{'+transcription+'}'+'\n')
                 inputfile.close()
         outputfile.close()
     print('****End of method setDataCorpus')
