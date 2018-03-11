@@ -43,8 +43,8 @@ for session in dirlist:
             print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code)
            
             #FEED THE NN
-            y = nn.FFNNModel(allFrameFFT, y_code)
-            
+            #y = nn.FFNNModel(allFrameFFT, y_code)
+            nn.RNNModel(allFrameFFT, y_code)
             
             
 

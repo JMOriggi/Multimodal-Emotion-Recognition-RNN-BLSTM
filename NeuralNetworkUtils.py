@@ -1,5 +1,9 @@
 import tensorflow as tf
 import numpy as np
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+import numpy as np
 
     
 def FFModel(In):
@@ -7,9 +11,39 @@ def FFModel(In):
     print('****End of method FFModel')
 
     
-def RNNModel(In):
+def RNNModel(input, output):
     print('****Start of method RNNModel')
+    
+    #PREPARE TRAINING DATA
+    def get_train():
+        X = np.asarray(input)
+        y = np.asarray(output)
+        print('X: ', X)
+        print('Y: ', y)
+        X = X.reshape((len(input[0]),len(X), len(input[0])))
+        return X, y
+    
+    #DEFINE MODEL
+    model = Sequential()
+    model.add(LSTM(10, input_shape=(1,2)))
+    model.add(Dense(1, activation='linear'))
+    
+    #COMPILE MODEL
+    model.compile(loss='mse', optimizer='adam')
+    
+    #GET DATA FOR TRAINING
+    X, y = get_train()
+    print('X: ', X)
+    print('Y: ', y)
+    
+    #Train MODEL
+    model.fit(X, y, epochs=5000, shuffle=False, verbose=2)
+    
+    #SAVE MODEL AND WEIGHTS AFTER TRAINING
+    model.save('lstm_model.h5')
+    
     print('****End of method RNNModel')
+
 
 
 #INPUT: must be an array where each row is an input; 

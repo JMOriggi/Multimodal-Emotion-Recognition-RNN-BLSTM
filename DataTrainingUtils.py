@@ -81,23 +81,23 @@ def getOutputDataFromAudio(audioFileName):
     val = output.split(';')[2]
     text = output.split(';')[3] 
     code = ''
-    if  emo == 'ext': 
+    if  emo == 'fru': 
         code = 1
     if  emo == 'ang':    
         code = 2
-    if  emo == 'fru': 
-        code = 3
     if  emo == 'sad': 
+        code = 3
+    if  emo == 'dep': 
         code = 4
     if  emo == 'sur': 
         code = 5 
-    if  emo == 'neu': 
+    if  emo == 'exi': 
         code = 6 
     if  emo == 'xxx': 
         code = 7 
     if  emo == 'other': 
         code = 8 
-    if  emo == 'test': 
+    if  emo == 'neu': 
         code = 9     
                    
     print('****End of method getOutputFromAudio')                
