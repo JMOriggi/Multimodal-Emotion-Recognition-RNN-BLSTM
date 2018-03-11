@@ -1,15 +1,22 @@
+#INPUT: [ [ [input at time1][time2][..][..][..] ] ]
+#LSTM Input Shape: 3D tensor with shape (batch_size, timesteps, input_dim)
+##Batchsize: numero di sample da considerare come chunk, quindi considero ad esmepio i primi 10 poi i successivi 10 riallenando la rete ogni volta.
+#LSTM(hidden_nodes, input_shape=(timesteps, input_dim)))
+##Hidden_nodes = This is the number of neurons of the LSTM. If you have a higher number, the network gets more powerful.
+##Timesteps = the number of timesteps you want to consider. E.g. if you want to classify a sentence, this would be the number of words in a sentence.
+##Input_dim = the dimensions of your features/embeddings. E.g. a vector representation of the words in the sentence
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
-from numpy import array
+import numpy as np
 
 #PREPARE TRAINING DATA
 def get_train():
-    data = array(range(0,25))
-    labels = array([range(1,26)],[range(2,27)])
+    data = np.array([0,1,2,3,4,5,6,7,8,9])
+    labels = [[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],[10,11]]
     X = data
-    y = labels
-    X = X.reshape((len(X), 1, 1))
+    y = np.asarray(labels)
+    X = X.reshape((len(X),1, 1))
     return X, y
 
 #DEFINE MODEL
