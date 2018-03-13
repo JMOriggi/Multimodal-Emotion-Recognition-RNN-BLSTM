@@ -8,6 +8,7 @@
 #                                [[A B C ..]]--> struttura 1 sample
 #                                [ [[a b c]] [[d e f]] ]--> struttura array X con 2 sample 
 #OUTPUT MATRIX SHAPE FOR KERAS: [ [1] [2] [3] ]--> output shape with 3 sample output.
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
@@ -19,6 +20,8 @@ def get_train():
     labels = [[2],[3],[4],[5],[6]]
     X = data
     y = np.asarray(labels)
+    print('X: ', X)
+    print('Y: ', y)
     X = X.reshape((len(X),1, 2))
     return X, y
 

@@ -11,16 +11,33 @@ def FFModel(In):
     print('****End of method FFModel')
 
     
-def RNNModel(input, output):
+def RNNModel(Input, output):
     print('****Start of method RNNModel')
     
     #PREPARE TRAINING DATA
     def get_train():
-        X = np.asarray(input)
-        y = np.asarray(output)
-        print('X: ', X)
+        #data = np.array([[0,1],[1,2],[2,3],[3,4],[4,5]])
+        #labels = [[2],[3],[4],[5],[6]]
+        
+        
+        X1 = np.full((len(Input), 1,len(Input[0])), 0)
+        print('X1: ', X1)
+        
+        y = np.full((len(X1), 1), output)
         print('Y: ', y)
-        X = X.reshape((len(input[0]),len(X), len(input[0])))
+        
+        i = 0
+        j = 0
+        while i<len(Input):
+            print('X1: ', X1[i][0])
+            X1[i][0] = Input[i]
+            print('X1: ', X1[i][0])
+            i+=1
+        print('X1: ', X1)
+        
+        X = X.reshape((len(X1),1, len(X1[0])))
+        print('X: ', X)
+        
         return X, y
     
     #DEFINE MODEL
