@@ -3,7 +3,7 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
-import numpy as np
+from keras.models import load_model
 
     
 def FFModel(In):
@@ -16,42 +16,34 @@ def RNNModel(Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
-        #data = np.array([[0,1],[1,2],[2,3],[3,4],[4,5]])
-        #labels = [[2],[3],[4],[5],[6]]
+        X = np.full((len(Input), 1,len(Input[0])), 0)
+        print('X: ', X)
         
-        
-        X1 = np.full((len(Input), 1,len(Input[0])), 0)
-        print('X1: ', X1)
-        
-        y = np.full((len(X1), 1), output)
+        y = np.full((len(X), 1), output)
         print('Y: ', y)
         
         i = 0
-        j = 0
-        while i<len(Input):
-            print('X1: ', X1[i][0])
-            X1[i][0] = Input[i]
-            print('X1: ', X1[i][0])
+        while i<len(Input)-1:
+            print('X: ', X[i][0])
+            X[i][0] = Input[i]
+            print('X: ', X[i][0])
             i+=1
-        print('X1: ', X1)
-        
-        X = X.reshape((len(X1),1, len(X1[0])))
         print('X: ', X)
         
         return X, y
-    
-    #DEFINE MODEL
-    model = Sequential()
-    model.add(LSTM(10, input_shape=(1,2)))
-    model.add(Dense(1, activation='linear'))
-    
-    #COMPILE MODEL
-    model.compile(loss='mse', optimizer='adam')
     
     #GET DATA FOR TRAINING
     X, y = get_train()
     print('X: ', X)
     print('Y: ', y)
+    
+    #DEFINE MODEL
+    model = Sequential()
+    model.add(LSTM(10, input_shape=(1,len(X[0]))))
+    model.add(Dense(1, activation='linear'))
+    
+    #COMPILE MODEL
+    model.compile(loss='mse', optimizer='adam')
     
     #Train MODEL
     model.fit(X, y, epochs=5000, shuffle=False, verbose=2)
@@ -59,7 +51,19 @@ def RNNModel(Input, output):
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
     model.save('lstm_model.h5')
     
+    #LOAD MODEL FROM FILE
+    model = load_model('lstm_model.h5')
+    
+    #PREDICTION
+    test = X
+    
+    #yhat = model.predict(X, verbose=0)
+    yhat = model.predict(test, verbose=0)
+    
+    print('Result: ',yhat)
+    
     print('****End of method RNNModel')
+    
 
 
 
