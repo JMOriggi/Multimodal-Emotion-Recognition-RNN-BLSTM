@@ -16,19 +16,27 @@ def RNNModel(Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
+        
         X = np.full((len(Input), 1,len(Input[0])), 0)
+        #X = np.asarray(Input)
+        #X = np.delete(X, (len(X)-1), axis=0)
+        #print('len before: ', len(Input))
+        #print('len after: ', len(X))
+        #X = X.reshape((len(X),1, len(Input[0])))
         print('X: ', X)
         
         y = np.full((len(X), 1), output)
         print('Y: ', y)
         
         i = 0
+        #Not considering last frame beacause lenght not costant for this last frame
         while i<len(Input)-1:
             print('X: ', X[i][0])
             X[i][0] = Input[i]
             print('X: ', X[i][0])
             i+=1
         print('X: ', X)
+        
         
         return X, y
     
@@ -39,7 +47,7 @@ def RNNModel(Input, output):
     
     #DEFINE MODEL
     model = Sequential()
-    model.add(LSTM(10, input_shape=(1,len(X[0]))))
+    model.add(LSTM(10, input_shape=(1,len(Input[0]))))
     model.add(Dense(1, activation='linear'))
     
     #COMPILE MODEL
