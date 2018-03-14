@@ -16,7 +16,6 @@ def RNNModel(Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
-        
         X = np.full((len(Input), 1,len(Input[0])), 0)
         #X = np.asarray(Input)
         #X = np.delete(X, (len(X)-1), axis=0)
@@ -28,15 +27,14 @@ def RNNModel(Input, output):
         y = np.full((len(X), 1), output)
         print('Y: ', y)
         
+        #Not considering last frame beacause lenght not costant for the last frame
         i = 0
-        #Not considering last frame beacause lenght not costant for this last frame
         while i<len(Input)-1:
             print('X: ', X[i][0])
             X[i][0] = Input[i]
             print('X: ', X[i][0])
             i+=1
         print('X: ', X)
-        
         
         return X, y
     
@@ -57,18 +55,10 @@ def RNNModel(Input, output):
     model.fit(X, y, epochs=5000, shuffle=False, verbose=2)
     
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
-    model.save('lstm_model.h5')
+    model.save('RNN_Model_saved.h5')
     
-    #LOAD MODEL FROM FILE
-    model = load_model('lstm_model.h5')
-    
-    #PREDICTION
-    test = X
-    
-    #yhat = model.predict(X, verbose=0)
-    yhat = model.predict(test, verbose=0)
-    
-    print('Result: ',yhat)
+    #TEST MODEL
+    predictFromSavedModel(X, 'RNN_Model_saved.h5')
     
     print('****End of method RNNModel')
     
@@ -115,8 +105,17 @@ def FFNNModel(x_data1, yTrainData):
     print('****Start of method FFNNModel')
  
     
-def SaveWeights(Model):
+def predictFromSavedModel(test, fileName):
     print('****Start of method SaveWeights')
+    
+    #LOAD MODEL FROM FILE
+    model = load_model(fileName)
+    
+    #yhat = model.predict(X, verbose=0)
+    yhat = model.predict(test, verbose=0)
+    
+    print('Result: ',yhat)
+    
     print('****End of method SaveWeights')        
     
     
