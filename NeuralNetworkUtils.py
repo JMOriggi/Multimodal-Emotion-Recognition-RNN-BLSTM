@@ -42,17 +42,14 @@ def RNNModel(Input, output):
     X, y = get_train()
     print('X: ', X)
     print('Y: ', y)
+    lenX = len(Input[0])
     
     #DEFINE MODEL
     model = Sequential()
-    model.add(LSTM(10, return_sequences=False, input_shape=(1,len(Input[0]))))
-    model.add(Dense(1, activation='linear'))
-    
-    #COMPILE MODEL
-    model.compile(loss='mse', optimizer='adam')
-    
-    #Train MODEL
-    model.fit(X, y, epochs=100, shuffle=False, verbose=2)
+    model.add(LSTM(64, input_shape=(1,lenX), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
+    model.add(Dense(units = 10,activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer='adam')
+    model.fit(X, y, epochs=10, batch_size=64, verbose=2)
     
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
     model.save('RNN_Model_saved.h5')
