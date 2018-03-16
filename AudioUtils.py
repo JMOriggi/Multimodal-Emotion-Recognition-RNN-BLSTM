@@ -26,13 +26,13 @@ def getArrayFromAudio(audioFileName):
     print('Mono audio matrix structure: ',monoAudio.shape)
     
     #PLOT THE AUDIO ARRAY
-    plt.plot(monoAudio)
+    '''plt.plot(monoAudio)
     plt.xlabel('Time (samples)')
     plt.ylabel('Amplitude')
     plt.title(audioFileName)
-    plt.show() #display the plot
+    plt.show() #display the plot'''
 
-    print('****End of function getArrayFromAudio')
+    print('****End of function getArrayFromAudio\n')
     return monoAudio, sampleRate
 
 
@@ -57,7 +57,7 @@ def getFrameArray(monoAudio, sampleRate, frameSize):
     print('size row: ',len(allFrame))
     print('size collums: ',len(allFrame[0]))
     
-    print('****End of method getFrameArray')          
+    print('****End of method getFrameArray\n')          
     return allFrame
    
    
@@ -70,7 +70,7 @@ def getSpectrumFrameArray(allFrame):
     allFrameFFT = []
     mags = []
     i = 0
-    while i < len(allFrame):
+    while i < len(allFrame)-1:
         mags = abs(rfft(allFrame[i]))
         mags = 20 * scipy.log10(mags)#Convert to dB
         mags -= max(mags)#Normalise to 0 dB max
@@ -79,11 +79,11 @@ def getSpectrumFrameArray(allFrame):
         
     
     #PLOT GRAPH: example for first frame window
-    plt.plot(allFrameFFT[0])
+    '''plt.plot(allFrameFFT[0])
     plt.ylabel("Magnitude (dB)")
     plt.xlabel("Frequency Bin")
     plt.title("Spectrum")
-    plt.show()
+    plt.show()'''
     
     #allFrameFFT = [arr.tolist() for arr in allFrameFFT]
     #print('allFrameFFT: ',allFrameFFT)
@@ -91,8 +91,8 @@ def getSpectrumFrameArray(allFrame):
     print('allFrameFFT size collums: ',len(allFrameFFT[0]))
     
     
-    print('****End of method getSpectrumFromArray')
-    return allFrameFFT
+    print('****End of method getSpectrumFromArray\n')
+    return np.asarray(allFrameFFT)
 
     
         

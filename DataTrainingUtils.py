@@ -60,7 +60,7 @@ def setDataCorpus():
                             #outputfile.writelines(file.split('.')[0]+','+parselines+','+'{'+transcription+'}'+'\n')
                 inputfile.close()
         outputfile.close()
-    print('****End of method setDataCorpus')
+    print('****End of method setDataCorpus\n')
  
     
 def getOutputDataFromAudio(audioFileName):
@@ -100,6 +100,6 @@ def getOutputDataFromAudio(audioFileName):
     if  emo == 'neu': 
         code = 9     
                    
-    print('****End of method getOutputFromAudio')                
+    print('****End of method getOutputFromAudio\n')                
     return code, output, emo, val, text
   

@@ -1,6 +1,7 @@
 #Classe Main. Lancia l'esecuzione di tutto il processo.
 
 import os
+import numpy as np
 import DataTrainingUtils as trainData
 import AudioUtils as aud
 import NeuralNetworkUtils as nn
@@ -9,6 +10,8 @@ import NeuralNetworkUtils as nn
 mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus')
 #mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
 dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
+TInArray = []
+TOutArray = []
 
 #CREATE TRAINING OUTPUT DATA FILE
 #trainData.setDataCorpus()
@@ -29,22 +32,31 @@ for session in dirlist:
             #READ AUDIO FILE: tranform it in a redable array in spectrum
             arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath)
             allFrame = aud.getFrameArray(arrayAudio, sampleRate, 1024)
-            print('allFrame: ', allFrame)
+            #print('allFrame: ', allFrame)
             print('allFrame type: ', type(allFrame))
             allFrameFFT = aud.getSpectrumFrameArray(allFrame)
-            print('allFrameFFT: ', allFrameFFT)
+            #print('allFrameFFT: ', allFrameFFT)
             print('allFrameFFT type: ', type(allFrameFFT))
-           
+            
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
-            #y_code, output, emo, val, text = trainData.getOutputDataFromAudio('Ses04F_script01_1_M019')
-            #print('---Coresponding output for Audio Ses04F_script01_1_M019---')
             y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
             print('---Coresponding output for Audio ', Afile)
             print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code)
-           
-            #FEED THE NN
-            #y = nn.FFNNModel(allFrameFFT, y_code)
-            nn.RNNModel(allFrameFFT, y_code)
+            
+            #BUILD THE INPUT TRAINING ARRAY: dim = (#audiofile, #ofFftPerformed, fftWindowSize)
+            TInArray.append(allFrameFFT)
+            
+            #BUILD THE OUTPUT TRAINING ARRAY: dim = (#audiofile, outlabelArray)
+            TOutArray.append(y_code)
+            
+        #FEED THE NN: done for 1 session at time, because the groupped audio file array contains only one session files
+        print('\n')
+        print('TInArray number of audio file: ', len(TInArray))
+        print('TInArray number of timestep (number of FFT window): ', len(TInArray[0]))
+        print('TInArray lenght of each input (samples considered in the FFT window): ', len(TInArray[0][0]))
+        print('TOutArray number of audio file: ', len(TOutArray))
+        print('TOutArray number of output label for each timestep: ', len(TInArray[0]))
+        nn.RNNModel(np.asarray(TInArray), TOutArray)
             
             
 

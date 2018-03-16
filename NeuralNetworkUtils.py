@@ -16,7 +16,7 @@ def RNNModel(Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
-        X = np.full((len(Input), 1,len(Input[0])), 0)
+        X = np.full((len(Input), len(Input[0]),len(Input[0][0])), 0)
         #X = np.asarray(Input)
         #X = np.delete(X, (len(X)-1), axis=0)
         #print('len before: ', len(Input))
@@ -24,38 +24,39 @@ def RNNModel(Input, output):
         #X = X.reshape((len(X),1, len(Input[0])))
         print('X: ', X)
         
-        y = np.full((len(X), 1), output)
-        print('Y: ', y)
+        #y = np.full((len(X), 1), output)
+        #print('Y: ', y)
         
-        #Not considering last frame beacause lenght not costant for the last frame
+        #Not considering last frame because lenght not costant for the last frame
         i = 0
-        while i<len(Input)-1:
-            print('X: ', X[i][0])
-            X[i][0] = Input[i]
-            print('X: ', X[i][0])
+        while i<len(Input):
+            y = 0
+            while y<len(Input[0]):
+                print('X: ', X[i][y])
+                X[i][y] = Input[i][y]
+                print('X: ', X[i][y])
+                y+=1
             i+=1
-        print('X: ', X)
         
-        return X, y
+        return X
     
     #GET DATA FOR TRAINING
-    X, y = get_train()
+    X = get_train()
     print('X: ', X)
-    print('Y: ', y)
-    lenX = len(Input[0])
+    #print('Y: ', y)
     
     #DEFINE MODEL
     model = Sequential()
-    model.add(LSTM(64, input_shape=(1,lenX), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
-    model.add(Dense(units = 10,activation='softmax'))
+    model.add(LSTM(10, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
+    model.add(Dense(units = 1,activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adam')
-    model.fit(X, y, epochs=10, batch_size=64, verbose=2)
+    model.fit(X, output, epochs=1, verbose=2)
     
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
     model.save('RNN_Model_saved.h5')
     
     #TEST MODEL
-    predictFromSavedModel(X, 'RNN_Model_saved.h5')
+    predictFromSavedModel(Input, 'RNN_Model_saved.h5')
     
     print('****End of method RNNModel')
     
