@@ -16,47 +16,51 @@ def RNNModel(Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
-        X = np.full((len(Input), len(Input[0]),len(Input[0][0])), 0)
-        #X = np.asarray(Input)
-        #X = np.delete(X, (len(X)-1), axis=0)
-        #print('len before: ', len(Input))
-        #print('len after: ', len(X))
-        #X = X.reshape((len(X),1, len(Input[0])))
-        print('X: ', X)
+        X = np.full((len(Input), 80,len(Input[0][0])), 0)
         
         #y = np.full((len(X), 1), output)
-        #print('Y: ', y)
+        Y = np.asarray(output)
+        Y = Y.reshape((len(Y), 1))
         
-        #Not considering last frame because lenght not costant for the last frame
+        #y<80 problem of the lenght of the audio
         i = 0
         while i<len(Input):
             y = 0
-            while y<len(Input[0]):
-                print('X: ', X[i][y])
+            while y<80:
+                #print('X: ', X[i][y])
+                #print('len X: ', len(X[i][y]))
+                #print('len input: ', len(Input[i][y]))
                 X[i][y] = Input[i][y]
-                print('X: ', X[i][y])
+                #print('X: ', X[i][y])
                 y+=1
             i+=1
         
-        return X
+        return X, Y
     
     #GET DATA FOR TRAINING
-    X = get_train()
+    X, Y = get_train()
+    print('len X1: ', len(X))
+    print('len X2: ', len(X[0]))
+    print('len X3: ', len(X[0][0]))
     print('X: ', X)
-    #print('Y: ', y)
+    print('len Y1: ', len(Y))
+    print('len Y2: ', len(Y[0]))
+    print('Y: ', Y)
     
     #DEFINE MODEL
     model = Sequential()
-    model.add(LSTM(10, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
-    model.add(Dense(units = 1,activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam')
-    model.fit(X, output, epochs=1, verbose=2)
+    #model.add(LSTM(10, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
+    model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0]))))
+    #model.add(Dense(1,activation='softmax'))
+    model.add(Dense(1, activation='linear'))
+    model.compile(loss='mse', optimizer='adam')
+    model.fit(X, Y, epochs=500, verbose=2)
     
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
     model.save('RNN_Model_saved.h5')
     
     #TEST MODEL
-    predictFromSavedModel(Input, 'RNN_Model_saved.h5')
+    predictFromSavedModel(X, 'RNN_Model_saved.h5')
     
     print('****End of method RNNModel')
     

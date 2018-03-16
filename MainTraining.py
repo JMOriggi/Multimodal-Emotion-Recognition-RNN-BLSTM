@@ -26,17 +26,17 @@ for session in dirlist:
     for dirs, subdir, files in os.walk(directoryAudio):
         #print('Directory: ',dirs)
         for Afile in files:
-            print('Current File: ',Afile)
+            #print('Current File: ',Afile)
             audioFilePath = os.path.join(currentSessionPathText, Afile) 
             
             #READ AUDIO FILE: tranform it in a redable array in spectrum
             arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath)
             allFrame = aud.getFrameArray(arrayAudio, sampleRate, 1024)
             #print('allFrame: ', allFrame)
-            print('allFrame type: ', type(allFrame))
+            #print('allFrame type: ', type(allFrame))
             allFrameFFT = aud.getSpectrumFrameArray(allFrame)
             #print('allFrameFFT: ', allFrameFFT)
-            print('allFrameFFT type: ', type(allFrameFFT))
+            #print('allFrameFFT type: ', type(allFrameFFT))
             
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
             y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
