@@ -80,8 +80,8 @@ def getOutputDataFromAudio(audioFileName):
     emo = output.split(';')[1]
     val = output.split(';')[2]
     text = output.split(';')[3] 
-    code = ''
-    if  emo == 'fru': 
+    code = 0
+    '''if  emo == 'fru': 
         code = 1
     if  emo == 'ang':    
         code = 2
@@ -98,8 +98,24 @@ def getOutputDataFromAudio(audioFileName):
     if  emo == 'other': 
         code = 8 
     if  emo == 'neu': 
-        code = 9     
+        code = 9''' 
+     
+    if  emo == 'fru': 
+        code = [1,0,0,0,0,0,0,0]
+    if  emo == 'ang':    
+        code = [0,1,0,0,0,0,0,0] 
+    if  emo == 'sad': 
+        code = [0,0,1,0,0,0,0,0] 
+    if  emo == 'dep': 
+        code = [0,0,0,1,0,0,0,0] 
+    if  emo == 'sur': 
+        code = [0,0,0,0,1,0,0,0] 
+    if  emo == 'exi': 
+        code = [0,0,0,0,0,1,0,0]  
+    if  emo == 'other': 
+        code = [0,0,0,0,0,0,1,0]  
+    if  emo == 'neu': 
+        code = [0,0,0,0,0,0,0,1]  
                    
     print('****End of method getOutputFromAudio\n')                
     return code, output, emo, val, text
-  

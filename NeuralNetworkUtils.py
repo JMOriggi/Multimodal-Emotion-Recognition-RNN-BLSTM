@@ -20,7 +20,7 @@ def RNNModel(Input, output):
         
         #y = np.full((len(X), 1), output)
         Y = np.asarray(output)
-        Y = Y.reshape((len(Y), 1))
+        Y = Y.reshape((len(Y), 8))
         
         #y<80 problem of the lenght of the audio
         i = 0
@@ -51,8 +51,8 @@ def RNNModel(Input, output):
     model = Sequential()
     #model.add(LSTM(10, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
     model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0]))))
-    #model.add(Dense(1,activation='softmax'))
-    model.add(Dense(1, activation='linear'))
+    #model.add(Dense(1,activation='linear'))
+    model.add(Dense(8, activation='softmax'))
     model.compile(loss='mse', optimizer='adam')
     model.fit(X, Y, epochs=500, verbose=2)
     
