@@ -3,8 +3,8 @@
 
 import os
 
-mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus')
-#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
+#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus')
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
 
 def setDataCorpus():
     print('****Start of method setDataCorpus')
@@ -80,42 +80,22 @@ def getOutputDataFromAudio(audioFileName):
     emo = output.split(';')[1]
     val = output.split(';')[2]
     text = output.split(';')[3] 
-    code = 0
-    '''if  emo == 'fru': 
-        code = 1
-    if  emo == 'ang':    
-        code = 2
-    if  emo == 'sad': 
-        code = 3
-    if  emo == 'dep': 
-        code = 4
-    if  emo == 'sur': 
-        code = 5 
-    if  emo == 'exi': 
-        code = 6 
-    if  emo == 'xxx': 
-        code = 7 
-    if  emo == 'other': 
-        code = 8 
-    if  emo == 'neu': 
-        code = 9''' 
+    code = []
      
-    if  emo == 'fru': 
-        code = [1,0,0,0,0,0,0,0]
-    if  emo == 'ang':    
-        code = [0,1,0,0,0,0,0,0] 
+    if  emo == 'exc' or emo == 'hap': 
+        code = [1,0,0,0,0,0,0] #JOY
+    if  emo == 'ang' or emo == 'fru':    
+        code = [0,1,0,0,0,0,0] #ANG
+    if  emo == 'dis': 
+        code = [0,0,1,0,0,0,0] 
     if  emo == 'sad': 
-        code = [0,0,1,0,0,0,0,0] 
-    if  emo == 'dep': 
-        code = [0,0,0,1,0,0,0,0] 
+        code = [0,0,0,1,0,0,0] 
     if  emo == 'sur': 
-        code = [0,0,0,0,1,0,0,0] 
-    if  emo == 'exi': 
-        code = [0,0,0,0,0,1,0,0]  
-    if  emo == 'other': 
-        code = [0,0,0,0,0,0,1,0]  
-    if  emo == 'neu': 
-        code = [0,0,0,0,0,0,0,1]  
+        code = [0,0,0,0,1,0,0] 
+    if  emo == 'fea': 
+        code = [0,0,0,0,0,1,0]  
+    if  emo == 'other' or emo == 'neu' or emo == 'xxx': 
+        code = [0,0,0,0,0,0,1]  #NOT CLASSIFIED
                    
     print('****End of method getOutputFromAudio\n')                
     return code, output, emo, val, text
