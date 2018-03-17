@@ -7,7 +7,7 @@ import AudioUtils as aud
 import NeuralNetworkUtils as nn
 
 #SET VARIABLES AND CLASSES
-mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus')
+mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
 #mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
 dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
 TInArray = []
@@ -22,7 +22,7 @@ for session in dirlist:
     currentSessionPathText = os.path.join(mainRoot, session)
     currentSessionPathText += '\Sentences_audio'
     directoryAudio = os.path.normpath(currentSessionPathText)
-    print(directoryAudio)
+    #print(directoryAudio)
     for dirs, subdir, files in os.walk(directoryAudio):
         #print('Directory: ',dirs)
         for Afile in files:
@@ -42,6 +42,7 @@ for session in dirlist:
             y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
             print('---Coresponding output for Audio ', Afile)
             print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code)
+            print('\n')
             
             #BUILD THE INPUT TRAINING ARRAY: dim = (#audiofile, #ofFftPerformed, fftWindowSize)
             TInArray.append(allFrameFFT)
@@ -56,8 +57,12 @@ for session in dirlist:
         print('TInArray lenght of each input (samples considered in the FFT window): ', len(TInArray[0][0]))
         print('TOutArray number of audio file: ', len(TOutArray))
         print('TOutArray number of output label for each timestep: ', len(TInArray[0]))
+        print('\n')
         nn.RNNModel(np.asarray(TInArray), TOutArray)
-            
+        
+        #RESET ARRAY: se non viene fatto accumulo in tin e tout tutti i file audio (risultato finale voluto, eseguendo la RNN all'uscita di tutto il ciclo)
+        TInArray = []    
+        TOutArray = []
             
 
 

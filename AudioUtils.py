@@ -17,11 +17,12 @@ def getArrayFromAudio(audioFileName):
     stereoAudio = inputAudio[1]
     
     #TRASFORM IN MONO
-    monoAudio = (stereoAudio[:,0] + stereoAudio[:,1]) / 2  
+    #monoAudio = (stereoAudio[:,0] + stereoAudio[:,1]) / 2  
+    monoAudio = stereoAudio
     
     #PRINT RESULT
     print('Sampling frequency: ',sampleRate)
-    print('Stereo audio data (first 1024 samples): ',stereoAudio[0:1024])
+    #print('Stereo audio data (first 1024 samples): ',stereoAudio[0:1024])
     print('Mono audio data (first 1024 samples): ',monoAudio[0:1024])
     print('Mono audio matrix structure: ',monoAudio.shape)
     

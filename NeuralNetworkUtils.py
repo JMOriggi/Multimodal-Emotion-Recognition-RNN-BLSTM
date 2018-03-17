@@ -16,17 +16,17 @@ def RNNModel(Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
-        X = np.full((len(Input), 80,len(Input[0][0])), 0)
+        X = np.full((len(Input), 40,len(Input[0][0])), 0)
         
         #y = np.full((len(X), 1), output)
         Y = np.asarray(output)
-        Y = Y.reshape((len(Y), 8))
+        Y = Y.reshape((len(Y), 7))
         
         #y<80 problem of the lenght of the audio
         i = 0
         while i<len(Input):
             y = 0
-            while y<80:
+            while y < 40:
                 #print('X: ', X[i][y])
                 #print('len X: ', len(X[i][y]))
                 #print('len input: ', len(Input[i][y]))
@@ -52,9 +52,9 @@ def RNNModel(Input, output):
     #model.add(LSTM(10, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
     model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0]))))
     #model.add(Dense(1,activation='linear'))
-    model.add(Dense(8, activation='softmax'))
+    model.add(Dense(7, activation='softmax'))
     model.compile(loss='mse', optimizer='adam')
-    model.fit(X, Y, epochs=500, verbose=2)
+    model.fit(X, Y, epochs=50, verbose=2)
     
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
     model.save('RNN_Model_saved.h5')

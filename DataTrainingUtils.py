@@ -3,8 +3,8 @@
 
 import os
 
-#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
+mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
+#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
 
 def setDataCorpus():
     print('****Start of method setDataCorpus')
