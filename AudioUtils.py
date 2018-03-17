@@ -51,12 +51,12 @@ def getFrameArray(monoAudio, sampleRate, frameSize):
         i += frameSize+1
         
     #PRINT RESULTS
-    print('Mono first 1024 samples: ', monoAudio[0:1024])
+    '''print('Mono first 1024 samples: ', monoAudio[0:1024])
     print('Sample rate: ', sampleRate)
     print('Frame size: ', frameSize)     
     print('All Frame[0]',allFrame[0])
     print('size row: ',len(allFrame))
-    print('size collums: ',len(allFrame[0]))
+    print('size collums: ',len(allFrame[0]))'''
     
     print('****End of method getFrameArray\n')          
     return allFrame
@@ -86,10 +86,9 @@ def getSpectrumFrameArray(allFrame):
     plt.title("Spectrum")
     plt.show()'''
     
-    #allFrameFFT = [arr.tolist() for arr in allFrameFFT]
-    #print('allFrameFFT: ',allFrameFFT)
+    '''print('allFrameFFT: ',allFrameFFT)
     print('allFrameFFT size row: ',len(allFrameFFT))
-    print('allFrameFFT size collums: ',len(allFrameFFT[0]))
+    print('allFrameFFT size collums: ',len(allFrameFFT[0]))'''
     
     
     print('****End of method getSpectrumFromArray\n')

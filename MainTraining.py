@@ -7,8 +7,8 @@ import AudioUtils as aud
 import NeuralNetworkUtils as nn
 
 #SET VARIABLES AND CLASSES
-mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
+#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
 dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
 TInArray = []
 TOutArray = []
@@ -40,9 +40,9 @@ for session in dirlist:
             
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
             y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
-            print('---Coresponding output for Audio ', Afile)
-            print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code)
-            print('\n')
+            #print('---Coresponding output for Audio ', Afile)
+            #print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code)
+            #print('\n')
             
             #BUILD THE INPUT TRAINING ARRAY: dim = (#audiofile, #ofFftPerformed, fftWindowSize)
             TInArray.append(allFrameFFT)

@@ -16,7 +16,7 @@ def RNNModel(Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
-        X = np.full((len(Input), 40,len(Input[0][0])), 0)
+        X = np.full((len(Input), 18,len(Input[0][0])), 0)
         
         #y = np.full((len(X), 1), output)
         Y = np.asarray(output)
@@ -26,7 +26,7 @@ def RNNModel(Input, output):
         i = 0
         while i<len(Input):
             y = 0
-            while y < 40:
+            while y < 18:
                 #print('X: ', X[i][y])
                 #print('len X: ', len(X[i][y]))
                 #print('len input: ', len(Input[i][y]))
@@ -42,7 +42,7 @@ def RNNModel(Input, output):
     print('len X1: ', len(X))
     print('len X2: ', len(X[0]))
     print('len X3: ', len(X[0][0]))
-    print('X: ', X)
+    #print('X: ', X)
     print('len Y1: ', len(Y))
     print('len Y2: ', len(Y[0]))
     print('Y: ', Y)
@@ -54,7 +54,7 @@ def RNNModel(Input, output):
     #model.add(Dense(1,activation='linear'))
     model.add(Dense(7, activation='softmax'))
     model.compile(loss='mse', optimizer='adam')
-    model.fit(X, Y, epochs=50, verbose=2)
+    model.fit(X, Y, epochs=50, verbose=0)
     
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
     model.save('RNN_Model_saved.h5')
@@ -116,7 +116,7 @@ def predictFromSavedModel(test, fileName):
     #yhat = model.predict(X, verbose=0)
     yhat = model.predict(test, verbose=0)
     
-    print('Result: ',yhat)
+    print('Result per line: ',yhat.round(decimals=3))
     
     print('****End of method SaveWeights')        
     
