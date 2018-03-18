@@ -31,7 +31,7 @@ for session in dirlist:
             
             #READ AUDIO FILE: tranform it in a redable array in spectrum
             arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath)
-            allFrame = aud.getFrameArray(arrayAudio, sampleRate, 1024)
+            allFrame = aud.getFrameArray(arrayAudio, sampleRate) 
             #print('allFrame: ', allFrame)
             #print('allFrame type: ', type(allFrame))
             allFrameFFT = aud.getSpectrumFrameArray(allFrame)
@@ -50,19 +50,19 @@ for session in dirlist:
             #BUILD THE OUTPUT TRAINING ARRAY: dim = (#audiofile, outlabelArray)
             TOutArray.append(y_code)
             
-        #FEED THE NN: done for 1 session at time, because the groupped audio file array contains only one session files
-        print('\n')
-        print('TInArray number of audio file: ', len(TInArray))
-        print('TInArray number of timestep (number of FFT window): ', len(TInArray[0]))
-        print('TInArray lenght of each input (samples considered in the FFT window): ', len(TInArray[0][0]))
-        print('TOutArray number of audio file: ', len(TOutArray))
-        print('TOutArray number of output label for each timestep: ', len(TInArray[0]))
-        print('\n')
-        nn.RNNModel(np.asarray(TInArray), TOutArray)
-        
-        #RESET ARRAY: se non viene fatto accumulo in tin e tout tutti i file audio (risultato finale voluto, eseguendo la RNN all'uscita di tutto il ciclo)
-        TInArray = []    
-        TOutArray = []
+            #FEED THE NN: done for 1 session at time, because the groupped audio file array contains only one session files
+            print('\n')
+            print('TInArray number of audio file: ', len(TInArray))
+            print('TInArray number of timestep (number of FFT window): ', len(TInArray[0]))
+            print('TInArray lenght of each input (samples considered in the FFT window): ', len(TInArray[0][0]))
+            print('TOutArray number of audio file: ', len(TOutArray))
+            print('TOutArray number of output label for each file: ', len(TOutArray[0]))
+            print('\n')
+            nn.RNNModel(np.asarray(TInArray), TOutArray)
+            
+            #RESET ARRAY: se non viene fatto accumulo in tin e tout tutti i file audio (risultato finale voluto, eseguendo la RNN all'uscita di tutto il ciclo)
+            TInArray = []    
+            TOutArray = []
             
 
 

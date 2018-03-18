@@ -39,7 +39,36 @@ model.fit(data,labels,epochs=10,batch_size=32)
 predictions = model.predict(data)
 print('predictions: ',predictions)'''
 
+import matplotlib.pyplot as plt
+from scipy import signal
+from scipy.io import wavfile
+import numpy as np
+sample_rate, samples = wavfile.read('Ses03F_impro08_M003.wav')
+print('samples: ', samples)
+print('sample_rate: ', sample_rate)
 
+'''fs = 10e3
+N = 1e5
+amp = 2 * np.sqrt(2)
+noise_power = 0.01 * fs / 2
+time = np.arange(N) / float(fs)
+mod = 500*np.cos(2*np.pi*0.25*time)
+carrier = amp * np.sin(2*np.pi*3e3*time + mod)
+noise = np.random.normal(scale=np.sqrt(noise_power), size=time.shape)
+noise *= np.exp(-time/5)
+x = carrier + noise
+samples=x
+sample_rate=fs'''
+
+frequencies, times, spectogram = signal.spectrogram(samples, sample_rate)
+print('times: ', times)
+print('frequencies: ', frequencies)
+print('spectogram: ', spectogram)
+
+plt.pcolormesh(times, frequencies, spectogram)
+plt.ylabel('Frequency [Hz]')
+plt.xlabel('Time [sec]')
+plt.show()
 
 
 

@@ -8,7 +8,7 @@ from keras.models import load_model
     
 def FFModel(In):
     print('****Start of method FFModel')
-    print('****End of method FFModel')
+    print('****End of method FFModel\n')
 
     
 def RNNModel(Input, output):
@@ -16,7 +16,7 @@ def RNNModel(Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
-        X = np.full((len(Input), 18,len(Input[0][0])), 0)
+        X = np.full((len(Input), len(Input[0]),len(Input[0][0])), 0)
         
         #y = np.full((len(X), 1), output)
         Y = np.asarray(output)
@@ -26,7 +26,7 @@ def RNNModel(Input, output):
         i = 0
         while i<len(Input):
             y = 0
-            while y < 18:
+            while y < len(Input[0]):
                 #print('X: ', X[i][y])
                 #print('len X: ', len(X[i][y]))
                 #print('len input: ', len(Input[i][y]))
@@ -54,6 +54,7 @@ def RNNModel(Input, output):
     #model.add(Dense(1,activation='linear'))
     model.add(Dense(7, activation='softmax'))
     model.compile(loss='mse', optimizer='adam')
+    #model.compile(loss='categorical_crossentropy', optimizer='adam')
     model.fit(X, Y, epochs=50, verbose=0)
     
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
@@ -62,7 +63,7 @@ def RNNModel(Input, output):
     #TEST MODEL
     predictFromSavedModel(X, 'RNN_Model_saved.h5')
     
-    print('****End of method RNNModel')
+    print('****End of method RNNModel\n')
     
 
 
@@ -118,6 +119,6 @@ def predictFromSavedModel(test, fileName):
     
     print('Result per line: ',yhat.round(decimals=3))
     
-    print('****End of method SaveWeights')        
+    print('****End of method SaveWeights\n')        
     
     

@@ -21,10 +21,10 @@ def getArrayFromAudio(audioFileName):
     monoAudio = stereoAudio
     
     #PRINT RESULT
-    print('Sampling frequency: ',sampleRate)
-    #print('Stereo audio data (first 1024 samples): ',stereoAudio[0:1024])
-    print('Mono audio data (first 1024 samples): ',monoAudio[0:1024])
-    print('Mono audio matrix structure: ',monoAudio.shape)
+    '''print('Sampling frequency: ',sampleRate)
+    #print('Stereo audio data (first 100 samples): ',stereoAudio[0:100])
+    print('Mono audio data (first 100 samples): ',monoAudio[0:1000])
+    print('Mono audio matrix structure: ',monoAudio.shape)'''
     
     #PLOT THE AUDIO ARRAY
     '''plt.plot(monoAudio)
@@ -39,10 +39,11 @@ def getArrayFromAudio(audioFileName):
 
 #INPUT: array of the mono info, sampleRate, frame size choosen
 #Output: list of chunks containing frame info, [[[a b c]][[d e f]]...] example for frame of size 3 
-def getFrameArray(monoAudio, sampleRate, frameSize):
+def getFrameArray(monoAudio, sampleRate):
     print('****Start of method getFrameArray')
     
     #DIVIDE ARRAY IN CHUNKS: each chunks of a frame size of samples
+    frameSize = 320 #Frame size setted to 320samples hat correspond to chunks of 20ms
     allFrame=[]
     i = 0
     while i < len(monoAudio):
@@ -51,7 +52,7 @@ def getFrameArray(monoAudio, sampleRate, frameSize):
         i += frameSize+1
         
     #PRINT RESULTS
-    '''print('Mono first 1024 samples: ', monoAudio[0:1024])
+    '''print('Mono first 100 samples: ', monoAudio[0:100])
     print('Sample rate: ', sampleRate)
     print('Frame size: ', frameSize)     
     print('All Frame[0]',allFrame[0])
@@ -71,24 +72,24 @@ def getSpectrumFrameArray(allFrame):
     allFrameFFT = []
     mags = []
     i = 0
-    while i < len(allFrame)-1:
+    while i < len(allFrame)-1: #-1 beacause the last chunks may be shorter than the others
         mags = abs(rfft(allFrame[i]))
-        mags = 20 * scipy.log10(mags)#Convert to dB
-        mags -= max(mags)#Normalise to 0 dB max
+        #mags = 20 * scipy.log10(mags)#Convert to dB
+        #mags -= max(mags)#Normalise to 0 dB max
         allFrameFFT.append(mags)
         i += 1
         
     
     #PLOT GRAPH: example for first frame window
-    '''plt.plot(allFrameFFT[0])
+    plt.plot(allFrameFFT[0])
     plt.ylabel("Magnitude (dB)")
     plt.xlabel("Frequency Bin")
     plt.title("Spectrum")
-    plt.show()'''
+    plt.show()
     
-    '''print('allFrameFFT: ',allFrameFFT)
+    print('allFrameFFT: ',allFrameFFT)
     print('allFrameFFT size row: ',len(allFrameFFT))
-    print('allFrameFFT size collums: ',len(allFrameFFT[0]))'''
+    print('allFrameFFT size collums: ',len(allFrameFFT[0]))
     
     
     print('****End of method getSpectrumFromArray\n')
