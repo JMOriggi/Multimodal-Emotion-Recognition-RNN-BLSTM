@@ -22,16 +22,12 @@ def RNNModel(Input, output):
         Y = np.asarray(output)
         Y = Y.reshape((len(Y), 7))
         
-        #y<80 problem of the lenght of the audio
+        #Reshape
         i = 0
         while i<len(Input):
             y = 0
             while y < len(Input[0]):
-                #print('X: ', X[i][y])
-                #print('len X: ', len(X[i][y]))
-                #print('len input: ', len(Input[i][y]))
                 X[i][y] = Input[i][y]
-                #print('X: ', X[i][y])
                 y+=1
             i+=1
         

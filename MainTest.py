@@ -57,11 +57,23 @@ print('len2 Pxx: ', len(fft[0]))
 print('shape Pxx: ', fft.shape)
 print('shape freqs: ', freqsBins.shape)
 print('shape bins: ', timeBins.shape)
+
 cbar=plt.colorbar(im)
 plt.xlabel('Time (s)')
 plt.ylabel('Frequency (Hz)')
 cbar.set_label('Intensity (dB)')
 plt.show()
+
+i = 0
+X = np.full((len(fft[0]), len(fft)), 0)
+while i < len(fft):
+    y = 0
+    while y < len(fft[0]):
+        X[y][i] = fft[i][y]
+        y+=1
+    i+=1
+print('New shape Pxx: ', X.shape)
+print('New Pxx: ', X)
 
 '''fs = 10e3
 N = 1e5

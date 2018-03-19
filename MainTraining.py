@@ -31,12 +31,9 @@ for session in dirlist:
             
             #READ AUDIO FILE: tranform it in a redable array in spectrum
             arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath)
-            allFrame = aud.getFrameArray(arrayAudio, sampleRate) 
-            #print('allFrame: ', allFrame)
-            #print('allFrame type: ', type(allFrame))
-            allFrameFFT = aud.getSpectrumFrameArray(allFrame)
-            #print('allFrameFFT: ', allFrameFFT)
-            #print('allFrameFFT type: ', type(allFrameFFT))
+            allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
+            '''allFrame = aud.getFrameArray(arrayAudio, sampleRate) 
+            allFrameFFT = aud.getSpectrumFrameArray(allFrame)'''
             
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
             y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
@@ -54,7 +51,7 @@ for session in dirlist:
             print('\n')
             print('TInArray number of audio file: ', len(TInArray))
             print('TInArray number of timestep (number of FFT window): ', len(TInArray[0]))
-            print('TInArray lenght of each input (samples considered in the FFT window): ', len(TInArray[0][0]))
+            print('TInArray number of freq considered (value is the amplitude in db for each one): ', len(TInArray[0][0]))
             print('TOutArray number of audio file: ', len(TOutArray))
             print('TOutArray number of output label for each file: ', len(TOutArray[0]))
             print('\n')
