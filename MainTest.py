@@ -1,9 +1,3 @@
-'''myarray = np.asarray(mylist)
-np.array([[1,2,3],[4,5,6]]).tolist()
-
-'''
-
-
 
 #TEST DATA TRAINING CLASS
 #from DataTrainingUtils import DataTrainingUtils
@@ -22,8 +16,6 @@ arrayAudio, sampleRate = aud.getArrayFromAudio(audioFileName)
 allFrame = aud.getFrameArray(arrayAudio, sampleRate, 1024)
 allFrameFFT = aud.getSpectrumFrameArray(allFrame)'''
 #nn.FFNNModel(np.float32(allFrameFFT[0]), 1)
-
-
 '''import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense
@@ -74,29 +66,6 @@ while i < len(fft):
     i+=1
 print('New shape Pxx: ', X.shape)
 print('New Pxx: ', X)
-
-'''fs = 10e3
-N = 1e5
-amp = 2 * np.sqrt(2)
-noise_power = 0.01 * fs / 2
-time = np.arange(N) / float(fs)
-mod = 500*np.cos(2*np.pi*0.25*time)
-carrier = amp * np.sin(2*np.pi*3e3*time + mod)
-noise = np.random.normal(scale=np.sqrt(noise_power), size=time.shape)
-noise *= np.exp(-time/5)
-x = carrier + noise
-samples=x
-sample_rate=fs'''
-
-'''frequencies, times, spectogram = signal.spectrogram(samples, sample_rate)
-print('times: ', times)
-print('frequencies: ', frequencies)
-print('spectogram: ', spectogram)
-
-plt.pcolormesh(times, frequencies, spectogram)
-plt.ylabel('Frequency [Hz]')
-plt.xlabel('Time [sec]')
-plt.show()'''
 
 
 

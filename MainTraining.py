@@ -1,4 +1,3 @@
-#Classe Main. Lancia l'esecuzione di tutto il processo.
 
 import os
 import numpy as np
@@ -17,7 +16,6 @@ TOutArray = []
 #trainData.setDataCorpus()
 
 #MAIN ROUTINE: load one after the other all the audio files for each session
-#for session in dirlist[0]:
 for session in dirlist:
     currentSessionPathText = os.path.join(mainRoot, session)
     currentSessionPathText += '\Sentences_audio'
@@ -38,8 +36,7 @@ for session in dirlist:
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
             y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
             #print('---Coresponding output for Audio ', Afile)
-            #print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code)
-            #print('\n')
+            #print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code, '\n')
             
             #BUILD THE INPUT TRAINING ARRAY: dim = (#audiofile, #ofFftPerformed, fftWindowSize)
             TInArray.append(allFrameFFT)
@@ -47,14 +44,15 @@ for session in dirlist:
             #BUILD THE OUTPUT TRAINING ARRAY: dim = (#audiofile, outlabelArray)
             TOutArray.append(y_code)
             
-            #FEED THE NN: done for 1 session at time, because the groupped audio file array contains only one session files
-            print('\n')
+            '''print('\n')
             print('TInArray number of audio file: ', len(TInArray))
             print('TInArray number of timestep (number of FFT window): ', len(TInArray[0]))
             print('TInArray number of freq considered (value is the amplitude in db for each one): ', len(TInArray[0][0]))
             print('TOutArray number of audio file: ', len(TOutArray))
             print('TOutArray number of output label for each file: ', len(TOutArray[0]))
-            print('\n')
+            print('\n')'''
+            
+            #FEED THE NN: done for 1 session at time, because the groupped audio file array contains only one session files
             nn.RNNModel(np.asarray(TInArray), TOutArray)
             
             #RESET ARRAY: se non viene fatto accumulo in tin e tout tutti i file audio (risultato finale voluto, eseguendo la RNN all'uscita di tutto il ciclo)

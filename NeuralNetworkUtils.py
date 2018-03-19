@@ -6,11 +6,6 @@ from keras.layers import LSTM
 from keras.models import load_model
 
     
-def FFModel(In):
-    print('****Start of method FFModel')
-    print('****End of method FFModel\n')
-
-    
 def RNNModel(Input, output):
     print('****Start of method RNNModel')
     
@@ -51,7 +46,7 @@ def RNNModel(Input, output):
     model.add(Dense(7, activation='softmax'))
     model.compile(loss='mse', optimizer='adam')
     #model.compile(loss='categorical_crossentropy', optimizer='adam')
-    model.fit(X, Y, epochs=50, verbose=0)
+    model.fit(X, Y, epochs=20, verbose=0)
     
     #SAVE MODEL AND WEIGHTS AFTER TRAINING
     model.save('RNN_Model_saved.h5')
@@ -60,9 +55,21 @@ def RNNModel(Input, output):
     predictFromSavedModel(X, 'RNN_Model_saved.h5')
     
     print('****End of method RNNModel\n')
+
     
-
-
+def predictFromSavedModel(test, fileName):
+    print('****Start of method SaveWeights')
+    
+    #LOAD MODEL FROM FILE
+    model = load_model(fileName)
+    
+    #yhat = model.predict(X, verbose=0)
+    yhat = model.predict(test, verbose=0)
+    
+    print('Result per line: ',yhat.round(decimals=2))
+    
+    print('****End of method SaveWeights\n')        
+  
 
 #INPUT: must be an array where each row is an input; 
 def FFNNModel(x_data1, yTrainData):
@@ -102,19 +109,5 @@ def FFNNModel(x_data1, yTrainData):
     print('Output After run',sess.run(y))
 
     print('****Start of method FFNNModel')
- 
-    
-def predictFromSavedModel(test, fileName):
-    print('****Start of method SaveWeights')
-    
-    #LOAD MODEL FROM FILE
-    model = load_model(fileName)
-    
-    #yhat = model.predict(X, verbose=0)
-    yhat = model.predict(test, verbose=0)
-    
-    print('Result per line: ',yhat.round(decimals=3))
-    
-    print('****End of method SaveWeights\n')        
-    
+   
     
