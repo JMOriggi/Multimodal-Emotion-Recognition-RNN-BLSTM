@@ -43,9 +43,25 @@ import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.io import wavfile
 import numpy as np
+
 sample_rate, samples = wavfile.read('Ses03F_impro08_M003.wav')
 print('samples: ', samples)
+print('Samples shape: ', samples.shape)
+print('Samples duration: ', len(samples)/sample_rate)
 print('sample_rate: ', sample_rate)
+
+fft, freqsBins, timeBins, im = plt.specgram(samples, Fs=sample_rate, NFFT=320, cmap=plt.get_cmap('autumn_r'))
+print('Pxx: ', fft)
+print('len Pxx: ', len(fft))
+print('len2 Pxx: ', len(fft[0]))
+print('shape Pxx: ', fft.shape)
+print('shape freqs: ', freqsBins.shape)
+print('shape bins: ', timeBins.shape)
+cbar=plt.colorbar(im)
+plt.xlabel('Time (s)')
+plt.ylabel('Frequency (Hz)')
+cbar.set_label('Intensity (dB)')
+plt.show()
 
 '''fs = 10e3
 N = 1e5
@@ -60,7 +76,7 @@ x = carrier + noise
 samples=x
 sample_rate=fs'''
 
-frequencies, times, spectogram = signal.spectrogram(samples, sample_rate)
+'''frequencies, times, spectogram = signal.spectrogram(samples, sample_rate)
 print('times: ', times)
 print('frequencies: ', frequencies)
 print('spectogram: ', spectogram)
@@ -68,7 +84,9 @@ print('spectogram: ', spectogram)
 plt.pcolormesh(times, frequencies, spectogram)
 plt.ylabel('Frequency [Hz]')
 plt.xlabel('Time [sec]')
-plt.show()
+plt.show()'''
+
+
 
 
 
