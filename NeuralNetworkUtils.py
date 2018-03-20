@@ -6,7 +6,7 @@ from keras.layers import LSTM
 from keras.models import load_model
 
     
-def RNNModel(Input, output):
+def RNNModel(modelRNN, Input, output):
     print('****Start of method RNNModel')
     
     #PREPARE TRAINING DATA
@@ -39,23 +39,22 @@ def RNNModel(Input, output):
     print('Y: ', Y)
     
     #DEFINE MODEL
-    model = Sequential()
-    #model.add(LSTM(10, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
-    model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0]))))
-    #model.add(Dense(1,activation='linear'))
-    model.add(Dense(7, activation='softmax'))
-    model.compile(loss='mse', optimizer='adam')
-    #model.compile(loss='categorical_crossentropy', optimizer='adam')
+    if modelRNN == '':
+        model = Sequential()
+        model.add(LSTM(64, input_shape=(None,len(X[0][0])), return_sequences=False))
+        #model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0])), return_sequences=False))
+        #model.add(LSTM(10, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
+        model.add(Dense(7, activation='softmax'))
+        model.compile(loss='mse', optimizer='adam')
+        #model.compile(loss='categorical_crossentropy', optimizer='adam')
+    else:
+        model = modelRNN 
+        
     model.fit(X, Y, epochs=20, verbose=0)
     
-    #SAVE MODEL AND WEIGHTS AFTER TRAINING
-    model.save('RNN_Model_saved.h5')
-    
-    #TEST MODEL
-    predictFromSavedModel(X, 'RNN_Model_saved.h5')
-    
     print('****End of method RNNModel\n')
-
+    return model
+    
     
 def predictFromSavedModel(test, fileName):
     print('****Start of method SaveWeights')
@@ -63,7 +62,7 @@ def predictFromSavedModel(test, fileName):
     #LOAD MODEL FROM FILE
     model = load_model(fileName)
     
-    #yhat = model.predict(X, verbose=0)
+    #TEST MODEL: with gived array and model name loaded
     yhat = model.predict(test, verbose=0)
     
     print('Result per line: ',yhat.round(decimals=2))

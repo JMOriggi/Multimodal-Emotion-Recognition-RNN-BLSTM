@@ -17,6 +17,7 @@ def setDataCorpus():
     #The output file is placed in the root folder and the content will have the format: AudioFileName, CatOutput, ValOutput.
     for session in dirlist:
         print('Parsing: ',session)
+        
         #COMPOSE DIRECTORY PATH FOR THE EMOTION RESULTS FILE FOR THE CURRENT SESSION
         currentSessionPathEmo = os.path.join(mainRoot, session)
         currentSessionPathEmo += '\EmoEvaluation'
@@ -56,7 +57,7 @@ def setDataCorpus():
                                                     transcription = transcription.split('\n')[0]
                                                     #print('Transcription: ',transcription)
                                                     break
-                            outputfile.writelines(parselines+';'+'{'+transcription+'}'+'\n')
+                            outputfile.writelines(parselines+';'+'{'+transcription+'\n')
                             #outputfile.writelines(file.split('.')[0]+','+parselines+','+'{'+transcription+'}'+'\n')
                 inputfile.close()
         outputfile.close()
@@ -79,7 +80,7 @@ def getOutputDataFromAudio(audioFileName):
     #CREATE OUTPUT VARIABLES
     emo = output.split(';')[1]
     val = output.split(';')[2]
-    text = output.split(';')[3] 
+    text = output.split('{')[1] 
     code = []
      
     if  emo == 'exc' or emo == 'hap': 

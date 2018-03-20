@@ -47,11 +47,11 @@ def getFreqArray(monoAudio, sampleRate):
     print('shape freqsBins: ', freqsBins.shape)
     
     #PRINT SPECTROGRAM
-    cbar=plt.colorbar(im)
+    '''cbar=plt.colorbar(im)
     plt.xlabel('Time (s)')
     plt.ylabel('Frequency (Hz)')
     cbar.set_label('Intensity (dB)')
-    plt.show()
+    plt.show()'''
     
     #RESHAPE FREQ ARRAY: to prepare it for the NN, row=timestep collumns=freq values
     i = 0
