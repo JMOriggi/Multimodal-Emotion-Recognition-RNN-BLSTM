@@ -11,13 +11,8 @@ def RNNModel(modelRNN, Input, output):
     
     #PREPARE TRAINING DATA
     def get_train():
+        #RESHAPE INPUT
         X = np.full((len(Input), len(Input[0]),len(Input[0][0])), 0)
-        
-        #y = np.full((len(X), 1), output)
-        Y = np.asarray(output)
-        Y = Y.reshape((len(Y), 7))
-        
-        #Reshape
         i = 0
         while i<len(Input):
             y = 0
@@ -25,6 +20,10 @@ def RNNModel(modelRNN, Input, output):
                 X[i][y] = Input[i][y]
                 y+=1
             i+=1
+        
+        #RESHAPE OUTPUT
+        Y = np.asarray(output)
+        Y = Y.reshape((len(Y), 7))
         
         return X, Y
     
@@ -50,14 +49,14 @@ def RNNModel(modelRNN, Input, output):
     else:
         model = modelRNN 
         
-    model.fit(X, Y, epochs=1, verbose=0)
+    model.fit(X, Y, epochs=10, verbose=0)
     
     print('****End of method RNNModel\n')
     return model
     
     
 def predictFromSavedModel(test, fileName):
-    print('****Start of method SaveWeights')
+    print('****Start of method predictFromSavedModel')
     
     #LOAD MODEL FROM FILE
     model = load_model(fileName)
@@ -67,7 +66,7 @@ def predictFromSavedModel(test, fileName):
     
     print('Result per line: ',yhat.round(decimals=2))
     
-    print('****End of method SaveWeights\n')        
+    print('****End of method predictFromSavedModel\n')        
   
 
 #INPUT: must be an array where each row is an input; 

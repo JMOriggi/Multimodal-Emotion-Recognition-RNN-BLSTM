@@ -1,10 +1,6 @@
-#Se cambia posizione cartella modificare SOLO la root e mantenere struttura cartelle uguale.
 #Struttura da mantenere: Corpus--> TrainOutput.txt Session1,2,3,4,5-->EmoEvaluation,Sentences_audio,Transcriptions
 
 import os
-
-#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
 
 def setDataCorpus(mainRoot):
     print('****Start of method setDataCorpus')
@@ -28,26 +24,23 @@ def setDataCorpus(mainRoot):
         translist = [ item for item in os.listdir(directoryEmoPath) if os.path.isfile(os.path.join(directoryEmoPath, item)) ]
         print('Directory Transcription: ',directoryText)
         
-        #CREATE OUT DATA FILE: remove if it already exist and recreate it new
+        #CREATE OUTPU DATA FILE: remove if it already exist and recreate it new
         outputfilePath = os.path.join(mainRoot+'\TrainOutput'+session+'.txt')
-        #outputfilePath = os.path.join(mainRoot, session)+'\TrainOutput'+session+'.txt')
-        #outputfilePath = os.path.join('TrainOutput'+session+'.txt')
         try:
             os.remove(outputfilePath)
         except OSError:
             pass
         outputfile = open(outputfilePath, 'a')
         
+        #PARSE ALL THE FILES AND APPEND IN THE OUTPUT FILE
         for file in emolist:
-            #print('Open and parsing: ',file.split('.')[0])
-            
             with open(os.path.join(directoryEmoPath, file), 'r') as inputfile:
                 for lines in inputfile:
                     lines = lines.strip()
                     pos = lines.find('Ses')
                     if pos != -1:
+                        #CREATE NEW LINE FOR EMOTION RESULTS
                         parselines = lines.split()[3]+';'+lines.split()[4]+';'+lines.split()[5]+lines.split()[6]+lines.split()[7]
-                        #print(lines.split()[3])
                         
                         #FOR EACH LINE FIND THE CORRESPONDING TRANSCRIPTION SENTENCE IN THE TRANSCRIPTION FILE
                         for file2 in translist:
@@ -59,11 +52,12 @@ def setDataCorpus(mainRoot):
                                             transcription = transcription.split('\n')[0]
                                             #print('Transcription: ',transcription)
                                             break
-                                            
+                        
+                        #APPEND IN THE OUTPUT FILE                    
                         outputfile.writelines(parselines+';'+'{'+transcription+'\n')
-                        #outputfile.writelines(file.split('.')[0]+','+parselines+','+'{'+transcription+'}'+'\n')
             inputfile.close()
         outputfile.close()
+        
     print('****End of method setDataCorpus\n')
  
     

@@ -6,12 +6,9 @@ import NeuralNetworkUtils as nn
 
 #SET VARIABLES AND CLASSES
 #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Test')
 sessDirList = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
 TInArrayTest = []
-
-#CREATE TRAINING OUTPUT DATA FILE
-trainData.setDataCorpus()
 
 #MAIN ROUTINE: load one after the other all the audio files for each session
 for session in sessDirList:
@@ -30,7 +27,7 @@ for session in sessDirList:
             allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
             
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
-            y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
+            y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0], mainRoot)
             print('---Coresponding output for Audio ', Afile)
             print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code, '\n')
             
@@ -38,22 +35,14 @@ for session in sessDirList:
             TInArrayTest.append(allFrameFFT)
             
             #PREPARE TRAINING DATA
-            def get_train():
-                X = np.full((len(TInArrayTest), len(TInArrayTest[0]),len(TInArrayTest[0][0])), 0)
-                
-                #Reshape
-                i = 0
-                while i<len(TInArrayTest):
-                    y = 0
-                    while y < len(TInArrayTest[0]):
-                        X[i][y] = TInArrayTest[i][y]
-                        y+=1
-                    i+=1
-                
-                return X
-            
-            #GET DATA FOR TRAINING
-            X = get_train()
+            X = np.full((len(TInArrayTest), len(TInArrayTest[0]),len(TInArrayTest[0][0])), 0)
+            i = 0
+            while i<len(TInArrayTest):
+                y = 0
+                while y < len(TInArrayTest[0]):
+                    X[i][y] = TInArrayTest[i][y]
+                    y+=1
+                i+=1
             
             #TEST MODEL
             nn.predictFromSavedModel(X, 'RNN_Model_saved.h5')
@@ -61,4 +50,4 @@ for session in sessDirList:
             #RESET ARRAY: se non viene fatto accumulo in tin e tout tutti i file audio (risultato finale voluto, eseguendo la RNN all'uscita di tutto il ciclo)
             TInArrayTest = []  
             
-
+print('END OF TEST PREDICTION')  
