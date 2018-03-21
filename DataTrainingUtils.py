@@ -3,10 +3,10 @@
 
 import os
 
-mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
+#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
 #mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
 
-def setDataCorpus():
+def setDataCorpus(mainRoot):
     print('****Start of method setDataCorpus')
     
     #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
@@ -66,7 +66,7 @@ def setDataCorpus():
     print('****End of method setDataCorpus\n')
  
     
-def getOutputDataFromAudio(audioFileName):
+def getOutputDataFromAudio(audioFileName, mainRoot):
     print('****Start of method getOutputFromAudio')
     
     #TAKE THE OUTPUT TRAINING INFO FROM TRAINING DATA FILE PREVIOUSLY GENERATED

@@ -5,13 +5,13 @@ import AudioUtils as aud
 import NeuralNetworkUtils as nn
 
 #SET VARIABLES AND CLASSES
-mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Predict')
+#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus')
 sessDirList = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
 TInArrayTest = []
 
 #CREATE TRAINING OUTPUT DATA FILE
-#trainData.setDataCorpus()
+trainData.setDataCorpus()
 
 #MAIN ROUTINE: load one after the other all the audio files for each session
 for session in sessDirList:
