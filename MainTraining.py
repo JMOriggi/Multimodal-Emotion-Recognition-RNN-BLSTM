@@ -6,8 +6,8 @@ import NeuralNetworkUtils as nn
 from keras.models import load_model
 
 #SET VARIABLES AND CLASSES
-mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
+#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
 sessDirList = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
 TInArray = []
 TOutArray = []
@@ -33,7 +33,7 @@ for session in sessDirList:
             allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
             
             #READ TRAINING OUTPUT DATA: corresponding to that audio file
-            y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0])
+            y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0], mainRoot)
             '''print('---Coresponding output for Audio ', Afile)
             print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code, '\n')'''
             

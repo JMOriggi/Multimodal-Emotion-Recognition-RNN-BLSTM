@@ -11,7 +11,7 @@ def setDataCorpus(mainRoot):
     
     #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
     dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
-    #print('All Sessions',dirlist)
+    print('All Sessions',dirlist)
     
     #CREATE A UNIQUE TXT FILE FOR EACH SESSION WITH ALL THE TRAINING OUTPUT RESULT FOR EACH AUDIO FILE
     #The output file is placed in the root folder and the content will have the format: AudioFileName, CatOutput, ValOutput.
@@ -19,49 +19,50 @@ def setDataCorpus(mainRoot):
         print('Parsing: ',session)
         
         #COMPOSE DIRECTORY PATH FOR THE EMOTION RESULTS FILE FOR THE CURRENT SESSION
-        currentSessionPathEmo = os.path.join(mainRoot, session)
-        currentSessionPathEmo += '\EmoEvaluation'
-        directoryEmo = os.path.normpath(currentSessionPathEmo)
-        #print('Current directory Emotion: ',directoryEmo)
+        directoryEmoPath = os.path.normpath(os.path.join(mainRoot, session)+'\EmoEvaluation')
+        emolist = [ item for item in os.listdir(directoryEmoPath) if os.path.isfile(os.path.join(directoryEmoPath, item)) ]
+        print('Directory Emotion: ',directoryEmoPath)
         
         #COMPOSE DIRECTORY PATH FOR THE SENTENCE TRANSCRIPTION FILE FOR THE CURRENT SESSION
-        currentSessionPathText = os.path.join(mainRoot, session)
-        currentSessionPathText += '\Transcriptions'
-        directoryText = os.path.normpath(currentSessionPathText)
-        #print('Current directory Transcription: ',directoryText)
+        directoryText = os.path.normpath(os.path.join(mainRoot, session)+'\Transcriptions')
+        translist = [ item for item in os.listdir(directoryEmoPath) if os.path.isfile(os.path.join(directoryEmoPath, item)) ]
+        print('Directory Transcription: ',directoryText)
         
-        #PARSE ALL THE TEXT FILE AND CREATE A STANDARDIZE OUTPUT FILE
-        outputfile = open(mainRoot+'\TrainOutput'+session+'.txt', 'a')
-        #outputfile = open(os.path.join(mainRoot, session)+'\TrainOutput'+session+'.txt', 'a')
-        #outputfile = open('TrainOutput'+session+'.txt', 'a')
-        for dirs, subdir, files in os.walk(directoryEmo):
-            #print('All File in: ',files)
+        #CREATE OUT DATA FILE: remove if it already exist and recreate it new
+        outputfilePath = os.path.join(mainRoot+'\TrainOutput'+session+'.txt')
+        #outputfilePath = os.path.join(mainRoot, session)+'\TrainOutput'+session+'.txt')
+        #outputfilePath = os.path.join('TrainOutput'+session+'.txt')
+        try:
+            os.remove(outputfilePath)
+        except OSError:
+            pass
+        outputfile = open(outputfilePath, 'a')
+        
+        for file in emolist:
+            #print('Open and parsing: ',file.split('.')[0])
             
-            for file in files:
-                #print('Open and parsing: ',file.split('.')[0])
-                
-                with open(os.path.join(directoryEmo, file), 'r') as inputfile:
-                    for lines in inputfile:
-                        lines = lines.strip()
-                        pos = lines.find('Ses')
-                        if pos != -1:
-                            parselines = lines.split()[3]+';'+lines.split()[4]+';'+lines.split()[5]+lines.split()[6]+lines.split()[7]
-                            #print(lines.split()[3])
-                            
-                            #FOR EACH LINE FIND THE CORRESPONDING TRANSCRIPTION SENTENCE IN THE TRANSCRIPTION FILE
-                            for dirs2, subdir2, files2 in os.walk(directoryText):
-                                for file2 in files2:
-                                    if file2 == file:
-                                        with open(os.path.join(directoryText, file2), 'r') as inputfile2:
-                                            for lines2 in inputfile2:
-                                                if lines2.split(' ')[0] == lines.split()[3]:
-                                                    transcription = lines2.split(':')[1]
-                                                    transcription = transcription.split('\n')[0]
-                                                    #print('Transcription: ',transcription)
-                                                    break
-                            outputfile.writelines(parselines+';'+'{'+transcription+'\n')
-                            #outputfile.writelines(file.split('.')[0]+','+parselines+','+'{'+transcription+'}'+'\n')
-                inputfile.close()
+            with open(os.path.join(directoryEmoPath, file), 'r') as inputfile:
+                for lines in inputfile:
+                    lines = lines.strip()
+                    pos = lines.find('Ses')
+                    if pos != -1:
+                        parselines = lines.split()[3]+';'+lines.split()[4]+';'+lines.split()[5]+lines.split()[6]+lines.split()[7]
+                        #print(lines.split()[3])
+                        
+                        #FOR EACH LINE FIND THE CORRESPONDING TRANSCRIPTION SENTENCE IN THE TRANSCRIPTION FILE
+                        for file2 in translist:
+                            if file2 == file:
+                                with open(os.path.join(directoryText, file2), 'r') as inputfile2:
+                                    for lines2 in inputfile2:
+                                        if lines2.split(' ')[0] == lines.split()[3]:
+                                            transcription = lines2.split(':')[1]
+                                            transcription = transcription.split('\n')[0]
+                                            #print('Transcription: ',transcription)
+                                            break
+                                            
+                        outputfile.writelines(parselines+';'+'{'+transcription+'\n')
+                        #outputfile.writelines(file.split('.')[0]+','+parselines+','+'{'+transcription+'}'+'\n')
+            inputfile.close()
         outputfile.close()
     print('****End of method setDataCorpus\n')
  

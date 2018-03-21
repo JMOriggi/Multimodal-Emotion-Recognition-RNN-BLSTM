@@ -10,7 +10,7 @@ mainRootTraining = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Tr
 mainRootTest = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Test')
 
 #CREATE TRAINING OUTPUT DATA FILE
-trainData.setDataCorpus(mainRootTraining)
+#trainData.setDataCorpus(mainRootTraining)
 
 #CREATE TEST OUTPUT DATA FILE
 trainData.setDataCorpus(mainRootTest)
