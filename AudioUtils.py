@@ -10,6 +10,7 @@ import numpy as np
 #OUTPUT: array of the mono information and the sample rate 
 def getArrayFromAudio(audioFileName):
     print('****START of function getArrayFromAudio')
+    print('Current File: ',audioFileName)
     
     #READ THE WAV FILE
     inputAudio = read(audioFileName)
@@ -35,6 +36,7 @@ def getArrayFromAudio(audioFileName):
 
     print('****End of function getArrayFromAudio\n')
     return monoAudio, sampleRate
+
 
 #GET THE FREQUENCY ARRAY: [timestep [freqs amplitude]]
 def getFreqArray(monoAudio, sampleRate): 
@@ -93,38 +95,5 @@ def getFrameArray(monoAudio, sampleRate):
     print('****End of method getFrameArray\n')          
     return allFrame
    
-   
-#INPUT: the frame chunks list array     
-#OUTPUT: the fft list of each frame chunks, same format of the input
-def getSpectrumFrameArray(allFrame):
-    print('****Start of method getSpectrumFromArray')
-    
-    #COMPUTE FFT: for each frame window chunks we will obtain a magnitude fft chunks
-    allFrameFFT = []
-    mags = []
-    i = 0
-    while i < len(allFrame)-1: #-1 beacause the last chunks may be shorter than the others
-        mags = abs(rfft(allFrame[i]))
-        #mags = 20 * scipy.log10(mags)#Convert to dB
-        #mags -= max(mags)#Normalise to 0 dB max
-        allFrameFFT.append(mags)
-        i += 1
-        
-    
-    #PLOT GRAPH: example for first frame window
-    plt.plot(allFrameFFT[0])
-    plt.ylabel("Magnitude (dB)")
-    plt.xlabel("Frequency Bin")
-    plt.title("Spectrum")
-    plt.show()
-    
-    print('allFrameFFT: ',allFrameFFT)
-    print('allFrameFFT size row: ',len(allFrameFFT))
-    print('allFrameFFT size collums: ',len(allFrameFFT[0]))
-    
-    
-    print('****End of method getSpectrumFromArray\n')
-    return np.asarray(allFrameFFT)
-
 
        

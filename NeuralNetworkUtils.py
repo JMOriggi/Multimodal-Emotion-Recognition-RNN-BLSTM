@@ -50,7 +50,7 @@ def RNNModel(modelRNN, Input, output):
     else:
         model = modelRNN 
         
-    model.fit(X, Y, epochs=20, verbose=0)
+    model.fit(X, Y, epochs=1, verbose=0)
     
     print('****End of method RNNModel\n')
     return model

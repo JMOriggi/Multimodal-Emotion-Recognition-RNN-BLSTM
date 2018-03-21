@@ -3,8 +3,8 @@
 
 import os
 
-#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
+mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
+#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_test')
 
 def setDataCorpus():
     print('****Start of method setDataCorpus')
@@ -36,8 +36,10 @@ def setDataCorpus():
         #outputfile = open('TrainOutput'+session+'.txt', 'a')
         for dirs, subdir, files in os.walk(directoryEmo):
             #print('All File in: ',files)
+            
             for file in files:
                 #print('Open and parsing: ',file.split('.')[0])
+                
                 with open(os.path.join(directoryEmo, file), 'r') as inputfile:
                     for lines in inputfile:
                         lines = lines.strip()
