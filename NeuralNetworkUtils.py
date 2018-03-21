@@ -38,12 +38,12 @@ def RNNModel(modelRNN, Input, output):
     print('len Y2: ', len(Y[0]))
     print('Y: ', Y)
     
-    #DEFINE MODEL
+    #DEFINE MODEL: if model do not exist create it otherwise use the given one.
     if modelRNN == '':
         model = Sequential()
-        model.add(LSTM(64, input_shape=(None,len(X[0][0])), return_sequences=False))
+        model.add(LSTM(64, input_shape=(None,len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
+        #model.add(LSTM(64, input_shape=(None,len(X[0][0])), return_sequences=False))
         #model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0])), return_sequences=False))
-        #model.add(LSTM(10, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
         model.add(Dense(7, activation='softmax'))
         model.compile(loss='mse', optimizer='adam')
         #model.compile(loss='categorical_crossentropy', optimizer='adam')
