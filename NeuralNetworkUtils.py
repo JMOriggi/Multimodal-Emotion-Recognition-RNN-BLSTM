@@ -56,6 +56,11 @@ def predictFromSavedModel(inputTest, fileName):
     print('****End of method predictFromSavedModel\n')        
 
 
+def sentimentAnalysis():
+    print('****Start of method sentimentAnalysis')
+    print('****End of method sentimentAnalysis\n')
+    
+
 #RESHAPER TRAINING DATA
 def get_train(Input, output):
     #RESHAPE INPUT
@@ -73,45 +78,5 @@ def get_train(Input, output):
     Y = Y.reshape((len(Y), 7))
     
     return X, Y 
-
-
-#INPUT: must be an array where each row is an input; 
-def FFNNModel(x_data1, yTrainData):
-    print('****Start of method FFNNModel')
-    
-    #TRASFORM INPUT TO ACCEPTED FORM: input alla rete deve avere forma [[.. .. ..]] quindi una matrice 1xN
-    N = len(x_data1[0])
-    x_data = x_data1[0].reshape((1,N))
-    
-    #STARTING SITUATION
-    print('Input: ', x_data)
-    print('Type input: ',type(x_data))
-    print('Shape input: ',np.shape(x_data))
-    print('Output training data: ', yTrainData)
-    
-    #NETWORK DEFINITION: we define the biases, weights, and outputs of our synapses as tensors variable
-    b = tf.Variable(tf.zeros(1))#a 1 value matrix initialized with 0
-    W = tf.Variable(tf.random_uniform([1,1],-1,1))#W as weight or synapses matrix of 1 row and 2 collumns (collumns correspond to the number of input present) initialized as random number
-    y = tf.matmul(W,np.float32(x_data)) + b #Output data: input times weight add a bias
-    
-    #TRAINING SETTINGS: Gradient descent time! to minimize the error
-    error = tf.reduce_mean(tf.square(y - yTrainData))#Define the error function as the mean square error
-    optimizer = tf.train.GradientDescentOptimizer(0.5)#Associate the optimizer functionas a gradient descent function, 0.5 is the learning rate, the error step
-    train = optimizer.minimize(error) #We want to minimize the error with the prevously define function, we define another funciton to do that
-    
-    #INITIALIZE SESSION FOR TENSORFLOW
-    init = tf.global_variables_initializer()
-    sess = tf.Session()#Create a session, that is an event where we compute what we are trying to compute
-    sess.run(init)#the session will be run with all the tf variables
-    
-    #TRAINING SESSION ROUTINE: 200 iterations of training
-    print('Output Before run',sess.run(y))
-    for step in range(0,300):
-        sess.run(train)
-        if step % 20 == 0: #print every 20 step
-            print('STEP: ',step,', error: ',sess.run(error),', weights: ',sess.run(W),', bias: ',sess.run(b))
-    print('Output After run',sess.run(y))
-
-    print('****Start of method FFNNModel')
    
     
