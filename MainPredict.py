@@ -5,8 +5,8 @@ import AudioUtils as aud
 import NeuralNetworkUtils as nn
 
 #SET VARIABLES AND CLASSES
-#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Test')
+mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
+#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Test')
 sessDirList = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
 TInArrayTest = []
 
@@ -34,18 +34,8 @@ for session in sessDirList:
             #BUILD THE INPUT TRAINING ARRAY: dim = (#audiofile, #ofFftPerformed, fftWindowSize)
             TInArrayTest.append(allFrameFFT)
             
-            #PREPARE TRAINING DATA
-            X = np.full((len(TInArrayTest), len(TInArrayTest[0]),len(TInArrayTest[0][0])), 0)
-            i = 0
-            while i<len(TInArrayTest):
-                y = 0
-                while y < len(TInArrayTest[0]):
-                    X[i][y] = TInArrayTest[i][y]
-                    y+=1
-                i+=1
-            
             #TEST MODEL
-            nn.predictFromSavedModel(X, 'RNN_Model_saved.h5')
+            nn.predictFromSavedModel(TInArrayTest, 'RNN_Model_saved.h5')
             
             #RESET ARRAY: se non viene fatto accumulo in tin e tout tutti i file audio (risultato finale voluto, eseguendo la RNN all'uscita di tutto il ciclo)
             TInArrayTest = []  

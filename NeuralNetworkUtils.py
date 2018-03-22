@@ -17,7 +17,6 @@ def RNNModel(modelRNN, Input, output):
     print('len X2: ', len(X[0]))
     print('len X3: ', len(X[0][0]))
     print('X: ', X)
-    print('Input: ', Input)
     print('len Y1: ', len(Y))
     print('len Y2: ', len(Y[0]))
     print('Y: ', Y)'''
@@ -40,14 +39,17 @@ def RNNModel(modelRNN, Input, output):
     return model
     
     
-def predictFromSavedModel(test, fileName):
+def predictFromSavedModel(inputTest, fileName):
     print('****Start of method predictFromSavedModel')
     
     #LOAD MODEL FROM FILE
     model = load_model(fileName)
     
+    #PREPARE TEST DATA
+    inputTest = np.asarray(inputTest)
+    
     #TEST MODEL: with gived array and model name loaded
-    yhat = model.predict(test, verbose=0)
+    yhat = model.predict(inputTest, verbose=0)
     
     print('Result per line: ',yhat.round(decimals=2))
     
