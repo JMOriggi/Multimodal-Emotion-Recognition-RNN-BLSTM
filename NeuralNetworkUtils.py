@@ -9,33 +9,18 @@ from keras.models import load_model
 def RNNModel(modelRNN, Input, output):
     print('****Start of method RNNModel')
     
-    #PREPARE TRAINING DATA
-    def get_train():
-        #RESHAPE INPUT
-        X = np.full((len(Input), len(Input[0]),len(Input[0][0])), 0)
-        i = 0
-        while i<len(Input):
-            y = 0
-            while y < len(Input[0]):
-                X[i][y] = Input[i][y]
-                y+=1
-            i+=1
-        
-        #RESHAPE OUTPUT
-        Y = np.asarray(output)
-        Y = Y.reshape((len(Y), 7))
-        
-        return X, Y
-    
-    #GET DATA FOR TRAINING
-    X, Y = get_train()
-    print('len X1: ', len(X))
+    #PREPARE INPUT AND OUTPUT
+    X = np.asarray(Input) 
+    Y = np.asarray(output)
+    Y = Y.reshape((len(Y), 7))
+    '''print('len X1: ', len(X))
     print('len X2: ', len(X[0]))
     print('len X3: ', len(X[0][0]))
-    #print('X: ', X)
+    print('X: ', X)
+    print('Input: ', Input)
     print('len Y1: ', len(Y))
     print('len Y2: ', len(Y[0]))
-    print('Y: ', Y)
+    print('Y: ', Y)'''
     
     #DEFINE MODEL: if model do not exist create it otherwise use the given one.
     if modelRNN == '':
@@ -67,7 +52,26 @@ def predictFromSavedModel(test, fileName):
     print('Result per line: ',yhat.round(decimals=2))
     
     print('****End of method predictFromSavedModel\n')        
-  
+
+
+#RESHAPER TRAINING DATA
+def get_train(Input, output):
+    #RESHAPE INPUT
+    X = np.full((len(Input), len(Input[0]),len(Input[0][0])), 0)
+    i = 0
+    while i<len(Input):
+        y = 0
+        while y < len(Input[0]):
+            X[i][y] = Input[i][y]
+            y+=1
+        i+=1
+    
+    #RESHAPE OUTPUT
+    Y = np.asarray(output)
+    Y = Y.reshape((len(Y), 7))
+    
+    return X, Y 
+
 
 #INPUT: must be an array where each row is an input; 
 def FFNNModel(x_data1, yTrainData):

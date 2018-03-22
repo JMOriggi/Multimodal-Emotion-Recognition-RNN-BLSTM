@@ -6,8 +6,8 @@ import NeuralNetworkUtils as nn
 from keras.models import load_model
 
 #SET VARIABLES AND CLASSES
-#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
+#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
 sessDirList = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
 TInArray = []
 TOutArray = []
@@ -54,11 +54,11 @@ for session in sessDirList:
             #FEED THE NN: done for 1 session at time, because the groupped audio file array contains only one session files
             if flag > 0:
                 modelRNN = load_model('RNN_Model_saved.h5')    
-                model = nn.RNNModel(modelRNN, np.asarray(TInArray), TOutArray)
+                model = nn.RNNModel(modelRNN, TInArray, TOutArray)
             else:
                 print('CREATE NEW MODEL FILE FOR SAVE\n')
                 modelRNN = ''
-                model = nn.RNNModel(modelRNN, np.asarray(TInArray), TOutArray)
+                model = nn.RNNModel(modelRNN, TInArray, TOutArray)
                 flag +=1
                 
             #SAVE MODEL AND WEIGHTS AFTER TRAINING
