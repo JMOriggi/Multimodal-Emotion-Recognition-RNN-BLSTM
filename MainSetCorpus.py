@@ -14,3 +14,5 @@ trainData.setDataCorpus(mainRootTraining)
 
 #CREATE TEST OUTPUT DATA FILE
 trainData.setDataCorpus(mainRootTest)
+
+print('END OF SET CORPUS')

@@ -44,9 +44,9 @@ def getFreqArray(monoAudio, sampleRate):
     
     #COMPUTE SPECTROGRAM
     fft, freqsBins, timeBins, im = plt.specgram(monoAudio, Fs=sampleRate, NFFT=320, cmap=plt.get_cmap('autumn_r'))
-    print('shape fft: ', fft.shape)
+    '''print('shape fft: ', fft.shape)
     print('shape timeBins ', timeBins.shape)
-    print('shape freqsBins: ', freqsBins.shape)
+    print('shape freqsBins: ', freqsBins.shape)'''
     
     #PRINT SPECTROGRAM
     '''cbar=plt.colorbar(im)
@@ -64,7 +64,7 @@ def getFreqArray(monoAudio, sampleRate):
             X[y][i] = fft[i][y]
             y+=1
         i+=1
-    print('New shape Pxx: ', X.shape) 
+    #print('New shape Pxx: ', X.shape) 
     
     print('****End of method getSpectrumFromArray\n')
     return np.asarray(X)

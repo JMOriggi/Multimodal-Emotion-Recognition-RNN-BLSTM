@@ -13,9 +13,6 @@ TInArray = []
 TOutArray = []
 flag = 0
 
-#CREATE TRAINING OUTPUT DATA FILE
-#trainData.setDataCorpus()
-
 #MAIN ROUTINE: load one after the other all the audio files for each session
 for session in sessDirList:
     currentAudioDirPath = os.path.normpath(os.path.join(mainRoot, session)+'\Sentences_audio')
@@ -30,8 +27,6 @@ for session in sessDirList:
             
             #READ TRAINING OUTPUT DATA: corresponding to the current audio file; if emotion xxx, neu or other don't consider it for training
             y_code, output, emo, val, text = trainData.getOutputDataFromAudio(Afile.split('.')[0], mainRoot)
-            '''print('---Coresponding output for Audio ', Afile)
-            print('Name: ',output.split(';')[0],'\nEmotion: ',emo,'\nValence: ',val,'\nTranscription: ',text,'Emo Label code: ', y_code, '\n')'''
             
             if y_code != [0,0,0,0,0,0,1]:
                 #READ AUDIO FILE: tranform it in a redable array in spectrum
