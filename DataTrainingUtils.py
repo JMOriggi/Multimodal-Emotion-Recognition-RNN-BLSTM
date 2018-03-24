@@ -1,6 +1,7 @@
 #Struttura da mantenere: Corpus--> TrainOutput.txt Session1,2,3,4,5-->EmoEvaluation,Sentences_audio,Transcriptions
-
+from keras.preprocessing.text import Tokenizer
 import os
+import csv
 
 def setDataCorpus(mainRoot):
     print('****Start of method setDataCorpus')
@@ -21,7 +22,7 @@ def setDataCorpus(mainRoot):
         
         #COMPOSE DIRECTORY PATH FOR THE SENTENCE TRANSCRIPTION FILE FOR THE CURRENT SESSION
         directoryText = os.path.normpath(os.path.join(mainRoot, session)+'\Transcriptions')
-        translist = [ item for item in os.listdir(directoryEmoPath) if os.path.isfile(os.path.join(directoryEmoPath, item)) ]
+        translist = [ item for item in os.listdir(directoryText) if os.path.isfile(os.path.join(directoryText, item)) ]
         print('Directory Transcription: ',directoryText)
         
         #CREATE OUTPU DATA FILE: remove if it already exist and recreate it new
@@ -97,3 +98,83 @@ def getOutputDataFromAudio(audioFileName, mainRoot):
                    
     print('****End of method getOutputFromAudio\n')                
     return code, output, emo, val, text
+
+
+#BUILD A TXT FILE WITH ALL THE SENTENCES IN THE CORPUS TRANSCRIPTION
+def buildDictionary(mainRoot):
+    print('****Start of method buildDictionary')
+    
+    #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
+    dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
+    print('All Sessions',dirlist)
+    
+    #CREATE OUTPU DATA FILE: remove if it already exist and recreate it new
+    outputfilePath = os.path.join(mainRoot+'\AllWords.txt')
+    try:
+        os.remove(outputfilePath)
+    except OSError:
+        pass
+    outputfile = open(outputfilePath, 'a')
+    
+    #The output file is placed in the root folder and the content will have the format: AudioFileName, CatOutput, ValOutput.
+    for session in dirlist:
+        print('Parsing: ',session)
+        
+        #COMPOSE DIRECTORY PATH FOR THE SENTENCE TRANSCRIPTION FILE FOR THE CURRENT SESSION
+        directoryText = os.path.normpath(os.path.join(mainRoot, session)+'\Transcriptions')
+        translist = [ item for item in os.listdir(directoryText) if os.path.isfile(os.path.join(directoryText, item)) ]
+        print('Directory Transcription: ',directoryText)
+        
+        #PARSE ALL THE FILES AND APPEND IN THE OUTPUT FILE
+        #FOR EACH LINE FIND THE CORRESPONDING TRANSCRIPTION SENTENCE IN THE TRANSCRIPTION FILE
+        for file in translist:
+            with open(os.path.join(directoryText, file), 'r') as inputfile:
+                for lines in inputfile:
+                    #if first letter in 's' indicted it's a valid line
+                    if lines[0] == 'S':
+                        transcription = lines.split(':')[1]
+                        transcription = transcription.split('\n')[0]
+                        transcription = transcription.split(" ", 1)[1]
+                        #APPEND IN THE OUTPUT FILE                    
+                        outputfile.writelines(transcription+'\n')
+                    
+    outputfile.close()  
+    
+             
+    print('****End of method buildDictionary')
+    
+    
+def encodeText(mainRoot):    
+    print('****Start of method encodeText')
+    
+    # create the tokenizer
+    t = Tokenizer() 
+    
+    #COMPOSE DIRECTORY PATH FOR THE SENTENCE TRANSCRIPTION FILE FOR THE CURRENT SESSION
+    directoryText = os.path.normpath(mainRoot+'\AllWords.txt')
+    
+    #READ THE FILE AND BUILD AN ARRAY PER SENTENCE
+    with open(directoryText, 'r') as inputfile:
+        arrayText = [line.strip() for line in inputfile]       
+            
+    t.fit_on_texts(arrayText)
+    encodeText = t.texts_to_sequences(arrayText)
+    print(encodeText)
+    print(t.word_index)
+    
+    
+    with open('output.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(encodeText)
+
+    
+    
+    print('****End of method encodeText')
+    
+    
+    
+    
+    
+    
+    
+    
