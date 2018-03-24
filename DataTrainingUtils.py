@@ -143,7 +143,7 @@ def buildDictionary(mainRoot):
              
     print('****End of method buildDictionary')
     
-    
+#BUILD A CSV FILE WITH ALL SENTENCES ENCODED: [name_audio_file , encoding of the sentence]
 def encodeText(mainRoot):    
     print('****Start of method encodeText')
     
