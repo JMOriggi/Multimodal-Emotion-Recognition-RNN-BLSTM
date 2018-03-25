@@ -21,27 +21,45 @@ TOutArray = []
 #LOAD DATA FOR TRAINING
 AllAudioNames, EmoCode, encodedText = trainData.readCsvData(mainRoot)
 
+#CREATE OUTPUT DATA FILE: remove if it already exist and recreate it new
+outputfilePath = os.path.join(mainRoot+'\Results.txt')
+try:
+    os.remove(outputfilePath)
+except OSError:
+    pass
+outputfile = open(outputfilePath, 'a')
+
 i = 0
 while i < len(AllAudioNames):
     audioFilePath = os.path.join(audioDirectoryPath, AllAudioNames[i][0])
     
-    if EmoCode[i][6] != 1:
-        #READ AUDIO FILE: tranform it in a redable array in spectrum
-        arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath)
-        allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
-        TInArrayAudio.append(allFrameFFT)
-        
-        #TEXT
-        #BUILD THE INPUT TRAINING ARRAY        
-        X = encodedText[i].reshape(len(encodedText[i]), 1)
-        TInArrayText.append(X)
-        
-        #TEST MODEL
-        nn.predictFromSavedModel(TInArrayAudio, modelPath1)
-        nn.predictFromSavedModel(TInArrayText, modelPath2)      
+    #if EmoCode[i][6] != 1: #Don't consider neu,xx and other emotion label
+    #READ AUDIO FILE: tranform it in a redable array in spectrum
+    arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
+    allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
+    TInArrayAudio.append(allFrameFFT)
     
-    i +=1
+    #TEXT
+    #BUILD THE INPUT TRAINING ARRAY        
+    X = encodedText[i].reshape(len(encodedText[i]), 1)
+    TInArrayText.append(X)
+    
+    #TEST MODEL
+    audioRes = nn.predictFromSavedModel(TInArrayAudio, modelPath1)
+    textRes = nn.predictFromSavedModel(TInArrayText, modelPath2) 
+    print('Expected result: ',EmoCode[i])     
+    print(audioRes[0])
+    print(textRes[0])
+    
+    #APPEND IN THE OUTPUT FILE                    
+    #outputfile.writelines(AllAudioNames[i][0]+';'+EmoCode[i]+';'+audioRes[0]+';'+textRes[0]+'\n')
+    #np.savetxt(outputfilePath, (audioRes[0],textRes[0]))
+    
     TInArrayText = []
     TInArrayAudio = []
+    i +=1
+
+outputfile.close()    
             
-print('END OF TRAINING V2')  
+print('END OF PREDICTION V2')  
+

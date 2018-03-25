@@ -11,17 +11,17 @@ mainRootTest = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Test')
 
 #TRAINING
 #MOVE AUDIO FILES
-trainData.moveCopyAudioFiles(mainRootTraining)
+#trainData.moveCopyAudioFiles(mainRootTraining)
 #CREATE TRAINING DATA FILE
 trainData.clusterData(mainRootTraining)
 trainData.encoder(mainRootTraining)
 
-#TEST
+'''#TEST
 #MOVE AUDIO FILES
 trainData.moveCopyAudioFiles(mainRootTest)
 #CREATE TRAINING DATA FILE
 trainData.clusterData(mainRootTest)
-trainData.encoder(mainRootTest)
+trainData.encoder(mainRootTest)'''
 
 '''#CREATE TRAINING OUTPUT DATA FILE
 trainData.setDataCorpus(mainRootTraining)

@@ -81,9 +81,10 @@ def predictFromSavedModel(inputTest, fileName):
     #TEST MODEL: with gived array and model name loaded
     yhat = model.predict(inputTest, verbose=0)
     
-    print('Result per line: ',yhat.round(decimals=2))
+    print('Result per line: ',yhat.round(decimals=3))
     
-    print('****End of method predictFromSavedModel\n')        
+    print('****End of method predictFromSavedModel\n')   
+    return yhat.round(decimals=3)     
 
 
 def sentimentAnalysis():
