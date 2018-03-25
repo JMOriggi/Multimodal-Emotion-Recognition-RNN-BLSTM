@@ -6,13 +6,15 @@ from keras.layers import LSTM
 from keras.models import load_model
 
     
-def RNNModel(modelRNN, Input, output):
+def RNNModelAudio(modelRNNAudio, Input, output):
     print('****Start of method RNNModel')
     
     #PREPARE INPUT AND OUTPUT
     X = np.asarray(Input) 
     Y = np.asarray(output)
     Y = Y.reshape((len(Y), 7))
+    
+    #PRINT INFO ON INPUTS AND OUTPUTS
     '''print('len X1: ', len(X))
     print('len X2: ', len(X[0]))
     print('len X3: ', len(X[0][0]))
@@ -22,18 +24,46 @@ def RNNModel(modelRNN, Input, output):
     print('Y: ', Y)'''
     
     #DEFINE MODEL: if model do not exist create it otherwise use the given one.
-    if modelRNN == '':
+    if modelRNNAudio == '':
         model = Sequential()
         model.add(LSTM(64, input_shape=(None,len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
-        #model.add(LSTM(64, input_shape=(None,len(X[0][0])), return_sequences=False))
-        #model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0])), return_sequences=False))
         model.add(Dense(7, activation='softmax'))
-        model.compile(loss='mse', optimizer='adam')
-        #model.compile(loss='categorical_crossentropy', optimizer='adam')
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=["accuracy"])
     else:
-        model = modelRNN 
+        model = modelRNNAudio 
         
-    model.fit(X, Y, epochs=10, verbose=0)
+    model.fit(X, Y, epochs=10)
+    
+    print('****End of method RNNModel\n')
+    return model
+
+
+def RNNModelText(modelRNNText, Input, output):
+    print('****Start of method RNNModel')
+    
+    #PREPARE INPUT AND OUTPUT
+    X = np.asarray(Input) 
+    Y = np.asarray(output)
+    Y = Y.reshape((len(Y), 7))
+    
+    #PRINT INFO ON INPUTS AND OUTPUTS
+    '''print('len X1: ', len(X))
+    print('len X2: ', len(X[0]))
+    print('X: ', X)
+    print('len Y1: ', len(Y))
+    print('len Y2: ', len(Y[0]))
+    print('Y: ', Y)'''
+    
+    #DEFINE MODEL: if model do not exist create it otherwise use the given one.
+    if modelRNNText == '':
+        model = Sequential()
+        model.add(LSTM(100, input_shape=(None,1), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
+        model.add(Dense(7, activation='softmax'))
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=["accuracy"])
+    else:
+        model = modelRNNText 
+        
+    model.fit(X, Y, epochs=10)
     
     print('****End of method RNNModel\n')
     return model

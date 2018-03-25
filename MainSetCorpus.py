@@ -10,7 +10,7 @@ mainRootTraining = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Tr
 #mainRootTest = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Test')
 
 #MOVE AUDIO FILES
-#trainData.moveCopyAudioFiles(mainRootTraining)
+trainData.moveCopyAudioFiles(mainRootTraining)
 
 #CREATE TRAINING DATA FILE
 trainData.clusterData(mainRootTraining)
