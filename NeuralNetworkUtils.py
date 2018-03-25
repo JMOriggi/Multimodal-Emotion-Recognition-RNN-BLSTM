@@ -7,7 +7,7 @@ from keras.models import load_model
 
     
 def RNNModelAudio(modelRNNAudio, Input, output):
-    print('****Start of method RNNModel')
+    print('****Start of method RNNModelAudio')
     
     #PREPARE INPUT AND OUTPUT
     X = np.asarray(Input) 
@@ -32,14 +32,14 @@ def RNNModelAudio(modelRNNAudio, Input, output):
     else:
         model = modelRNNAudio 
         
-    model.fit(X, Y, epochs=10)
+    model.fit(X, Y, epochs=10,verbose=0)
     
-    print('****End of method RNNModel\n')
+    print('****End of method RNNModelAudio\n')
     return model
 
 
 def RNNModelText(modelRNNText, Input, output):
-    print('****Start of method RNNModel')
+    print('****Start of method RNNModelText')
     
     #PREPARE INPUT AND OUTPUT
     X = np.asarray(Input) 
@@ -63,9 +63,9 @@ def RNNModelText(modelRNNText, Input, output):
     else:
         model = modelRNNText 
         
-    model.fit(X, Y, epochs=10)
+    model.fit(X, Y, epochs=10,verbose=0)
     
-    print('****End of method RNNModel\n')
+    print('****End of method RNNModelText\n')
     return model
     
     
