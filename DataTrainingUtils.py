@@ -2,12 +2,14 @@
 from keras.preprocessing.text import Tokenizer
 import os
 import csv
+import shutil
+import numpy as np
 
 def setDataCorpus(mainRoot):
     print('****Start of method setDataCorpus')
     
     #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
-    dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
+    dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) and item[0] == 'S']
     print('All Sessions',dirlist)
     
     #CREATE A UNIQUE TXT FILE FOR EACH SESSION WITH ALL THE TRAINING OUTPUT RESULT FOR EACH AUDIO FILE
@@ -100,15 +102,15 @@ def getOutputDataFromAudio(audioFileName, mainRoot):
     return code, output, emo, val, text
 
 
-#BUILD A TXT FILE WITH ALL THE SENTENCES IN THE CORPUS: <audioFileName>;<emo>;<transcriptionText>
+#BUILD A TXT FILE WITH ALL THE USEFULL DATA: <audioFileName>;<emo>;<transcriptionText>
 def clusterData(mainRoot):
     print('****Start of method buildDictionary')
     
     #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
-    dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) ]
+    dirlist = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) and item[0] == 'S']
     print('All Sessions',dirlist)
     
-    #CREATE OUTPU DATA FILE: remove if it already exist and recreate it new
+    #CREATE OUTPUT DATA FILE: remove if it already exist and recreate it new
     outputfilePath = os.path.join(mainRoot+'\AllData.txt')
     try:
         os.remove(outputfilePath)
@@ -155,21 +157,6 @@ def clusterData(mainRoot):
                         #APPEND IN THE OUTPUT FILE                    
                         outputfile.writelines(audioName+';'+emoLabel+';'+transcription+'\n')
             inputfile.close()
-        
-        '''#PARSE ALL THE FILES AND APPEND IN THE OUTPUT FILE
-        #FOR EACH LINE FIND THE CORRESPONDING TRANSCRIPTION SENTENCE IN THE TRANSCRIPTION FILE
-        for file2 in translist:
-            with open(os.path.join(directoryText, file2), 'r') as inputfile:
-                for lines in inputfile:
-                    #if first letter in 's' indicted it's a valid line
-                    if lines[0] == 'S':
-                        audioFileName = lines.split(' ')[0]
-                        transcription = lines.split(':')[1]
-                        transcription = transcription.split('\n')[0]
-                        transcription = transcription.split(" ", 1)[1]
-                        #APPEND IN THE OUTPUT FILE                    
-                        outputfile.writelines(audioFileName+';'+transcription+'\n')'''
-                    
     outputfile.close()  
     
     print('****End of method buildDictionary')
@@ -266,10 +253,66 @@ def encoder(mainRoot):
     csvfile3.close()
     
     print('****End of method encodeText')
+ 
     
+#MOVE ALL THE AUDIO FILES IN THE MAINROOT IN 1 DIRECTORY    
+def moveCopyAudioFiles(mainRoot):
+    print('****Start of method moveAudioFiles')
     
+    #SET DESTINATION PATH
+    destPath = os.path.normpath(mainRoot+'\AllAudioFiles')
+    print('DestPath: ',destPath)
     
+    #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
+    sessDirList = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) and item[0] == 'S']
+    print('All Sessions',sessDirList)
     
+    for session in sessDirList:
+        currentAudioDirPath = os.path.normpath(os.path.join(mainRoot, session)+'\Sentences_audio')
+        audioGroupDir = [ item for item in os.listdir(currentAudioDirPath) if os.path.isdir(os.path.join(currentAudioDirPath, item)) ]
+        #destPath = currentAudioDirPath
+        print('Inside: ',session)
+        
+        for audioGroup in audioGroupDir:
+            currentAudioGroupPath = os.path.normpath(os.path.join(currentAudioDirPath, audioGroup))
+            audlist = [ item for item in os.listdir(currentAudioGroupPath) if os.path.isfile(os.path.join(currentAudioGroupPath, item)) ]
+            print('Inside audioGroup: ',audioGroup)
+               
+            for Afile in audlist:
+                print('Moving file: ',Afile)
+                audioFilePath = os.path.join(currentAudioGroupPath, Afile)
+                shutil.copy(audioFilePath, destPath)
+                #shutil.move(audioFilePath, destPath)
+                
+    print('****End of method moveAudioFiles')    
+ 
+#READ ALREADY CREATED CSV DATA FOR TRAINING ANG RETURN ALL ARRAYS    
+def readCsvData(mainRoot):
+    print('****Start of method readCsvData')
+    
+    #READ Audio File Name 
+    datareader = csv.reader(open(os.path.join(mainRoot+'\AudioFilesName.csv'), 'r'))
+    data = []
+    for row in datareader:
+        data.append(row)
+    X = data
+    
+    #READ encoded emotion: Read the content as an array of numbers and not string as default
+    datareader = csv.reader(open(os.path.join(mainRoot+'\encodedEmo.csv'), 'r'))
+    data = []
+    for row in datareader:
+        data.append([int(val) for val in row])
+    Y = np.array([np.array(xi) for xi in data])
+    
+    #READ encoded text: Read the content as an array of numbers and not string as default
+    datareader = csv.reader(open(os.path.join(mainRoot+'\encodedText.csv'), 'r'))
+    data = []
+    for row in datareader:
+        data.append([int(val) for val in row])
+    Z = np.array([np.array(xi) for xi in data])
+    
+    print('****End of method readCsvData')
+    return X, Y, Z    
     
     
     

@@ -1,4 +1,4 @@
-from keras.preprocessing.text import Tokenizer
+'''from keras.preprocessing.text import Tokenizer
 import csv
 import numpy as np
 
@@ -33,5 +33,9 @@ for row in datareader:
     data.append([int(val) for val in row])
 Z = np.array([np.array(xi) for xi in data])
 print(Z[0:10])
-print(type(Z))
+print(type(Z))'''
 
+import os
+import DataTrainingUtils as trainData
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+trainData.moveCopyAudioFiles(mainRoot)
