@@ -50,7 +50,7 @@ def clusterData(mainRoot):
                         #CREATE NEW LINE FOR EMOTION RESULTS
                         audioName = lines.split()[3]
                         emoLabel = lines.split()[4]
-                        
+                        '''parselines = lines.split()[3]+';'+lines.split()[4]+';'+lines.split()[5]+lines.split()[6]+lines.split()[7]'''
                         #FOR EACH LINE FIND THE CORRESPONDING TRANSCRIPTION SENTENCE IN THE TRANSCRIPTION FILE
                         for file2 in translist:
                             if file2 == file:
