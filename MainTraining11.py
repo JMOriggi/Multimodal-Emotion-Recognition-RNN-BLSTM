@@ -10,12 +10,10 @@ from keras.models import load_model
 mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
 
 #SET PATH AND VARIABLES
-modelPath1 = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
-modelPath2 = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
+modelPath = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
 audioDirectoryPath = os.path.normpath(mainRoot + '\AllAudioFiles')
 audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
 TInArrayAudio = []
-TInArrayText = []
 TOutArray = []
 i = 0
 
@@ -48,31 +46,21 @@ while i < len(AllAudioNames):
         allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
         TInArrayAudio.append(allFrameFFT)
         
-        #TEXT
-        #Build input array        
-        X = encodedText[i].reshape(len(encodedText[i]), 1)
-        TInArrayText.append(X)
-        
         #FEED THE NN: if flag=0 at the first iteration it creates the model, otherwise load an existing model
         if flag > 0:
-            modelRNNAudio = load_model(modelPath1) 
-            modelRNNText = load_model(modelPath2)     
+            modelRNNAudio = load_model(modelPath)     
             modelAudio = nn.RNNModelAudio(modelRNNAudio, TInArrayAudio, TOutArray)  
-            modelText = nn.RNNModelText(modelRNNText, TInArrayText, TOutArray)
         else:
             print('CREATE NEW MODEL FILE FOR SAVE\n')
             modelAudio = nn.RNNModelAudio('', TInArrayAudio, TOutArray)
-            modelText = nn.RNNModelText('', TInArrayText, TOutArray)
             flag +=1
         
         #SAVE THE 2 MODEL TRAINED  
-        modelAudio.save(modelPath1, overwrite=True)
-        modelText.save(modelPath2, overwrite=True)    
+        modelAudio.save(modelPath, overwrite=True)  
         
         #RESET ARRAYS AND INCREMENT i
-        TInArrayText = []
         TInArrayAudio = []
         TOutArray = []
         i +=1
             
-print('END OF TRAINING V2: Audio + Text')  
+print('END OF TRAINING V1.1: Audio')  

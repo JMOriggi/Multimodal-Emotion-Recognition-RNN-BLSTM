@@ -9,17 +9,17 @@ import NeuralNetworkUtils as nn
 mainRootTraining = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
 mainRootTest = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Test')
 
-#TRAINING
-#MOVE AUDIO FILES
-#trainData.moveCopyAudioFiles(mainRootTraining)
-#CREATE TRAINING DATA FILE
+#TRAINING FOLDER
+#Move copy of audio files
+trainData.moveCopyAudioFiles(mainRootTraining)
+#Create training data file
 trainData.clusterData(mainRootTraining)
 trainData.encoder(mainRootTraining)
 
-'''#TEST
-#MOVE AUDIO FILES
+'''#TEST FOLDER
+#Move copy of audio files
 trainData.moveCopyAudioFiles(mainRootTest)
-#CREATE TRAINING DATA FILE
+#Create training data file
 trainData.clusterData(mainRootTest)
 trainData.encoder(mainRootTest)'''
 
