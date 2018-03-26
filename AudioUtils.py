@@ -1,19 +1,16 @@
 import scipy
 from scipy import signal
 from scipy.io.wavfile import read
-from scipy.fftpack import rfft
-from scipy.fftpack import fft
 import matplotlib.pyplot as plt 
 import numpy as np 
 
-#INPUT: path for the file
-#OUTPUT: array of the mono information and the sample rate 
-def getArrayFromAudio(audioFileName):
+#TAKE ARRAY FROM AUDIO FILE WAV
+def getArrayFromAudio(audioFilePath):
     print('****START of function getArrayFromAudio')
-    print('Current File: ',audioFileName)
+    print('Current File: ',audioFilePath)
     
     #READ THE WAV FILE
-    inputAudio = read(audioFileName)
+    inputAudio = read(audioFilePath)
     sampleRate = inputAudio[0]
     stereoAudio = inputAudio[1]
     
@@ -21,7 +18,7 @@ def getArrayFromAudio(audioFileName):
     monoAudio = stereoAudio
     #monoAudio = (stereoAudio[:,0] + stereoAudio[:,1]) / 2
     
-    #PRINT RESULT
+    #PRINT INFO
     '''print('Sampling frequency: ',sampleRate)
     #print('Stereo audio data (first 100 samples): ',stereoAudio[0:100])
     print('Mono audio data (first 100 samples): ',monoAudio[0:1000])
@@ -44,6 +41,8 @@ def getFreqArray(monoAudio, sampleRate):
     
     #COMPUTE SPECTROGRAM
     fft, freqsBins, timeBins, im = plt.specgram(monoAudio, Fs=sampleRate, NFFT=320, cmap=plt.get_cmap('autumn_r'))
+    
+    #PRINT INFO
     '''print('shape fft: ', fft.shape)
     print('shape timeBins ', timeBins.shape)
     print('shape freqsBins: ', freqsBins.shape)'''
@@ -64,13 +63,12 @@ def getFreqArray(monoAudio, sampleRate):
             X[y][i] = fft[i][y]
             y+=1
         i+=1
-    #print('New shape Pxx: ', X.shape) 
+    '''print('New shape Pxx: ', X.shape)''' 
     
     print('****End of method getSpectrumFromArray\n')
     return np.asarray(X)
  
 
-#INPUT: array of the mono info, sampleRate, frame size choosen
 #Output: list of chunks containing frame info, [[[a b c]][[d e f]]...] example for frame of size 3 
 def getFrameArray(monoAudio, sampleRate):
     print('****Start of method getFrameArray')

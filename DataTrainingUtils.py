@@ -1,4 +1,8 @@
-#Struttura da mantenere: Corpus--> TrainOutput.txt Session1,2,3,4,5-->EmoEvaluation,Sentences_audio,Transcriptions
+#STRUTTURA INIZIALE DA MANTENERE: 
+#Corpus[...]
+#-> AllAudio, Session1,2,3,4,5[...]
+#-->EmoEvaluation[files], Sentences_audio[dirs[wav]], Transcriptions[files]
+
 from keras.preprocessing.text import Tokenizer
 import os
 import csv
