@@ -31,7 +31,8 @@ def RNNModelAudio(modelRNNAudio, Input, output):
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=["accuracy"])
     else:
         model = modelRNNAudio 
-        
+    
+    #START MODEL    
     model.fit(X, Y, epochs=10,verbose=0)
     
     print('****End of method RNNModelAudio\n')
@@ -69,11 +70,11 @@ def RNNModelText(modelRNNText, Input, output):
     return model
     
     
-def predictFromSavedModel(inputTest, fileName):
+def predictFromSavedModel(modelFilePath, inputTest):
     print('****Start of method predictFromSavedModel')
     
     #LOAD MODEL FROM FILE
-    model = load_model(fileName)
+    model = load_model(modelFilePath)
     
     #PREPARE TEST DATA
     inputTest = np.asarray(inputTest)
@@ -87,9 +88,21 @@ def predictFromSavedModel(inputTest, fileName):
     return yhat.round(decimals=3)     
 
 
-def sentimentAnalysis():
-    print('****Start of method sentimentAnalysis')
-    print('****End of method sentimentAnalysis\n')
+def evaluateModel(modelFilePath, inputTest, outputTest):
+    print('****Start of method evaluateModel')
+    
+    #PREPARE INPUT AND OUTPUT
+    X = np.asarray(inputTest) 
+    Y = np.asarray(outputTest)
+    
+    #LOAD MODEL FROM FILE
+    model = load_model(modelFilePath)
+    
+    # Final evaluation of the model
+    scores = model.evaluate(X, Y, verbose=0)
+    print("Baseline Error: %.2f%%" % (100-scores[1]*100))
+    
+    print('****End of method evaluateModel\n')
     
 
 #RESHAPER TRAINING DATA

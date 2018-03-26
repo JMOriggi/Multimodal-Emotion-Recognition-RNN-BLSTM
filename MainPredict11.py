@@ -9,19 +9,17 @@ import NeuralNetworkUtils as nn
 mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
 
 #SET PATH AND VARIABLES
-modelPath1 = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
-modelPath2 = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
+modelPath = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
 audioDirectoryPath = os.path.normpath(mainRoot + '\AllAudioFiles')
 audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
 TInArrayAudio = []
-TInArrayText = []
 TOutArray = []
 
 #LOAD DATA FOR TRAINING
 AllAudioNames, EmoCode, encodedText = trainData.readCsvData(mainRoot)
 
 #CREATE OUTPUT DATA FILE: remove if it already exist and recreate it new
-resultFilePath = os.path.join(mainRoot+'\Results.txt')
+resultFilePath = os.path.join(mainRoot+'\ResultsPredictionAudio.txt')
 try:
     os.remove(resultFilePath)
 except OSError:
@@ -38,25 +36,18 @@ while i < len(AllAudioNames):
     allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
     TInArrayAudio.append(allFrameFFT)
     
-    #TEXT
-    #BUILD THE INPUT TRAINING ARRAY        
-    X = encodedText[i].reshape(len(encodedText[i]), 1)
-    TInArrayText.append(X)
-    
     #TEST MODEL
-    audioRes = nn.predictFromSavedModel(modelPath1, TInArrayAudio)
-    textRes = nn.predictFromSavedModel(modelPath2, TInArrayText) 
+    audioRes = nn.predictFromSavedModel(modelPath, TInArrayAudio)
     
     #APPEND IN THE OUTPUT FILE
-    resultLine = AllAudioNames[i][0]+',EXP:'+str(EmoCode[i])+',AUD:'+str(audioRes[0])+',TEXT:'+str(textRes[0])+'\n'                   
+    resultLine = AllAudioNames[i][0]+',EXP:'+str(EmoCode[i])+',AUD:'+str(audioRes[0])+'\n'                    
     resultFile.writelines(resultLine)
     print(resultLine)
     
-    TInArrayText = []
     TInArrayAudio = []
     i +=1
 
 resultFile.close()    
             
-print('END OF PREDICTION V2: Audio + Text')  
+print('END OF PREDICTION V1.1: Audio')  
 

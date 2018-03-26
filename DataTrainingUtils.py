@@ -5,6 +5,7 @@ import csv
 import shutil
 import numpy as np
 
+
 #BUILD A TXT FILE WITH ALL THE USEFULL DATA: <audioFileName>;<emo>;<transcriptionText>
 def clusterData(mainRoot):
     print('****Start of method buildDictionary')
@@ -190,7 +191,8 @@ def moveCopyAudioFiles(mainRoot):
                 #shutil.move(audioFilePath, destPath)
                 
     print('****End of method moveAudioFiles')    
- 
+
+
 #READ ALREADY CREATED CSV DATA FOR TRAINING ANG RETURN ALL ARRAYS    
 def readCsvData(mainRoot):
     print('****Start of method readCsvData')
