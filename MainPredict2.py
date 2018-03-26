@@ -22,12 +22,12 @@ TOutArray = []
 AllAudioNames, EmoCode, encodedText = trainData.readCsvData(mainRoot)
 
 #CREATE OUTPUT DATA FILE: remove if it already exist and recreate it new
-outputfilePath = os.path.join(mainRoot+'\Results.txt')
+resultFilePath = os.path.join(mainRoot+'\Results.txt')
 try:
-    os.remove(outputfilePath)
+    os.remove(resultFilePath)
 except OSError:
     pass
-outputfile = open(outputfilePath, 'a')
+resultFile = open(resultFilePath, 'a')
 
 i = 0
 while i < len(AllAudioNames):
@@ -51,15 +51,15 @@ while i < len(AllAudioNames):
     print(audioRes[0])
     print(textRes[0])
     
-    #APPEND IN THE OUTPUT FILE                    
-    #outputfile.writelines(AllAudioNames[i][0]+';'+EmoCode[i]+';'+audioRes[0]+';'+textRes[0]+'\n')
-    #np.savetxt(outputfilePath, (audioRes[0],textRes[0]))
+    #APPEND IN THE OUTPUT FILE
+    resultLine = AllAudioNames[i][0]+',EXP:'+str(EmoCode[i])+',AUD:'+str(audioRes[0])+',TEXT:'+str(textRes[0])+'\n'                    
+    resultFile.writelines(resultLine)
     
     TInArrayText = []
     TInArrayAudio = []
     i +=1
 
-outputfile.close()    
+resultFile.close()    
             
 print('END OF PREDICTION V2')  
 
