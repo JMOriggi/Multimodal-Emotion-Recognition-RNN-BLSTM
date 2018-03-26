@@ -39,19 +39,19 @@ while i < len(AllAudioNames):
         '''print('Current file:', audioFilePath)'''
         
         #BUILD THE OUTPUT TRAINING ARRAY: dim = (#audiofile, outlabelArray)
-        TOutArray.append(EmoCode[i])
+        TOutArray.append(EmoCode[i].tolist())
         
         #AUDIO
-        #Read audio file: tranform it in a redable array in spectrum
-        #Build input array: dim = (#audiofile, #ofFftPerformed, fftWindowSize)
+        #Read audio file: tranform it in a redable list in spectrum
+        #Build input list: dim = (#audiofile, #ofFftPerformed, fftWindowSize)
         arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
         allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
-        TInArrayAudio.append(allFrameFFT)
+        TInArrayAudio.append(allFrameFFT.tolist())#very important to have a list casting!!!
         
         #TEXT
         #Build input array        
         X = encodedText[i].reshape(len(encodedText[i]), 1)
-        TInArrayText.append(X)
+        TInArrayText.append(X.tolist())
         
         #FEED THE NN: if flag=0 at the first iteration it creates the model, otherwise load an existing model
         if flag > 0:
@@ -67,12 +67,15 @@ while i < len(AllAudioNames):
         
         #SAVE THE 2 MODEL TRAINED  
         modelAudio.save(modelPath1, overwrite=True)
-        modelText.save(modelPath2, overwrite=True)    
+        modelText.save(modelPath2, overwrite=True)
         
         #RESET ARRAYS AND INCREMENT i
         TInArrayText = []
         TInArrayAudio = []
         TOutArray = []
-        i +=1
-            
+        
+        i +=1          
+
 print('END OF TRAINING V2: Audio + Text')  
+
+

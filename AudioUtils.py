@@ -66,8 +66,8 @@ def getFreqArray(monoAudio, sampleRate):
     '''print('New shape Pxx: ', X.shape)''' 
     
     print('****End of method getSpectrumFromArray\n')
-    return np.asarray(X)
- 
+    #return np.asarray(X)
+    return X
 
 #Output: list of chunks containing frame info, [[[a b c]][[d e f]]...] example for frame of size 3 
 def getFrameArray(monoAudio, sampleRate):

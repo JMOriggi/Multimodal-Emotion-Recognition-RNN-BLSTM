@@ -11,10 +11,14 @@ def RNNModelAudio(modelRNNAudio, Input, output):
     
     #PREPARE INPUT AND OUTPUT
     X = np.asarray(Input) 
+    #X = X.reshape(len(X),len(X[0]),len(X[0][0]))
     Y = np.asarray(output)
-    Y = Y.reshape((len(Y), 7))
+    Y = Y.reshape(len(Y), 7)
     
     #PRINT INFO ON INPUTS AND OUTPUTS
+    print('X shape', X.shape)
+    print('Y shape', Y.shape)
+    print('X[0][0] ', X[0][0])
     '''print('len X1: ', len(X))
     print('len X2: ', len(X[0]))
     print('len X3: ', len(X[0][0]))
