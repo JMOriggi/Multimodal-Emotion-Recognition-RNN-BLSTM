@@ -16,7 +16,7 @@ def getArrayFromAudio(audioFilePath):
     
     #TRASFORM IN MONO: no need because audio already in mono
     monoAudio = stereoAudio
-    #monoAudio = (stereoAudio[:,0] + stereoAudio[:,1]) / 2
+    '''monoAudio = (stereoAudio[:,0] + stereoAudio[:,1]) / 2'''
     
     #PRINT INFO
     '''print('Sampling frequency: ',sampleRate)
@@ -39,13 +39,14 @@ def getArrayFromAudio(audioFilePath):
 def getFreqArray(monoAudio, sampleRate): 
     print('****Start of method getSpectrumFromArray')
     
-    #COMPUTE SPECTROGRAM
+    #COMPUTE SPECTROGRAM: NFFT=how many sample in one chunk, for Fs16000 chunks20ms-->32
     fft, freqsBins, timeBins, im = plt.specgram(monoAudio, Fs=sampleRate, NFFT=320, cmap=plt.get_cmap('autumn_r'))
     
     #PRINT INFO
     '''print('shape fft: ', fft.shape)
     print('shape timeBins ', timeBins.shape)
-    print('shape freqsBins: ', freqsBins.shape)'''
+    print('shape freqsBins: ', freqsBins.shape)
+    print('freqsBins: ', freqsBins)'''
     
     #PRINT SPECTROGRAM
     '''cbar=plt.colorbar(im)
@@ -55,28 +56,28 @@ def getFreqArray(monoAudio, sampleRate):
     plt.show()'''
     
     #RESHAPE FREQ ARRAY: row=timestep collumns=freq values
+    maxFftValues = 50 #len(fft) #voce si estende 80Hz-1500Hz mentre fft va da 0-8000 (con 50 ho fino a 2450Hz)
+    X = np.full((len(fft[0]), maxFftValues), 0)
     i = 0
-    X = np.full((len(fft[0]), len(fft)), 0)
-    while i < len(fft):
+    while i < maxFftValues:
         y = 0
         while y < len(fft[0]):
             X[y][i] = fft[i][y]
             y+=1
         i+=1
     
-    #RESHAPE FREQ ARRAY: the number of rows (timestep) must be standard
-    maxNumbTime = 600
-    Y = np.full((maxNumbTime, len(fft)), 0)
+    #CUT FREQ ARRAY: the number of rows (timestep) must be standard
+    maxNumbTime = 700 #Chunk of 20ms=320sample considered, max lenght considered of 15sec=
+    Y = np.full((maxNumbTime, maxFftValues), 0)
     i = 0
     while i < maxNumbTime:
         if i < len(X): 
             Y[i] = X[i]
         else:
-            Y[i] = np.zeros(len(fft))    
+            Y[i] = np.zeros(maxFftValues)    
         i+=1
     
     print('****End of method getSpectrumFromArray\n')
-    #return np.asarray(X)
     return Y
 
 #Output: list of chunks containing frame info, [[[a b c]][[d e f]]...] example for frame of size 3 

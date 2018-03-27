@@ -44,7 +44,7 @@ while i < len(AllAudioNames):
         X = encodedText[i].reshape(len(encodedText[i]), 1)
         TInArrayText.append(X)
         
-        #FEED THE NN: if flag=0 at the first iteration it creates the model, otherwise load an existing model
+        '''#SINGLE BATCH TRAINING: if flag=0 at the first iteration it creates the model, otherwise load an existing model
         if flag > 0: 
             modelRNNText = load_model(modelPath)  
             modelText = nn.RNNModelText(modelRNNText, TInArrayText, TOutArray)
@@ -52,14 +52,19 @@ while i < len(AllAudioNames):
             print('CREATE NEW MODEL FILE FOR SAVE\n')
             modelText = nn.RNNModelText('', TInArrayText, TOutArray)
             flag +=1
-        
-        #SAVE THE 2 MODEL TRAINED
-        modelText.save(modelPath, overwrite=True)    
-        
-        #RESET ARRAYS AND INCREMENT i
+        modelText.save(modelPath, overwrite=True)
         TInArrayText = []
-        TInArrayAudio = []
-        TOutArray = []
+        TOutArray = []'''
+        
     i +=1
+ 
+#CHECK LISTS SHAPE
+'''print('TInArrayAudio shape: ',np.asarray(TInArrayAudio).shape)
+print('TOutArray shape: ',np.asarray(TOutArray).shape)'''
+
+#ALL BATCH TRAINING
+print('CREATE NEW MODEL FILE FOR SAVE\n')
+modelText = nn.RNNModelText('', TInArrayText, TOutArray)
+modelText.save(modelPath, overwrite=True) 
             
 print('END OF TRAINING V1.2: Text')  

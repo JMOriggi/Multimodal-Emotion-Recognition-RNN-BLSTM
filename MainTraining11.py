@@ -3,8 +3,6 @@ import numpy as np
 import DataTrainingUtils as trainData
 import AudioUtils as aud
 import NeuralNetworkUtils as nn
-from keras.models import load_model
-import keras
 
 #SET MAIN ROOT
 mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
@@ -18,7 +16,7 @@ TInArrayAudio = []
 TOutArray = []
 i = 0
 
-#CHOOSE THE FLAG VALUE: 1 for loading already existing model, 0 for creating a new one
+#CHOOSE THE FLAG VALUE (for single batch mode): 1 for loading already existing model, 0 for creating a new one
 flag = 0
 
 #LOAD DATA FOR TRAINING
@@ -43,17 +41,9 @@ while i < len(AllAudioNames):
         #AUDIO: Read audio file and tranform it in dim = (#audiofile, #ofFftPerformed, fftWindowSize)
         arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
         allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
-        print('allFrameFFT shape', allFrameFFT.shape)
         TInArrayAudio.append(allFrameFFT)
-        TInArrayAudio = np.asarray(TInArrayAudio)
-        print('TInArrayAudio shape', TInArrayAudio.shape)
-        TInArrayAudio = TInArrayAudio.tolist()
         
-        #TInArrayAudio[i] = TInArrayAudio.reshape(7,161)
-        #print('TInArrayAudio shape', np.asarray(TInArrayAudio).shape)
-        
-        
-        '''#SINGLE BATCH TRAINING
+        '''#SINGLE BATCH TRAINING: if flag=0 at the first iteration it creates the model, otherwise load an existing model
         if flag > 0:
             modelRNNAudio = load_model(modelPath)     
             modelAudio = nn.RNNModelAudio(modelRNNAudio, TInArrayAudio, TOutArray)  
@@ -61,21 +51,17 @@ while i < len(AllAudioNames):
             print('CREATE NEW MODEL FILE FOR SAVE\n')
             modelAudio = nn.RNNModelAudio('', TInArrayAudio, TOutArray)
             flag +=1
-        
-        #SAVE THE 2 MODEL TRAINED  
-        modelAudio.save(modelPath, overwrite=True) ''' 
-        
-        #RESET ARRAYS AND INCREMENT i
-        '''TInArrayAudio = []
+        modelAudio.save(modelPath, overwrite=True) 
+        TInArrayAudio = []
         TOutArray = []'''
+        
     i +=1
 
-#CHECK LISTS TYPE
-print('TInArrayAudio',type(TInArrayAudio))
-print('TInArrayAudio[0]',type(TInArrayAudio[0]))
-print('TOutArray',type(TOutArray))
+#CHECK LISTS SHAPE
+'''print('TInArrayAudio shape: ',np.asarray(TInArrayAudio).shape)
+print('TOutArray shape: ',np.asarray(TOutArray).shape)'''
 
-#ALL BATCH TRAINING: if flag=0 at the first iteration it creates the model, otherwise load an existing model
+#ALL BATCH TRAINING
 print('CREATE NEW MODEL FILE FOR SAVE\n')
 modelAudio = nn.RNNModelAudio('', TInArrayAudio, TOutArray)
 modelAudio.save(modelPath, overwrite=True)

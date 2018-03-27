@@ -11,27 +11,19 @@ def RNNModelAudio(modelRNNAudio, Input, output):
     
     #PREPARE INPUT AND OUTPUT
     X = np.asarray(Input) 
-    #X = X.reshape(len(X),len(X[0]),len(X[0][0]))
     Y = np.asarray(output)
     Y = Y.reshape(len(Y), 7)
     
     #PRINT INFO ON INPUTS AND OUTPUTS
     print('X shape', X.shape)
     print('Y shape', Y.shape)
-    print('X[0][0] ', X[0][0])
-    '''print('len X1: ', len(X))
-    print('len X2: ', len(X[0]))
-    print('len X3: ', len(X[0][0]))
-    print('X: ', X)
-    print('len Y1: ', len(Y))
-    print('len Y2: ', len(Y[0]))
+    '''print('X: ', X)
     print('Y: ', Y)'''
     
     #DEFINE MODEL: if model do not exist create it otherwise use the given one. (#audioFile,#timestep,#fftvalues)
     if modelRNNAudio == '':
         model = Sequential()
         model.add(LSTM(64, batch_input_shape=(len(X),len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
-        #model.add(LSTM(64, input_shape=(None,len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
         model.add(Dense(7, activation='softmax'))
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=["accuracy"])
     else:
