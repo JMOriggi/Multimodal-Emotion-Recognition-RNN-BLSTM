@@ -30,7 +30,7 @@ def RNNModelAudio(modelRNNAudio, Input, output):
         model = modelRNNAudio 
     
     #START MODEL    
-    model.fit(X, Y, epochs=10,verbose=0)
+    model.fit(X, Y, epochs=100)
     
     print('****End of method RNNModelAudio\n')
     return model
