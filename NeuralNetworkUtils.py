@@ -23,7 +23,7 @@ def RNNModelAudio(modelRNNAudio, Input, output):
     #DEFINE MODEL: if model do not exist create it otherwise use the given one. (#audioFile,#timestep,#fftvalues)
     if modelRNNAudio == '':
         model = Sequential()
-        model.add(LSTM(64, batch_input_shape=(len(X),len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
+        model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
         model.add(Dense(7, activation='softmax'))
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=["accuracy"])
     else:

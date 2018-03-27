@@ -30,21 +30,21 @@ i = 0
 while i < len(AllAudioNames):
     audioFilePath = os.path.join(audioDirectoryPath, AllAudioNames[i][0])
     
-    #if EmoCode[i][6] != 1: #Don't consider neu,xx and other emotion label
-    #READ AUDIO FILE: tranform it in a redable array in spectrum
-    arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
-    allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
-    TInArrayAudio.append(allFrameFFT)
-    
-    #TEST MODEL
-    audioRes = nn.predictFromSavedModel(modelPath, TInArrayAudio)
-    
-    #APPEND IN THE OUTPUT FILE
-    resultLine = AllAudioNames[i][0]+',EXP:'+str(EmoCode[i])+',AUD:'+str(audioRes[0])+'\n'                    
-    resultFile.writelines(resultLine)
-    print(resultLine)
-    
-    TInArrayAudio = []
+    if EmoCode[i][6] != 2:
+        #READ AUDIO FILE: tranform it in a redable array in spectrum
+        arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
+        allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
+        TInArrayAudio.append(allFrameFFT)
+        
+        #TEST MODEL
+        audioRes = nn.predictFromSavedModel(modelPath, TInArrayAudio)
+        
+        #APPEND IN THE OUTPUT FILE
+        resultLine = AllAudioNames[i][0]+',EXP:'+str(EmoCode[i])+',AUD:'+str(audioRes[0])+'\n'                    
+        resultFile.writelines(resultLine)
+        print(resultLine)
+        
+        TInArrayAudio = []
     i +=1
 
 resultFile.close()    
