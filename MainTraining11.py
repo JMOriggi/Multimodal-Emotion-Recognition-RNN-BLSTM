@@ -3,10 +3,11 @@ import numpy as np
 import DataTrainingUtils as trainData
 import AudioUtils as aud
 import NeuralNetworkUtils as nn
+from keras.models import load_model
 
 #SET MAIN ROOT
-mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
 
 #SET PATH AND VARIABLES
 modelPath = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -40,10 +41,11 @@ while i < len(AllAudioNames):
         
         #AUDIO: Read audio file and tranform it in dim = (#audiofile, #ofFftPerformed, fftWindowSize)
         arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
-        allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
+        #allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate) #BATCH SIZE > 1 MODE
+        allFrameFFT = aud.getFreqArrayV2(arrayAudio, sampleRate) #BATCH SIZE 1 MODE
         TInArrayAudio.append(allFrameFFT)
         
-        '''#SINGLE BATCH TRAINING: if flag=0 at the first iteration it creates the model, otherwise load an existing model
+        #SINGLE BATCH TRAINING: if flag=0 at the first iteration it creates the model, otherwise load an existing model
         if flag > 0:
             modelRNNAudio = load_model(modelPath)     
             modelAudio = nn.RNNModelAudio(modelRNNAudio, TInArrayAudio, TOutArray)  
@@ -53,7 +55,7 @@ while i < len(AllAudioNames):
             flag +=1
         modelAudio.save(modelPath, overwrite=True) 
         TInArrayAudio = []
-        TOutArray = []'''
+        TOutArray = []
         
     i +=1
 
@@ -62,9 +64,9 @@ while i < len(AllAudioNames):
 print('TOutArray shape: ',np.asarray(TOutArray).shape)'''
 
 #ALL BATCH TRAINING
-print('CREATE NEW MODEL FILE FOR SAVE\n')
+'''print('CREATE NEW MODEL FILE FOR SAVE\n')
 modelAudio = nn.RNNModelAudio('', TInArrayAudio, TOutArray)
-modelAudio.save(modelPath, overwrite=True)
+modelAudio.save(modelPath, overwrite=True)'''
             
 print('END OF TRAINING V1.1: Audio')  
 

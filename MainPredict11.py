@@ -5,8 +5,8 @@ import AudioUtils as aud
 import NeuralNetworkUtils as nn
 
 #SET MAIN ROOT
-mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
 
 #SET PATH AND VARIABLES
 modelPath = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -33,7 +33,8 @@ while i < len(AllAudioNames):
     if EmoCode[i][6] != 2:
         #READ AUDIO FILE: tranform it in a redable array in spectrum
         arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
-        allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
+        #allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate) #BATCH SIZE > 1 MODE
+        allFrameFFT = aud.getFreqArrayV2(arrayAudio, sampleRate) #BATCH SIZE 1 MODE
         TInArrayAudio.append(allFrameFFT)
         
         #TEST MODEL

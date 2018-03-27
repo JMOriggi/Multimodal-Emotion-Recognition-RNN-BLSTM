@@ -35,7 +35,7 @@ def getArrayFromAudio(audioFilePath):
     return monoAudio, sampleRate
 
 
-#GET THE FREQUENCY ARRAY: [timestep [freqs amplitude]]
+#GET THE FREQUENCY ARRAY: [timestep [freqs amplitude]], for batch size > 1
 def getFreqArray(monoAudio, sampleRate): 
     print('****Start of method getSpectrumFromArray')
     
@@ -79,6 +79,42 @@ def getFreqArray(monoAudio, sampleRate):
     
     print('****End of method getSpectrumFromArray\n')
     return Y
+
+
+#GET THE FREQUENCY ARRAY: [timestep [freqs amplitude]], for batch size 1
+def getFreqArrayV2(monoAudio, sampleRate): 
+    print('****Start of method getSpectrumFromArray')
+    
+    #COMPUTE SPECTROGRAM: NFFT=how many sample in one chunk, for Fs16000 chunks20ms-->32
+    fft, freqsBins, timeBins, im = plt.specgram(monoAudio, Fs=sampleRate, NFFT=320, cmap=plt.get_cmap('autumn_r'))
+    
+    #PRINT INFO
+    '''print('shape fft: ', fft.shape)
+    print('shape timeBins ', timeBins.shape)
+    print('shape freqsBins: ', freqsBins.shape)
+    print('freqsBins: ', freqsBins)'''
+    
+    #PRINT SPECTROGRAM
+    '''cbar=plt.colorbar(im)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Frequency (Hz)')
+    cbar.set_label('Intensity (dB)')
+    plt.show()'''
+    
+    #RESHAPE FREQ ARRAY: row=timestep collumns=freq values
+    maxFftValues = 50 #len(fft) #voce si estende 80Hz-1500Hz mentre fft va da 0-8000 (con 50 ho fino a 2450Hz)
+    X = np.full((len(fft[0]), maxFftValues), 0)
+    i = 0
+    while i < maxFftValues:
+        y = 0
+        while y < len(fft[0]):
+            X[y][i] = fft[i][y]
+            y+=1
+        i+=1
+    
+    print('****End of method getSpectrumFromArray\n')
+    return X
+
 
 #Output: list of chunks containing frame info, [[[a b c]][[d e f]]...] example for frame of size 3 
 def getFrameArray(monoAudio, sampleRate):
