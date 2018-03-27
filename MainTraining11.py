@@ -4,10 +4,11 @@ import DataTrainingUtils as trainData
 import AudioUtils as aud
 import NeuralNetworkUtils as nn
 from keras.models import load_model
+import keras
 
 #SET MAIN ROOT
-#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_lav2')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
 
 #SET PATH AND VARIABLES
 modelPath = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -34,27 +35,25 @@ while i < len(AllAudioNames):
 
     #DON'T EVALUATE labels 'xxx' and 'other': code[0,0,0,0,0,0,2]  
     if EmoCode[i][6] != 2: 
-        '''print('Current file:', audioFilePath)'''
+        print('Current file:', audioFilePath)
         
         #BUILD THE OUTPUT TRAINING ARRAY: dim = (#audiofile, outlabelArray)
-        TOutArray.append(EmoCode[i].tolist())
+        TOutArray.append(EmoCode[i])
         
-        #AUDIO
-        #Read audio file: tranform it in a redable array in spectrum
-        #Build input array: dim = (#audiofile, #ofFftPerformed, fftWindowSize)
+        #AUDIO: Read audio file and tranform it in dim = (#audiofile, #ofFftPerformed, fftWindowSize)
         arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
         allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate)
         print('allFrameFFT shape', allFrameFFT.shape)
-        #TInArrayAudio.append(allFrameFFT.tolist())
-        TInArrayAudio = np.append(TInArrayAudio, allFrameFFT)
-        #TInArrayAudio = np.asarray(TInArrayAudio)
+        TInArrayAudio.append(allFrameFFT)
+        TInArrayAudio = np.asarray(TInArrayAudio)
         print('TInArrayAudio shape', TInArrayAudio.shape)
+        TInArrayAudio = TInArrayAudio.tolist()
         
         #TInArrayAudio[i] = TInArrayAudio.reshape(7,161)
         #print('TInArrayAudio shape', np.asarray(TInArrayAudio).shape)
         
         
-        '''#FEED THE NN: if flag=0 at the first iteration it creates the model, otherwise load an existing model
+        '''#SINGLE BATCH TRAINING
         if flag > 0:
             modelRNNAudio = load_model(modelPath)     
             modelAudio = nn.RNNModelAudio(modelRNNAudio, TInArrayAudio, TOutArray)  
@@ -69,17 +68,17 @@ while i < len(AllAudioNames):
         #RESET ARRAYS AND INCREMENT i
         '''TInArrayAudio = []
         TOutArray = []'''
-        i +=1
+    i +=1
 
 #CHECK LISTS TYPE
 print('TInArrayAudio',type(TInArrayAudio))
 print('TInArrayAudio[0]',type(TInArrayAudio[0]))
 print('TOutArray',type(TOutArray))
 
-#FEED THE NN: if flag=0 at the first iteration it creates the model, otherwise load an existing model
-'''print('CREATE NEW MODEL FILE FOR SAVE\n')
+#ALL BATCH TRAINING: if flag=0 at the first iteration it creates the model, otherwise load an existing model
+print('CREATE NEW MODEL FILE FOR SAVE\n')
 modelAudio = nn.RNNModelAudio('', TInArrayAudio, TOutArray)
-modelAudio.save(modelPath, overwrite=True)'''
+modelAudio.save(modelPath, overwrite=True)
             
 print('END OF TRAINING V1.1: Audio')  
 

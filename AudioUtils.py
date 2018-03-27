@@ -54,7 +54,7 @@ def getFreqArray(monoAudio, sampleRate):
     cbar.set_label('Intensity (dB)')
     plt.show()'''
     
-    #RESHAPE FREQ ARRAY: to prepare it for the NN, row=timestep collumns=freq values
+    #RESHAPE FREQ ARRAY: row=timestep collumns=freq values
     i = 0
     X = np.full((len(fft[0]), len(fft)), 0)
     while i < len(fft):
@@ -63,11 +63,21 @@ def getFreqArray(monoAudio, sampleRate):
             X[y][i] = fft[i][y]
             y+=1
         i+=1
-    '''print('New shape Pxx: ', X.shape)''' 
+    
+    #RESHAPE FREQ ARRAY: the number of rows (timestep) must be standard
+    maxNumbTime = 600
+    Y = np.full((maxNumbTime, len(fft)), 0)
+    i = 0
+    while i < maxNumbTime:
+        if i < len(X): 
+            Y[i] = X[i]
+        else:
+            Y[i] = np.zeros(len(fft))    
+        i+=1
     
     print('****End of method getSpectrumFromArray\n')
     #return np.asarray(X)
-    return X
+    return Y
 
 #Output: list of chunks containing frame info, [[[a b c]][[d e f]]...] example for frame of size 3 
 def getFrameArray(monoAudio, sampleRate):

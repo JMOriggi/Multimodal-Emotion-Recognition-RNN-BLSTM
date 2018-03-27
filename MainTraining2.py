@@ -74,7 +74,7 @@ while i < len(AllAudioNames):
         TInArrayAudio = []
         TOutArray = []
         
-        i +=1          
+    i +=1          
 
 print('END OF TRAINING V2: Audio + Text')  
 
