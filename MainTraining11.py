@@ -7,7 +7,8 @@ from keras.models import load_model
 
 #SET MAIN ROOT
 #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
 
 #SET PATH AND VARIABLES
 modelPath = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')

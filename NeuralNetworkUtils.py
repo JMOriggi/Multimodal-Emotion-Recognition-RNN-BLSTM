@@ -27,15 +27,15 @@ def RNNModelAudio(modelRNNAudio, Input, output):
         #BATCH SIZE > 1
         #model.add(LSTM(64, input_shape=(len(X[0]),len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
         #BATCH SIZE 1
-        model.add(LSTM(64, input_shape=(None,len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
+        model.add(LSTM(10, input_shape=(None,len(X[0][0])), dropout=0.2, recurrent_dropout=0.2, return_sequences=False))
         
-        model.add(Dense(7, activation='sigmoid'))#activation='softmax'
-        model.compile(loss='categorical_crossentropy', optimizer='adam')#binary_crossentropy
+        model.add(Dense(7, activation='softmax'))#activation='sigmoidsoftmax'
+        model.compile(loss='mean_squared_error', optimizer='adam', metrics=["accuracy"])
     else:
         model = modelRNNAudio 
     
     #START MODEL    
-    model.fit(X, Y, epochs=10, batch_size=len(X), show_accuracy=True)
+    model.fit(X, Y, epochs=5, batch_size=len(X))
     
     print('****End of method RNNModelAudio\n')
     return model
