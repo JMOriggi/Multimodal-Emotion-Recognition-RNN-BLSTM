@@ -6,20 +6,21 @@ import NeuralNetworkUtils as nn
 
 #SET MAIN ROOT
 #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+mainRootM = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+mainRootTest = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test')
 
 #SET PATH AND VARIABLES
-modelPath = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
-audioDirectoryPath = os.path.normpath(mainRoot + '\AllAudioFiles')
+mainRootModel = os.path.normpath(mainRootM + '\RNN_Model_AUDIO_saved.h5')
+audioDirectoryPath = os.path.normpath(mainRootTest + '\AllAudioFiles')
 audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
 TInArrayAudio = []
 TOutArray = []
 
 #LOAD DATA FOR TRAINING
-AllAudioNames, EmoCode, encodedText = trainData.readCsvData(mainRoot)
+AllAudioNames, EmoCode, encodedText = trainData.readCsvData(mainRootTest)
 
 #CREATE OUTPUT DATA FILE: remove if it already exist and recreate it new
-resultFilePath = os.path.join(mainRoot+'\ResultsPredictionAudio.txt')
+resultFilePath = os.path.join(mainRootTest+'\ResultsPredictionAudio.txt')
 try:
     os.remove(resultFilePath)
 except OSError:
@@ -38,7 +39,7 @@ while i < len(AllAudioNames):
         TInArrayAudio.append(allFrameFFT)
         
         #TEST MODEL
-        audioRes = nn.predictFromSavedModel(modelPath, TInArrayAudio)
+        audioRes = nn.predictFromSavedModel(mainRootModel, TInArrayAudio)
         
         #APPEND IN THE OUTPUT FILE
         resultLine = AllAudioNames[i][0]+',EXP:'+str(EmoCode[i])+',AUD:'+str(audioRes[0])+'\n'                    
