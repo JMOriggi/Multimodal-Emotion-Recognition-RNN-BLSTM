@@ -7,6 +7,7 @@ from PyQt5.QtCore import QSize
 #DEFINE GLOBAL VARIABLE ROOT 
 MainRoot = ''
 mainRootT = ''
+AudioTextFlag = 0 #2 for both, 1 for only text, 0 for only audio
      
 #CLASS FOR WINDOW CREATION     
 class Window(QMainWindow):
@@ -19,17 +20,29 @@ class Window(QMainWindow):
         self.setWindowTitle("Emotional Neural Network") 
         
         #TRAINING1 CHECKBOX
-        self.b1 = QCheckBox("ORIGINAL",self)
+        self.b1 = QCheckBox("Original Corpus",self)
         self.b1.stateChanged.connect(self.clickBoxOriginal)
         self.b1.move(20,20)
         #TRAINING2 CHECKBOX
-        self.b4 = QCheckBox("FAKE",self)
-        self.b4.stateChanged.connect(self.clickBoxFake)
-        self.b4.move(20,50)
+        self.b2 = QCheckBox("Fake Corpus",self)
+        self.b2.stateChanged.connect(self.clickBoxFake)
+        self.b2.move(20,50)
         #TRAINING3 CHECKBOX
-        self.b6 = QCheckBox("LAV",self)
-        self.b6.stateChanged.connect(self.clickBoxLav)
-        self.b6.move(20,80)
+        self.b3 = QCheckBox("Lav",self)
+        self.b3.stateChanged.connect(self.clickBoxLav)
+        self.b3.move(20,80)
+        #AUDIO TRAINING
+        self.b4 = QCheckBox("Audio",self)
+        self.b4.stateChanged.connect(self.clickBoxA)
+        self.b4.move(20,130)
+        #TEXT TRAINING
+        self.b5 = QCheckBox("Text",self)
+        self.b5.stateChanged.connect(self.clickBoxT)
+        self.b5.move(20,150)
+        #AUDIO+TEXT TRAINING
+        self.b6 = QCheckBox("Audio+Text",self)
+        self.b6.stateChanged.connect(self.clickBoxAT)
+        self.b6.move(20,170)
         
         #BUTTON SET CORPUS
         self.btn_runTest = QPushButton("SET CORPUS", self)
@@ -75,6 +88,31 @@ class Window(QMainWindow):
         else:
             MainRoot = ''
             print('Unchecked clickBoxLav')                
+    
+    def clickBoxA(self, state):
+        if state == QtCore.Qt.Checked:
+            AudioTextFlag = 0
+            print('Checked clickBoxAT: ',AudioTextFlag)
+        else:
+            AudioTextFlag = 0
+            print('Checked clickBoxAT: ',AudioTextFlag)
+            
+    def clickBoxT(self, state):
+        if state == QtCore.Qt.Checked:
+            AudioTextFlag = 1
+            print('Checked clickBoxAT: ',AudioTextFlag)
+        else:
+            AudioTextFlag = 0
+            print('Checked clickBoxAT: ',AudioTextFlag)  
+            
+    def clickBoxAT(self, state):
+        if state == QtCore.Qt.Checked:
+            AudioTextFlag = 2
+            print('Checked clickBoxAT: ',AudioTextFlag)
+        else:
+            AudioTextFlag = 0
+            print('Checked clickBoxAT: ',AudioTextFlag)               
+ 
  
     def runSetCorpus(self, w):
         if MainRoot == '':
