@@ -6,9 +6,9 @@ import NeuralNetworkUtils as nn
 from keras.models import load_model
 
 #SET MAIN ROOT
-#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
 #mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+#mainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
 
 #SET PATH AND VARIABLES
 modelPath = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -19,7 +19,7 @@ TOutArray = []
 i = 0
 
 #CHOOSE THE FLAG VALUE (for single batch mode): 1 for loading already existing model, 0 for creating a new one
-flag = 0
+flag = 1
 
 #LOAD DATA FOR TRAINING
 AllAudioNames, EmoCode, encodedText = trainData.readCsvData(mainRoot)

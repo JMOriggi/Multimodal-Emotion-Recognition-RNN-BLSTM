@@ -5,9 +5,10 @@ import AudioUtils as aud
 import NeuralNetworkUtils as nn
 
 #SET MAIN ROOT
-#mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-mainRootM = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-mainRootTest = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+mainRootM = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+mainRootTest = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+#mainRootM = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+#mainRootTest = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
 
 #SET PATH AND VARIABLES
 mainRootModel = os.path.normpath(mainRootM + '\RNN_Model_AUDIO_saved.h5')
