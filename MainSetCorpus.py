@@ -1,8 +1,5 @@
 import os
-import numpy as np
 import DataTrainingUtils as trainData
-import AudioUtils as aud
-import NeuralNetworkUtils as nn
 
 #SET MAIN ROOT
 #mainRootTraining = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
