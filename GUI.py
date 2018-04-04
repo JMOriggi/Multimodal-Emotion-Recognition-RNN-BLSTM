@@ -144,8 +144,8 @@ class Window(QMainWindow):
     #CHECKBOX METHODS          
     def clickBoxOriginal(self, state):
         if state == QtCore.Qt.Checked:
-            self.MainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-            self.MainRootT = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+            self.MainRootT = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+            self.MainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test')
             txt = 'Checked on roots: '+self.MainRoot+', AND, '+self.MainRootT
             self.printLog(txt)
         else:

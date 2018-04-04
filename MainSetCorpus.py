@@ -18,9 +18,9 @@ def mainSetCorpus(mainRootTraining, mainRootTest):
     
     #TEST FOLDER
     #Move copy of audio files
-    trainData.moveCopyAudioFiles(mainRootTest)
+    #trainData.moveCopyAudioFiles(mainRootTest)
     #Create training data file
-    trainData.clusterData(mainRootTest)
-    trainData.encoder(mainRootTest)
+    #trainData.clusterData(mainRootTest)
+    #trainData.encoder(mainRootTest)
     
     print('END OF SET CORPUS')

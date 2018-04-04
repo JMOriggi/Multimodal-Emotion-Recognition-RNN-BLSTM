@@ -7,7 +7,6 @@ import numpy as np
 #TAKE ARRAY FROM AUDIO FILE WAV
 def getArrayFromAudio(audioFilePath):
     print('****START of function getArrayFromAudio')
-    print('Current File: ',audioFilePath)
     
     #READ THE WAV FILE
     inputAudio = read(audioFilePath)
