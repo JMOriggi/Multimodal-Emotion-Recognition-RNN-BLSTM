@@ -20,40 +20,54 @@ class Window(QMainWindow):
         QMainWindow.__init__(self)
  
         #WINDOW SIZE
-        self.setGeometry(600, 200, 500, 300) 
+        self.setGeometry(600, 200, 1000, 600) 
         self.setWindowTitle("Emotional Neural Network") 
         
+        #CHECK POINTS GRAFIC
+        x = 10
+        ya = 20
+        yb = 120
+        
         #LABELS
-        myFont = QFont()
-        myFont.setBold(True)
+        fontLabel = QFont()
+        fontLabel.setBold(True)
+        fontLabel.setPixelSize(13)
         self.l1 = QLabel(self)
         self.l1.setText('Select Corpus:')
-        self.l1.setFont(myFont)
-        self.l1.move(10,0)
+        self.l1.setFont(fontLabel)
+        self.l1.move(x,ya)
         self.l2 = QLabel(self)
         self.l2.setText('Select NN type:')
-        self.l2.setFont(myFont)
-        self.l2.move(10,80)
+        self.l2.setFont(fontLabel)
+        self.l2.move(x,yb)
         
-        #CHECKBOXS 
+        #CHECKBOXS
+        fontBox = QFont()
+        fontBox.setPixelSize(12)
         self.b1 = QCheckBox("Original Corpus",self)
         self.b1.stateChanged.connect(self.clickBoxOriginal)
-        self.b1.move(20,20)
+        self.b1.setFont(fontBox)
+        self.b1.move(x+10,ya+20)
         self.b2 = QCheckBox("Fake Corpus",self)
         self.b2.stateChanged.connect(self.clickBoxFake)
-        self.b2.move(20,40)
+        self.b2.setFont(fontBox)
+        self.b2.move(x+10,ya+40)
         self.b3 = QCheckBox("Lav",self)
         self.b3.stateChanged.connect(self.clickBoxLav)
-        self.b3.move(20,60)
+        self.b3.setFont(fontBox)
+        self.b3.move(x+10,ya+60)
         self.b4 = QCheckBox("Audio",self)
         self.b4.stateChanged.connect(self.clickBoxA)
-        self.b4.move(20,100)
+        self.b4.setFont(fontBox)
+        self.b4.move(x+10,yb+20)
         self.b5 = QCheckBox("Text",self)
         self.b5.stateChanged.connect(self.clickBoxT)
-        self.b5.move(20,120)
+        self.b5.setFont(fontBox)
+        self.b5.move(x+10,yb+40)
         self.b6 = QCheckBox("Audio+Text",self)
         self.b6.stateChanged.connect(self.clickBoxAT)
-        self.b6.move(20,140)
+        self.b6.setFont(fontBox)
+        self.b6.move(x+10,yb+60)
         
         #BUTTONS
         self.btn_setCorpus = QPushButton("SET CORPUS", self)
@@ -75,14 +89,14 @@ class Window(QMainWindow):
         self.logOutput.setLineWrapMode(QTextEdit.NoWrap)
         font = self.logOutput.font()
         font.setFamily("Courier")
-        font.setPointSize(10)
-        self.logOutput.setFixedSize(460,90)
-        self.logOutput.move(20,200)
+        font.setPointSize(14)
+        self.logOutput.setFixedSize(700,300)
+        self.logOutput.move(20,280)
         #Button clear log
         self.btn_clear = QPushButton("Clear Logs", self)
         self.btn_clear.clicked.connect(self.clearLog)
         self.btn_clear.setFixedSize(100,25)
-        self.btn_clear.move(380,170)   
+        self.btn_clear.move(620,250)   
     
     #PRINT LOG
     def printLog(self, text):
