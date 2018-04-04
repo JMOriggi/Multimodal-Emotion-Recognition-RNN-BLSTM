@@ -17,7 +17,8 @@ class Window(QMainWindow):
     MainRoot = ''
     MainRootT = ''
     AudioTextFlag = 0 #2 for both, 1 for only text, 0 for only audio
-    FlagLM = 0 #0 create new model file during training, 1 use the one already existing
+    FlagLMA = 1 #0 create new model file during training, 1 use the one already existing
+    FlagLMT = 1
     
     def __init__(self):
         QMainWindow.__init__(self)
@@ -47,15 +48,17 @@ class Window(QMainWindow):
         self.l1 = QLabel(self)
         self.l1.setText('Select Corpus')
         self.l1.setFont(fontLabel)
+        self.l1.setFixedSize(200,20)
         self.l1.move(x,ya)
         self.l2 = QLabel(self)
-        self.l2.setText('Select NN type')
+        self.l2.setText('Select NN type (default Audio)')
         self.l2.setFont(fontLabel)
+        self.l2.setFixedSize(200,20)
         self.l2.move(x,yb)
         self.l3 = QLabel(self)
-        self.l3.setText('Load Existing Models')
+        self.l3.setText('Create new Models')
         self.l3.setFont(fontLabel)
-        self.l3.setFixedSize(150,20)
+        self.l3.setFixedSize(200,20)
         self.l3.move(x,yc)
         
         #CHECKBOXS
@@ -97,15 +100,20 @@ class Window(QMainWindow):
         #BUTTONS
         self.btn_setCorpus = QPushButton("SET CORPUS", self)
         self.btn_setCorpus.clicked.connect(self.runSetCorpus)
-        self.btn_setCorpus.setFixedSize(100,50)
+        self.btn_setCorpus.setStyleSheet("background-color:rgb(255, 220, 201)")
+        self.btn_setCorpus.setFixedSize(200,50)
         self.btn_setCorpus.move(xbutton,ybutton)
+        #
         self.btn_runTraining = QPushButton("RUN TRAINING", self)
         self.btn_runTraining.clicked.connect(self.runTraining)
-        self.btn_runTraining.setFixedSize(100,50)
+        self.btn_runTraining.setStyleSheet("background-color:rgb(255, 220, 201)")
+        self.btn_runTraining.setFixedSize(200,50)
         self.btn_runTraining.move(xbutton,ybutton+60)
+        #
         self.btn_runTest = QPushButton("RUN TEST", self)
         self.btn_runTest.clicked.connect(self.runTest)
-        self.btn_runTest.setFixedSize(100,50)
+        self.btn_runTest.setStyleSheet("background-color:rgb(255, 220, 201)")
+        self.btn_runTest.setFixedSize(200,50)
         self.btn_runTest.move(xbutton,ybutton+120)
         
         #CONSOLE LOG
@@ -123,13 +131,15 @@ class Window(QMainWindow):
         self.btn_clear.setFixedSize(100,25)
         self.btn_clear.move(620,560)   
     
-    #PRINT LOG
+    
+    #LOG METHODS
     def printLog(self, text):
         self.logOutput.insertPlainText(text+'\n')
         sb = self.logOutput.verticalScrollBar()
         sb.setValue(sb.maximum()) 
     def clearLog(self):
         self.logOutput.clear()    
+     
         
     #CHECKBOX METHODS          
     def clickBoxOriginal(self, state):
@@ -141,6 +151,7 @@ class Window(QMainWindow):
         else:
             self.MainRoot = ''
             self.printLog('Unchecked clickBoxOriginal') 
+            
     def clickBoxFake(self, state):
         if state == QtCore.Qt.Checked:
             self.MainRoot = os.path.normpath('D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
@@ -149,7 +160,8 @@ class Window(QMainWindow):
             self.printLog(txt)
         else:
             self.MainRoot = ''
-            self.printLog('Unchecked clickBoxFake') 
+            self.printLog('Unchecked clickBoxFake')
+             
     def clickBoxLav(self, state):
         if state == QtCore.Qt.Checked:
             self.MainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
@@ -158,7 +170,8 @@ class Window(QMainWindow):
             self.printLog(txt)
         else:
             self.MainRoot = ''
-            self.printLog('Unchecked clickBoxLav')                
+            self.printLog('Unchecked clickBoxLav') 
+                           
     def clickBoxA(self, state):
         if state == QtCore.Qt.Checked:
             self.AudioTextFlag = 0
@@ -166,38 +179,43 @@ class Window(QMainWindow):
             self.printLog(txt)
         else:
             self.AudioTextFlag = 0
+            
     def clickBoxT(self, state):
         if state == QtCore.Qt.Checked:
             self.AudioTextFlag = 1
             txt = 'Checked only text'
             self.printLog(txt)
         else:
-            self.AudioTextFlag = 0  
+            self.AudioTextFlag = 0 
+             
     def clickBoxAT(self, state):
         if state == QtCore.Qt.Checked:
             self.AudioTextFlag = 2
             txt = 'Checked audio and text'
             self.printLog(txt)
         else:
-            self.AudioTextFlag = 0               
+            self.AudioTextFlag = 0 
+                          
     def clickBoxFlagMA(self, state):
         if state == QtCore.Qt.Checked:
-            self.FlagLMA = 1
+            self.FlagLMA = 0
             txt = 'Checked Load Model Audio'
             self.printLog(txt)
         else:
-            self.FlagLMA = 0 
+            self.FlagLMA = 1
+             
     def clickBoxFlagMT(self, state):
         if state == QtCore.Qt.Checked:
-            self.FlagLMT = 1
+            self.FlagLMT = 0
             txt = 'Checked Load Model Text'
             self.printLog(txt)
         else:
-            self.FlagLMT = 0               
+            self.FlagLMT = 1               
+    
     
     #BUTTONS METHODS 
     def runSetCorpus(self, w):
-        if self.MainRoot == '':
+        if (self.MainRoot == ''):
             self.printLog('Select one Root checkbox')
         else:
             txt = 'Set Corpus on roots: '+self.MainRoot+', AND, '+self.MainRootT
@@ -222,7 +240,8 @@ class Window(QMainWindow):
             self.printLog(txt) 
             predict.mainPredict(self.MainRoot, self.MainRootT, self.AudioTextFlag)
             self.printLog('END of Test')     
-            
+    
+           
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     mainWin = Window()
