@@ -21,7 +21,7 @@ def mainPredict(mainRootM, mainRootTest, NNType):
     TInArrayText = []
     
     #LOAD DATA FOR TRAINING
-    AllAudioNames, EmoCode, encodedText = trainData.readCsvData(mainRootTest)
+    AllAudioNames, EmoCode, encodedText, encodedAudio = trainData.readCsvData(mainRootTest)
     
     #CREATE OUTPUT DATA FILE: remove if it already exist and recreate it new
     resultFilePath = os.path.join(mainRootTest+'\ResultsPredictionAudio.txt')
@@ -40,11 +40,13 @@ def mainPredict(mainRootM, mainRootTest, NNType):
             #ONLY AUDIO NN
             if (NNType == 0) or (NNType == 2):
                 print('AUDIO')
+                
                 #READ AUDIO FILE: tranform it in a redable array in spectrum
-                arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
-                #allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate) #BATCH SIZE > 1 MODE
-                allFrameFFT = aud.getFreqArrayV2(arrayAudio, sampleRate) #BATCH SIZE 1 MODE
-                TInArrayAudio.append(allFrameFFT)
+                    #arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
+                    ##allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate) #BATCH SIZE > 1 MODE
+                    #allFrameFFT = aud.getFreqArrayV2(arrayAudio, sampleRate) #BATCH SIZE 1 MODE
+                    #TInArrayAudio.append(allFrameFFT)
+                TInArrayAudio.append(encodedAudio[i])#BATCH SIZE 1 MODE
                 
                 #TEST MODEL
                 audioRes = nn.predictFromSavedModel(mainRootModelAudio, TInArrayAudio)

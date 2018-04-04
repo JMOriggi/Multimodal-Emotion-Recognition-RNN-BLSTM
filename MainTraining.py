@@ -32,7 +32,7 @@ def mainTraining(mainRoot, NNType, flagMA, flagMT):
     #flag = 1
     
     #LOAD DATA FOR TRAINING
-    AllAudioNames, EmoCode, encodedText = trainData.readCsvData(mainRoot)
+    AllAudioNames, EmoCode, encodedText, encodedAudio = trainData.readCsvData(mainRoot)
     '''print('Len AllAudioNames: ',len(AllAudioNames))
     print('Len EmoCode: ',len(EmoCode))
     print('Len encodedText: ',len(encodedText))
@@ -55,10 +55,12 @@ def mainTraining(mainRoot, NNType, flagMA, flagMT):
                 print('AUDIO')
                 
                 #AUDIO: Read audio file and tranform it in dim = (#audiofile, #ofFftPerformed, fftWindowSize)
-                arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
-                #allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate) #BATCH SIZE > 1 MODE
-                allFrameFFT = aud.getFreqArrayV2(arrayAudio, sampleRate) #BATCH SIZE 1 MODE
-                TInArrayAudio.append(allFrameFFT)
+                    #arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath+'.wav')
+                    ##allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate) #BATCH SIZE > 1 MODE
+                    #allFrameFFT = aud.getFreqArrayV2(arrayAudio, sampleRate) #BATCH SIZE 1 MODE
+                    #TInArrayAudio.append(allFrameFFT)
+                TInArrayAudio.append(encodedAudio[i])#BATCH SIZE 1 MODE
+                
                 
                 #SINGLE BATCH TRAINING: if flag=0 at the first iteration it creates the model, otherwise load an existing model
                 if flagMA > 0:

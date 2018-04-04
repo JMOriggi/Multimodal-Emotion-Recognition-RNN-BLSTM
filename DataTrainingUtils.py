@@ -8,6 +8,7 @@ import os
 import csv
 import shutil
 import numpy as np
+import AudioUtils as aud
 
 
 #BUILD A TXT FILE WITH ALL THE USEFULL DATA: <audioFileName>;<emo>;<transcriptionText>
@@ -162,6 +163,9 @@ def encoder(mainRoot):
         writer.writerows(encodeText)
     csvfile3.close()
     
+    #ENCODE AUDIO FILE AND BUILD CSV
+    buildAudioCsv(mainRoot)
+    
     print('****End of method encodeText')
  
     
@@ -222,7 +226,60 @@ def readCsvData(mainRoot):
         data.append([int(val) for val in row])
     Z = np.array([np.array(xi) for xi in data])
     
+    #READ Audio encoded 
+    W = readAudioCsv(mainRoot)
+    
     print('****End of method readCsvData')
-    return X, Y, Z    
+    return X, Y, Z, W    
+
+   
+def buildAudioCsv(mainRoot):
+    print('****Start of method buildAudioCsv')
+    
+    TInArrayAudio = []
+    audioDirectoryPath = os.path.normpath(mainRoot + '\AllAudioFiles')
+    audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
+    
+    for audioFile in audlist:
+        audioFilePath = os.path.join(audioDirectoryPath, audioFile)
+        arrayAudio, sampleRate = aud.getArrayFromAudio(audioFilePath)
+        #allFrameFFT = aud.getFreqArray(arrayAudio, sampleRate) #BATCH SIZE > 1 MODE
+        allFrameFFT = aud.getFreqArrayV2(arrayAudio, sampleRate) #BATCH SIZE 1 MODE
+        TInArrayAudio.append(np.asarray(allFrameFFT))
+        
+    #print('prepared array: ',TInArrayAudio)
+    
+    outputfilePath = os.path.join(mainRoot+'\encodedAudio.csv')
+    with open(outputfilePath, "w", newline='') as f:
+        writer = csv.writer(f)
+        i = 0
+        while i < len(TInArrayAudio):
+            writer.writerows(np.asarray(TInArrayAudio[i]))
+            writer.writerows('A')
+            i += 1
+    f.close()
+        
+    print('****Start of method buildAudioCsv')    
     
     
+def readAudioCsv(mainRoot):
+    print('****Start of method readAudioCsv')
+    
+    outputfilePath = os.path.join(mainRoot+'\encodedAudio.csv')
+    datareader = csv.reader(open(outputfilePath, 'r'))
+    
+    Alldata = []
+    fileData = []
+    for row in datareader:
+        if row[0] == 'A':
+            Alldata.append(np.array(fileData))
+            fileData = [] 
+        else: 
+            fileData.append([int(val) for val in row])  
+    
+    #print('data: ', Alldata)
+    
+    print('****End of method readAudioCsv')  
+    return Alldata
+    
+      
