@@ -56,7 +56,7 @@ class Window(QMainWindow):
         self.l2.setFixedSize(200,20)
         self.l2.move(x,yb)
         self.l3 = QLabel(self)
-        self.l3.setText('Create new Models')
+        self.l3.setText('Create new Models File')
         self.l3.setFont(fontLabel)
         self.l3.setFixedSize(200,20)
         self.l3.move(x,yc)
