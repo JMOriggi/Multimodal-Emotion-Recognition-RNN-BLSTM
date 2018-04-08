@@ -73,7 +73,7 @@ def moveCopyAudioFiles(mainRoot, destPath):
     for session in sessDirList:
         currentAudioDirPath = os.path.normpath(os.path.join(mainRoot, session)+'\Sentences_audio')
         audioGroupDir = [ item for item in os.listdir(currentAudioDirPath) if os.path.isdir(os.path.join(currentAudioDirPath, item)) ]
-        #destPath = currentAudioDirPath
+
         print('Inside: ',session)
         
         for audioGroup in audioGroupDir:
