@@ -30,23 +30,30 @@ def buildFeatures(monoAudio, sampleRate):
     mfcc = librosa.feature.mfcc(monoAudio, sampleRate, n_mfcc=40, hop_length=int(0.010*sampleRate), n_fft=int(0.020*sampleRate))
     mfcc_delta = librosa.feature.delta(mfcc)
     mfcc_delta_delta = librosa.feature.delta(mfcc, order=2)
-    print(mfcc.shape)
+    '''print(mfcc.shape)
     print(mfcc_delta.shape)
-    print(mfcc_delta_delta.shape)
+    print(mfcc_delta_delta.shape)'''
     #Transpose because librosa gives me the freq in the row but i want them in the collums
     mfcc = mfcc.T
     mfcc_delta = mfcc_delta.T
     mfcc_delta_delta = mfcc_delta_delta.T
-    print(mfcc.shape)
+    '''print(mfcc.shape)
     print(mfcc_delta.shape)
-    print(mfcc_delta_delta.shape)
+    print(mfcc_delta_delta.shape)'''
     
-    pitch_and_intensity.extractPitch(wavFN, outputFN, praatEXE, minPitch, maxPitch, sampleStep, silenceThreshold, forceRegenerate, undefinedValue, medianFilterWindowSize, pitchQuadInterp)
-    pitch_and_intensity.extractIntensity(inputFN, outputFN, praatEXE, minPitch, sampleStep, forceRegenerate, undefinedValue)
+    #pitch_and_intensity.extractPitch(wavFN, outputFN, praatEXE, minPitch, maxPitch, sampleStep, silenceThreshold, forceRegenerate, undefinedValue, medianFilterWindowSize, pitchQuadInterp)
+    #pitch_and_intensity.extractIntensity(inputFN, outputFN, praatEXE, minPitch, sampleStep, forceRegenerate, undefinedValue)
+    pitch , mag = librosa.core.piptrack(monoAudio, sampleRate, hop_length=int(0.010*sampleRate), n_fft=int(0.020*sampleRate),fmin=0, fmax=10)
+    pitch = mfcc.T
+    mag = mfcc.T
+    print(pitch.shape)
+    print(pitch)
+    #print(mag)
+    #print(mag.shape)
     
     #to concatenate row per row 
     X = np.hstack((mfcc, mfcc_delta, mfcc_delta_delta))
-    print(X.shape)
+    #print(X.shape)
     
     return X
 
