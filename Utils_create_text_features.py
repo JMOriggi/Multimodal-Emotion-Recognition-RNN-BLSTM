@@ -16,6 +16,9 @@ def write_to_tfrecord(label, binary_text, writer):
 
 
 def get_text_bynary(text, model):
+    
+    print('get_text_bynary')
+    
     counter = 0
     translated_text = []
     notfounded = []
@@ -28,15 +31,16 @@ def get_text_bynary(text, model):
             translated_text.append(model.wv['unknown'])
             notfounded.append(word)
 
-    text = np.array(translated_text, np.float32)
-    return text.tobytes(), notfounded, counter
-
+    #text = np.array(translated_text, np.float32)
+    #return text.tobytes(), notfounded, counter
+    return text, notfounded, counter
 
 if __name__ == '__main__':
 
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     index_file_path =  os.path.join(main_root+'\AllData.txt')
-    out_text_feature_path = os.path.join(main_root+'\Featurestext') 
+    out_text_feature_path = os.path.join(main_root+'\FeaturesText') 
     
     #READ THE FILE AND BUILD ARRAYS
     #Audio File Names
@@ -49,16 +53,19 @@ if __name__ == '__main__':
         Z = [line.strip() for line in AllDatafile] 
         arrayText = [line.split(';')[2] for line in Z]
     AllDatafile.close()
-
+    
+    print(arrayText)
+    
     counter = 0
-    model = gensim.models.Word2Vec.load(main_root + '/W2V_model/glove_WIKI')
+    modelPath = os.path.join(main_root+'\W2V_model\glove_WIKI')
+    model = gensim.models.Word2Vec.load(modelPath)#Se errore pip install gensim==3.0
 
     # iterate over the list getting each file
-    i = 0
+    ''''i = 0
     while i < len(arrayFileName):
         current_text = arrayText[i]
         text_byn, nf, cnt = get_text_bynary(current_text, model)
         print(text_byn)
         i += 1
-        
+    '''    
     print('END')   

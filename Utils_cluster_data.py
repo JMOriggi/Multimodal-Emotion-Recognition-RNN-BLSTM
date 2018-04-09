@@ -92,7 +92,8 @@ def moveCopyAudioFiles(mainRoot, destPath):
     
 if __name__ == '__main__':
     
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     ZData_path = os.path.join(main_root + '\ZData')
     print(main_root)
     print(ZData_path)
