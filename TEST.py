@@ -7,12 +7,26 @@ import DataTrainingUtils as trainData
 import librosa
 
 
-
-
-
-'''main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-all_wav_path = os.path.join(main_root + '\AllAudioFiles')
+'''all_wav_path = os.path.join(main_root + '\AllAudioFiles')
 audioDirectoryPath = os.path.normpath(main_root + '\AllAudioFiles')
 audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
     
 print(audlist)'''
+
+if __name__ == '__main__':
+    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training\FeaturesText')
+    list = [ item for item in os.listdir(mainRoot) if os.path.isfile(os.path.join(mainRoot, item)) ]
+    
+    #READ encoded emotion: Read the content as an array of numbers and not string as default
+    for file in list:
+        datareader = csv.reader(open(os.path.join(mainRoot,file), 'r'))
+        data = []
+        for row in datareader:
+            data.append([float(val) for val in row])
+        Y = np.array([np.array(xi) for xi in data])
+        print(len(Y))
+        i=0
+        while i < len(Y):
+            print(len(Y[i]))
+            i+=1
+      
