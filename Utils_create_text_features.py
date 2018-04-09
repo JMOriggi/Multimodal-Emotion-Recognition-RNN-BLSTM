@@ -74,8 +74,8 @@ def saveFeaturecsv(currentFilename, out_text_feature_path):
 if __name__ == '__main__':
 
     #SET ROOTS
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     modelPath = os.path.join(main_root+'\W2V_model\glove_WIKI')
     index_file_path =  os.path.join(main_root+'\AllData.txt')
     out_text_feature_path = os.path.join(main_root+'\FeaturesText') 
@@ -99,6 +99,7 @@ if __name__ == '__main__':
         #Isolate words
         current_text = current_text.split()
         
+        #ENCODE
         text_byn, notFoundCounter, notFoundedWord = get_text_bynary(current_text, model, notFoundCounter, notFoundedWord)
         
         #WRITE OUTPUT FILE
