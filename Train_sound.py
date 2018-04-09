@@ -91,7 +91,6 @@ if __name__ == '__main__':
         
         #counter += 1
     
-        
     #EVALUATE LSTM
     X, Y = reshapeLSTMInOut(allFileFeature[2], allLabels[2])
     yhat = model.predict(X, verbose=0)
