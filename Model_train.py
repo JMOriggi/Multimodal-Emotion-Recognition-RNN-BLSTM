@@ -5,6 +5,7 @@ from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Dense
 from keras.layers import Bidirectional
+from keras.models import load_model
 
 
 def readFeatures(DirRoot):
@@ -76,6 +77,10 @@ if __name__ == '__main__':
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
     
+    #SET MODELS PATH
+    mainRootModelAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
+    mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
+    
     #EXTRACT FEATURES AND LABELS
     allAudioFeature, allFileName = readFeatures(dirAudio)
     allTextFeature, allFileName = readFeatures(dirText)
@@ -84,26 +89,32 @@ if __name__ == '__main__':
     print(allTextFeature.shape)
     print(allLabels.shape)
     
-    #DEFINE BLSTM MODEL
-    model = buildBLTSM()
+    #DEFINE PARAMETERS
+    flagLoadModel = 1 #1=load, 0=new
     modelType = 0 #1=OnlyAudio, 2=OnlyText, 3=Audio&Text
-    limit = 5 #number of file trained: len(allAudioFeature) or a number
+    limit = len(allAudioFeature) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 10 #number of epoch for each file trained
+    
+    #DEFINE MODEL
+    if flagLoadModel == 0:
+        modelA = buildBLTSM()
+        modelT = buildBLTSM()
+    else:
+        modelA = load_model(mainRootModelAudio)
+        modelT = load_model(mainRootModelText)
+    
+    print('Train of #file: ', limit)
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        model_Audio = trainBLSTM(allFileName, allAudioFeature, allLabels, model, limit, n_epoch)
+        model_Audio = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, limit, n_epoch)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
-        model_Audio.save(modelPathAudio, overwrite=True)
+        model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1 or modelType == 2:
-        modelText = trainBLSTM(allFileName, allTextFeature, allLabels, model, limit, n_epoch)   
+        modelText = trainBLSTM(allFileName, allTextFeature, allLabels, modelT, limit, n_epoch)    
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)    
     
-    #EVALUATE LSTM
-    X, Y = reshapeLSTMInOut(allAudioFeature[2], allLabels[2])
-    #yhat = model_Audio.predict(X, verbose=0)
-    yhat = model_Audio.predict_classes(X, verbose=0)
-    print('Expected:', Y, 'Predicted', yhat)
+    print('END')
     
     

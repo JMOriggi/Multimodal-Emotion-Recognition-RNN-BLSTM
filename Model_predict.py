@@ -1,10 +1,6 @@
 import numpy as np
 import os
 import csv
-from keras.models import Sequential
-from keras.layers import LSTM
-from keras.layers import Dense
-from keras.layers import Bidirectional
 from keras.models import load_model
 
 
@@ -112,5 +108,5 @@ if __name__ == '__main__':
     if modelType == 2:
         predictFromSavedModelV2(mainRootModelText, allAudioFeature, allTextFeature, allLabels, allFileName, limit)         
     
-    
+    print('END')
     
