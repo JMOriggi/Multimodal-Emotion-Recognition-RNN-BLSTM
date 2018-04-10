@@ -3,16 +3,6 @@ import os
 import sys
 import gensim
 import numpy as np
-import tensorflow as tf
-
-
-def write_to_tfrecord(label, binary_text, writer):
-    example = tf.train.Example(features=tf.train.Features(feature={
-        'labels': tf.train.Feature(bytes_list=tf.train.BytesList(value=[label])),
-        'features': tf.train.Feature(bytes_list=tf.train.BytesList(value=[binary_text]))
-    }))
-
-    writer.write(example.SerializeToString())
 
 
 def get_text_bynary(text, model, notFoundCounter, notFoundedWord):
@@ -32,7 +22,7 @@ def get_text_bynary(text, model, notFoundCounter, notFoundedWord):
             notFoundedWord.append(word)
             notFoundCounter += 1
     
-    print('translated_text shape: ',np.asarray(encodedText).shape)
+    print(np.asarray(encodedText).shape)
     
     #TRANFORM ENCODED TEXT
     #encodedText = np.array(encodedText, np.float32)
@@ -59,7 +49,6 @@ def readDatacsv(index_file_path):
 def saveFeaturecsv(currentFilename, out_text_feature_path):
     csvOutputFilePath = os.path.join(out_text_feature_path, currentFilename)
     csvOutputFilePath = csvOutputFilePath + '.csv'
-    print(csvOutputFilePath)
     try:
         os.remove(csvOutputFilePath)
     except OSError:
@@ -74,8 +63,8 @@ def saveFeaturecsv(currentFilename, out_text_feature_path):
 if __name__ == '__main__':
 
     #SET ROOT
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     
     #SET PATHS
     modelPath = os.path.join(main_root+'\W2V_model\glove_WIKI')

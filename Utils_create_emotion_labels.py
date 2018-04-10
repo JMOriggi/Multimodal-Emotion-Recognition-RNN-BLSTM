@@ -5,7 +5,6 @@ import numpy as np
 
 
 def readDataFile(main_root):
-    
     index_file_path =  os.path.join(main_root+'\AllData.txt')
     
     #Audio File Names
@@ -25,6 +24,7 @@ def readDataFile(main_root):
     AllDatafile.close()
     
     return arrayFileName, arrayEmoLabel
+
 
 def encodeLabels(arrayEmoLabel):
     i = 0
@@ -49,25 +49,26 @@ def encodeLabels(arrayEmoLabel):
             code = [0,0,0,0,0,0,2]  #NOT CLASSIFIED
         emoEncoded.append(code)
         i += 1
-    
+        
     return emoEncoded
 
 
 def saveEncLabelcsv(emoEncoded, arrayFileName, main_root):
-    
     out_csv_labels_path = os.path.join(main_root+'\LablesEmotion')
-    
     i = 0
+    
     while i < len(emoEncoded):
         #CREATE OUTPUTS DATA FILE: remove if it already exist and recreate it new
         out_current_file = arrayFileName[i] + '.csv'
-        out_current_file = os.path.join(out_csv_labels_path, out_current_file) 
-        print(out_current_file)
+        out_current_file = os.path.join(out_csv_labels_path, out_current_file)
         try:
             os.remove(out_current_file)
         except OSError:
             pass
         
+        #WRITE ON IT
+        print(arrayFileName[i])
+        print(emoEncoded[i])
         with open(out_current_file, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(emoEncoded[i])
@@ -89,7 +90,6 @@ if __name__ == '__main__':
     
     #WRITE CSV FILE
     saveEncLabelcsv(emoEncoded, arrayFileName, main_root)
-    
     
     print('END')
     

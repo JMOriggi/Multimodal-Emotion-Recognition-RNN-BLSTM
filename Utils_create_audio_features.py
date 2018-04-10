@@ -87,14 +87,13 @@ def computeFeatures(monoAudio, sampleRate):
     
     #CONCATENATE FEATURES PER ROWS
     X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, mfcc, mfcc_delta, mfcc_delta_delta, mfcc_energy, mfcc_energy_delta, mfcc_energy_delta_delta))
-    print('features shape final: ',X.shape)
+    print(X.shape) #Features final shape for current audio file
     
     return X
 
 
 def saveFeaturecsv(currentFileFeatures, csvOutputFilePath):
     csvOutputFilePath = os.path.join(csvOutputFilePath + '.csv')
-    print(csvOutputFilePath)
     try:
         os.remove(csvOutputFilePath)
     except OSError:
@@ -113,7 +112,7 @@ def buildAudioFeaturesCsv(mainRoot, audioDirectoryPath, out_audio_feature_path):
     for audioFile in audlist:
         audioFilePath = os.path.join(audioDirectoryPath, audioFile)
         csvOutputFilePath = os.path.join(out_audio_feature_path, audioFile.split('.')[0])
-        print('Current file: ', csvOutputFilePath)
+        print(audioFile)
         
         arrayAudio, sampleRate = readWav(audioFilePath)
         
