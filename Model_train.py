@@ -69,8 +69,9 @@ def trainBLSTM(fileName, Features, Labels, model, limit, n_epoch):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     print(allLabels.shape)
     
     #DEFINE PARAMETERS
-    flagLoadModel = 1 #1=load, 0=new
+    flagLoadModel = 0 #1=load, 0=new
     modelType = 0 #1=OnlyAudio, 2=OnlyText, 3=Audio&Text
     limit = len(allAudioFeature) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 10 #number of epoch for each file trained
