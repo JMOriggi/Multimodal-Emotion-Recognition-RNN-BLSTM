@@ -4,14 +4,10 @@ import shutil
 import numpy as np
 
 
-if __name__ == '__main__':
+def readDataFile(main_root):
     
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     index_file_path =  os.path.join(main_root+'\AllData.txt')
-    out_csv_labels_path = os.path.join(main_root+'\LablesEmotion') 
     
-    #READ THE FILE AND BUILD ARRAYS
     #Audio File Names
     with open(index_file_path, 'r') as AllDatafile:
         X = [line.strip() for line in AllDatafile] 
@@ -28,7 +24,9 @@ if __name__ == '__main__':
         arrayText = [line.split(';')[2] for line in Z]
     AllDatafile.close()
     
-    #ENCODE EMOTIONS
+    return arrayFileName, arrayEmoLabel
+
+def encodeLabels(arrayEmoLabel):
     i = 0
     emoEncoded = []
     while i < len(arrayEmoLabel):
@@ -52,8 +50,13 @@ if __name__ == '__main__':
         emoEncoded.append(code)
         i += 1
     
-    #WRITE CSV FILE
-    #Emotion Labels
+    return emoEncoded
+
+
+def saveEncLabelcsv(emoEncoded, arrayFileName, main_root):
+    
+    out_csv_labels_path = os.path.join(main_root+'\LablesEmotion')
+    
     i = 0
     while i < len(emoEncoded):
         #CREATE OUTPUTS DATA FILE: remove if it already exist and recreate it new
@@ -70,6 +73,23 @@ if __name__ == '__main__':
             writer.writerow(emoEncoded[i])
         csvfile.close()
         i += 1
+
+
+if __name__ == '__main__':
+    
+    #SET MAIN ROOT
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+     
+    #READ DATAFILE AND BUILD ARRAYS
+    arrayFileName, arrayEmoLabel = readDataFile(main_root)
+    
+    #ENCODE EMOTIONS LABELS
+    emoEncoded = encodeLabels(arrayEmoLabel)
+    
+    #WRITE CSV FILE
+    saveEncLabelcsv(emoEncoded, arrayFileName, main_root)
+    
     
     print('END')
     
