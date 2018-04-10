@@ -10,9 +10,11 @@ from keras.layers import Bidirectional
 def readFeatures(DirRoot):
     listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
     allFileFeature = []
+    allFileName = []
     
     #READ encoded audio Features
     for file in listA:
+        allFileName.append(file)
         datareader = csv.reader(open(os.path.join(DirRoot, file), 'r'))
         data = []
         for row in datareader:
@@ -24,7 +26,7 @@ def readFeatures(DirRoot):
         
     allFileFeature = np.asarray(allFileFeature)
     
-    return allFileFeature 
+    return allFileFeature, allFileName
 
 
 def getListshape(X):
@@ -48,31 +50,24 @@ def buildBLTSM():
     return model
         
 
-def trainBLSTM(Features, Labels, model, limit):
+def trainBLSTM(fileName, Features, Labels, model, limit, n_epoch):
     
     for i in range(limit):
-        #Format correctly single input and output
-        X, Y = reshapeLSTMInOut(Features[i], Labels[i])
         
-        #FIT MODEL for one epoch on this sequence
-        model.fit(X, Y, epochs=20, batch_size=1, verbose=2)
-    
-    return model  
-
-def trainBLSTMV2(Features, Labels, model, limit):
-    
-    for i in range(limit):
-        #Format correctly single input and output
-        X, Y = reshapeLSTMInOut(Features[i], Labels[i])
-        
-        #FIT MODEL for one epoch on this sequence
-        model.fit(X, Y, epochs=20, batch_size=1, verbose=2)
+        if Labels[i][0][6] != 2: 
+            print('Current file:', fileName[i])
+            #Format correctly single input and output
+            X, Y = reshapeLSTMInOut(Features[i], Labels[i])
+            
+            #FIT MODEL for one epoch on this sequence
+            model.fit(X, Y, epochs=n_epoch, batch_size=2, verbose=2)
     
     return model     
 
     
 if __name__ == '__main__':
     
+    #DEFINE MAIN ROOT
     mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     
@@ -82,34 +77,33 @@ if __name__ == '__main__':
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
     
     #EXTRACT FEATURES AND LABELS
-    allAudioFeature = readFeatures(dirAudio)
-    allTextFeature = readFeatures(dirText)
-    allLabels = readFeatures(dirLabel)
+    allAudioFeature, allFileName = readFeatures(dirAudio)
+    allTextFeature, allFileName = readFeatures(dirText)
+    allLabels, allFileName = readFeatures(dirLabel)
     print(allAudioFeature.shape)
     print(allTextFeature.shape)
     print(allLabels.shape)
     
-    #DEFINE BLSTM MODEL Parameters
+    #DEFINE BLSTM MODEL
+    model = buildBLTSM()
     modelType = 0 #1=OnlyAudio, 2=OnlyText, 3=Audio&Text
     limit = 5 #number of file trained: len(allAudioFeature) or a number
+    n_epoch = 10 #number of epoch for each file trained
     
-    modelA = buildBLTSM()
-    modelT = buildBLTSM()
-    
-    #TRAIN LSTM: considering one at time
-    if modelType == 0:
-        modelA = trainBLSTM(allAudioFeature, allLabels, modelA, limit)
-    if modelType == 1:
-        modelT = trainBLSTM(allTextFeature, allLabels, modelT, limit)       
-    
-    #SAVE MODEL
-    modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
-    modelA.save(modelPathAudio, overwrite=True)
+    #TRAIN & SAVE LSTM: considering one at time
+    if modelType == 0 or modelType == 2:
+        model_Audio = trainBLSTM(allFileName, allAudioFeature, allLabels, model, limit, n_epoch)
+        modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
+        model_Audio.save(modelPathAudio, overwrite=True)
+    if modelType == 1 or modelType == 2:
+        modelText = trainBLSTM(allFileName, allTextFeature, allLabels, model, limit, n_epoch)   
+        modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
+        model_Audio.save(modelPathAudio, overwrite=True)    
     
     #EVALUATE LSTM
     X, Y = reshapeLSTMInOut(allAudioFeature[2], allLabels[2])
-    #yhat = model.predict(X, verbose=0)
-    yhat = modelA.predict_classes(X, verbose=0)
+    #yhat = model_Audio.predict(X, verbose=0)
+    yhat = model_Audio.predict_classes(X, verbose=0)
     print('Expected:', Y, 'Predicted', yhat)
     
     
