@@ -45,7 +45,7 @@ def encodeLabels(arrayEmoLabel):
             code = [0,0,0,0,0,1,0]  
         if  emoLabel == 'neu': 
             code = [0,0,0,0,0,0,1]
-        if  emoLabel == 'other' or emoLabel == 'xxx': 
+        if  emoLabel == 'oth' or emoLabel == 'xxx': 
             code = [0,0,0,0,0,0,2]  #NOT CLASSIFIED
         emoEncoded.append(code)
         i += 1
@@ -81,7 +81,8 @@ if __name__ == '__main__':
     #SET MAIN ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull') 
      
     #READ DATAFILE AND BUILD ARRAYS
     arrayFileName, arrayEmoLabel = readDataFile(main_root)

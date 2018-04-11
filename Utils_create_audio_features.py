@@ -109,10 +109,14 @@ def buildAudioFeaturesCsv(mainRoot, audioDirectoryPath, out_audio_feature_path):
     currentFileFeatures = []
     audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
     
+    i = 0
+    
     for audioFile in audlist:
+        print(i,'/',len(audlist))
+        print(audioFile)
+        
         audioFilePath = os.path.join(audioDirectoryPath, audioFile)
         csvOutputFilePath = os.path.join(out_audio_feature_path, audioFile.split('.')[0])
-        print(audioFile)
         
         arrayAudio, sampleRate = readWav(audioFilePath)
         
@@ -122,13 +126,15 @@ def buildAudioFeaturesCsv(mainRoot, audioDirectoryPath, out_audio_feature_path):
         
         currentFileFeatures = []
         
+        i += 1
     
     
 if __name__ == '__main__':
     
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     all_wav_path = os.path.join(main_root + '\AllAudioFiles')
     index_file_path =  os.path.join(main_root+'\AllData.txt')

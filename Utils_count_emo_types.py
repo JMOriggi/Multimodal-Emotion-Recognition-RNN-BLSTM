@@ -24,7 +24,7 @@ def countLabels(arrayEmoLabel):
             counter[5] += 1  
         if  emoLabel == 'neu': 
             counter[6] += 1
-        if  emoLabel == 'other' or emoLabel == 'xxx': 
+        if  emoLabel == 'oth' or emoLabel == 'xxx': 
             counter[7] += 1
         i += 1
         
@@ -58,7 +58,8 @@ if __name__ == '__main__':
     #SET MAIN ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     arrayFileName, arrayEmoLabel = readDataFile(main_root) 
     counter = countLabels(arrayEmoLabel)

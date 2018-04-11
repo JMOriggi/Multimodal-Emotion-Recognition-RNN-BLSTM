@@ -74,7 +74,7 @@ def predictFromSavedModelV2(modelFilePath, inputAudio, inputText, labels, fileNa
             #yhat = model_Audio.predict(X, verbose=0)
             yhat = model.predict_classes(X, verbose=0)
     
-            print('Expected:', Y, 'Predicted', yhat)
+            print('Expected:', Y, '\nPredicted', yhat)
 
 
 if __name__ == '__main__':
@@ -82,7 +82,8 @@ if __name__ == '__main__':
     #DEFINE MAIN ROOT
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
+    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -103,7 +104,7 @@ if __name__ == '__main__':
     
     #DEFINE BLSTM MODEL
     modelType = 0 #1=OnlyAudio, 2=OnlyText, 3=Audio&Text
-    limit = len(allAudioFeature) #number of file trained: len(allAudioFeature) or a number
+    limit = 100 #number of file trained: len(allAudioFeature) or a number
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0:
