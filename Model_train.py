@@ -45,7 +45,7 @@ def reshapeLSTMInOut(audFeat, label):
 
 def buildBLTSM():
     model = Sequential()
-    model.add(Bidirectional(LSTM(20, return_sequences=False), input_shape=(None, 129)))
+    model.add(Bidirectional(LSTM(64, return_sequences=False), input_shape=(None, 129)))
     model.add(Dense(7, activation='softmax'))
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['acc'])
     return model
@@ -54,14 +54,16 @@ def buildBLTSM():
 def trainBLSTM(fileName, Features, Labels, model, limit, n_epoch):
     
     for i in range(limit):
+        print('ROUND: ',i,'/',limit)
         
         if Labels[i][0][6] != 2: 
             print('Current file:', fileName[i])
+            
             #Format correctly single input and output
             X, Y = reshapeLSTMInOut(Features[i], Labels[i])
             
             #FIT MODEL for one epoch on this sequence
-            model.fit(X, Y, epochs=n_epoch, batch_size=2, verbose=2)
+            model.fit(X, Y, epochs=n_epoch, batch_size=2, verbose=0)
     
     return model     
 
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     #DEFINE MAIN ROOT
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -91,10 +93,10 @@ if __name__ == '__main__':
     print(allLabels.shape)
     
     #DEFINE PARAMETERS
-    flagLoadModel = 0 #1=load, 0=new
     modelType = 0 #1=OnlyAudio, 2=OnlyText, 3=Audio&Text
+    flagLoadModel = 0 #1=load, 0=new
     limit = len(allAudioFeature) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 10 #number of epoch for each file trained
+    n_epoch = 15 #number of epoch for each file trained
     
     #DEFINE MODEL
     if flagLoadModel == 0:

@@ -41,6 +41,8 @@ def predictFromSavedModel(modelFilePath, inputTest, labels, fileName, limit):
     
     #FOR EACH FILE PREDICT
     for i in range(limit):
+        print('ROUND: ',i,'/',limit)
+        
         if labels[i][0][6] != 2: 
             print('Current file:', fileName[i])
             
@@ -60,6 +62,8 @@ def predictFromSavedModelV2(modelFilePath, inputAudio, inputText, labels, fileNa
     
     #FOR EACH FILE PREDICT
     for i in range(limit):
+        print('ROUND: ',i,'/',limit)
+        
         if labels[i][0][6] != 2: 
             print('Current file:', fileName[i])
             
@@ -78,7 +82,7 @@ if __name__ == '__main__':
     #DEFINE MAIN ROOT
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -99,7 +103,7 @@ if __name__ == '__main__':
     
     #DEFINE BLSTM MODEL
     modelType = 0 #1=OnlyAudio, 2=OnlyText, 3=Audio&Text
-    limit = 5 #number of file trained: len(allAudioFeature) or a number
+    limit = len(allAudioFeature) #number of file trained: len(allAudioFeature) or a number
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0:
