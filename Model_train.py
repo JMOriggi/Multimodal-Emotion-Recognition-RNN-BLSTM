@@ -233,7 +233,7 @@ if __name__ == '__main__':
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
     fileLimit = len(allAudioFeature) #number of file trained: len(allAudioFeature) or a number
-    labelLimit = 5 #Number of each emotion label file to process
+    labelLimit = 3 #Number of each emotion label file to process
     n_epoch = 30 #number of epoch for each file trained
     
     #DEFINE MODEL
