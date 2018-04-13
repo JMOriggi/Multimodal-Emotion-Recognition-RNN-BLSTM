@@ -45,8 +45,8 @@ def reshapeLSTMInOut(audFeat, label):
 
 def buildBLTSM():
     model = Sequential()
-    model.add(Bidirectional(LSTM(64, return_sequences=False), input_shape=(None, 129)))
-    model.add(Dense(7, activation='softmax'))
+    model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.5, recurrent_dropout=0.5), input_shape=(None, 129)))
+    model.add(Dense(4, activation='softmax'))
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['acc'])
     return model
 
@@ -67,6 +67,20 @@ def addEmoCount(emoLabel, counter):
         counter[5] += 1  
     if  emoLabel[0][6] == 1: 
         counter[6] += 1    
+    
+    return counter
+
+
+def addEmoCountV2(emoLabel, counter):
+    
+    if  emoLabel[0][0] == 1: 
+        counter[0] += 1
+    if  emoLabel[0][1] == 1:    
+        counter[1] += 1
+    if  emoLabel[0][2] == 1: 
+        counter[2] += 1
+    if  emoLabel[0][3] == 1: 
+        counter[3] += 1    
     
     return counter
 
@@ -99,34 +113,96 @@ def checkEmoCounter(emoLabel, counter, labelLimit):
 
     
 
+def checkEmoCounterV2(emoLabel, counter, labelLimit):
+    
+    if  emoLabel[0][0] == 1: 
+        if counter[0] > labelLimit:
+            return 'stop'
+    if  emoLabel[0][1] == 1:    
+        if counter[1] > labelLimit:
+            return 'stop'
+    if  emoLabel[0][2] == 1: 
+        if counter[2] > labelLimit:
+            return 'stop'
+    if  emoLabel[0][3] == 1: 
+        if counter[3] > labelLimit:
+            return 'stop'    
+    
+    return 'ok'
+
+
 def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch):
     
-    emoCounter = np.array([[0],[0],[0],[0],[0],[0],[0],[0]])
+    #emoCounter = np.array([[0],[0],[0],[0],[0],[0],[0],[0]])
+    emoCounter = np.array([[0],[0],[0],[0]])
     
     for i in range(fileLimit):
-        print('ROUND: ',i,'/',fileLimit)
         
-        if Labels[i][0][6] != 2:
-            print('Current file:', fileName[i])
+        if Labels[i][0][3] != 2:
             
             #Check number of current label processed and stop if # too high
-            emoTreshStop = checkEmoCounter(Labels[i], emoCounter, labelLimit)
-            print(emoTreshStop)
+            emoTreshStop = checkEmoCounterV2(Labels[i], emoCounter, labelLimit)
+            #print(emoTreshStop)
             
             if emoTreshStop == 'ok':
-                print('train -----')
+                
+                print('\nROUND: ',i,'/',fileLimit)
+                print('TRAIN Current file:', fileName[i])
                 
                 #Format correctly single input and output
                 X, Y = reshapeLSTMInOut(Features[i], Labels[i])
                 
                 #FIT MODEL for one epoch on this sequence
-                model.fit(X, Y, epochs=n_epoch, batch_size=2, verbose=0)
-    
-                emoCounter = addEmoCount(Labels[i], emoCounter)
+                model.fit(X, Y, epochs=n_epoch, batch_size=2, verbose=2)
+                
+                #EVALUATE
+                ev = model.evaluate(X,Y)
+                print('Evaluation: ', ev)
+                
+                emoCounter = addEmoCountV2(Labels[i], emoCounter)
                 print(emoCounter)
+                
+                #PROVO A PREDIRRE
+                '''if i > 1:
+                    Xtest, Ytest = reshapeLSTMInOut(Features[i-1], Labels[i-1])
+                    #yhat = model.predict_classes(X, verbose=0)
+                    yhat = model.predict(Xtest, verbose=0)
+                    print('Expected:', Ytest, '\nPredicted', yhat)'''
+                #predictFromSavedModel(model, Features, Labels, fileName, 20)    
     
     return model     
 
+ 
+def predictFromSavedModel(model, inputTest, Labels, fileName, limit, labelLimit):
+    
+    emoCounter = np.array([[0],[0],[0],[0]])
+    
+    #LOAD MODEL FROM FILE
+    #model = load_model(modelFilePath)
+    
+    for i in range(fileLimit):
+        
+        if Labels[i][0][3] != 2:
+            
+            #Check number of current label processed and stop if # too high
+            emoTreshStop = checkEmoCounterV2(Labels[i], emoCounter, labelLimit)
+            #print(emoTreshStop)
+            
+            if emoTreshStop == 'ok':
+                
+                #FORMAT X & Y
+                X, Y = reshapeLSTMInOut(inputTest[i], Labels[i])
+                
+                #PREDICT
+                yhat = model.predict_on_batch(X)
+                #yhat = model.predict(X, verbose=0)
+                #yhat = model.predict_classes(X, verbose=0)
+        
+                print('Expected:', Y, 'Predicted', yhat) 
+                
+                emoCounter = addEmoCountV2(Labels[i], emoCounter)
+                print(emoCounter)
+ 
     
 if __name__ == '__main__':
     
@@ -154,11 +230,11 @@ if __name__ == '__main__':
     print(allLabels.shape)
     
     #DEFINE PARAMETERS
-    modelType = 0 #1=OnlyAudio, 2=OnlyText, 3=Audio&Text
+    modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
     fileLimit = len(allAudioFeature) #number of file trained: len(allAudioFeature) or a number
     labelLimit = 5 #Number of each emotion label file to process
-    n_epoch = 15 #number of epoch for each file trained
+    n_epoch = 30 #number of epoch for each file trained
     
     #DEFINE MODEL
     if flagLoadModel == 0:
@@ -180,6 +256,8 @@ if __name__ == '__main__':
         modelText = trainBLSTM(allFileName, allTextFeature, allLabels, modelT, fileLimit, labelLimit, n_epoch)    
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)    
+    
+    predictFromSavedModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit)
     
     print('END')
     

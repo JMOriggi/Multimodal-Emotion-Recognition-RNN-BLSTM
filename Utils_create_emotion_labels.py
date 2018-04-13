@@ -26,7 +26,7 @@ def readDataFile(main_root):
     return arrayFileName, arrayEmoLabel
 
 
-def encodeLabels(arrayEmoLabel):
+'''def encodeLabels(arrayEmoLabel):
     i = 0
     emoEncoded = []
     while i < len(arrayEmoLabel):
@@ -47,6 +47,33 @@ def encodeLabels(arrayEmoLabel):
             code = [0,0,0,0,0,0,1]
         if  emoLabel == 'oth' or emoLabel == 'xxx': 
             code = [0,0,0,0,0,0,2]  #NOT CLASSIFIED
+        emoEncoded.append(code)
+        i += 1
+        
+    return emoEncoded'''
+
+
+def encodeLabels(arrayEmoLabel):
+    i = 0
+    emoEncoded = []
+    while i < len(arrayEmoLabel):
+        emoLabel = arrayEmoLabel[i]
+        if  emoLabel == 'exc' or emoLabel == 'hap': 
+            code = [1,0,0,0] #JOY
+        if  emoLabel == 'ang' or emoLabel == 'fru':    
+            code = [0,1,0,0] #ANG
+        if  emoLabel == 'dis': 
+            code = [0,0,0,2] 
+        if  emoLabel == 'sad': 
+            code = [0,0,1,0] 
+        if  emoLabel == 'sur': 
+            code = [0,0,0,2] 
+        if  emoLabel == 'fea': 
+            code = [0,0,0,2]  
+        if  emoLabel == 'neu': 
+            code = [0,0,0,1]
+        if  emoLabel == 'oth' or emoLabel == 'xxx': 
+            code = [0,0,0,2]  #NOT CLASSIFIED
         emoEncoded.append(code)
         i += 1
         
