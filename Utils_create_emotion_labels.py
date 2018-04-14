@@ -26,7 +26,7 @@ def readDataFile(main_root):
     return arrayFileName, arrayEmoLabel
 
 
-'''def encodeLabels(arrayEmoLabel):
+def encodeLabels(arrayEmoLabel):
     i = 0
     emoEncoded = []
     while i < len(arrayEmoLabel):
@@ -50,12 +50,19 @@ def readDataFile(main_root):
         emoEncoded.append(code)
         i += 1
         
-    return emoEncoded'''
+    return emoEncoded
 
 
-def encodeLabels(arrayEmoLabel):
+def encodeLabelsV2(arrayEmoLabel,arrayFileName):
     i = 0
-    emoEncoded = []
+    joyEncoded = []
+    sadEncoded = []
+    angEncoded = []
+    neuEncoded = []
+    joyFileName = []
+    sadFileName = []
+    angFileName = []
+    neuFileName = []
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
         if  emoLabel == 'exc' or emoLabel == 'hap': 
@@ -74,14 +81,27 @@ def encodeLabels(arrayEmoLabel):
             code = [0,0,0,1]
         if  emoLabel == 'oth' or emoLabel == 'xxx': 
             code = [0,0,0,2]  #NOT CLASSIFIED
-        emoEncoded.append(code)
+            
+        if code == [1,0,0,0]:
+            joyEncoded.append(code)
+            joyFileName.append(arrayFileName[i])
+        if code == [0,1,0,0]:   
+            angEncoded.append(code)
+            angFileName.append(arrayFileName[i])
+        if code == [0,0,1,0]:   
+            sadEncoded.append(code)
+            sadFileName.append(arrayFileName[i])
+        if code == [0,0,0,1]:   
+            neuEncoded.append(code)
+            neuFileName.append(arrayFileName[i])
+                        
         i += 1
         
-    return emoEncoded
+    return joyEncoded, angEncoded, sadEncoded, neuEncoded, joyFileName, angFileName, sadFileName, neuFileName
 
 
-def saveEncLabelcsv(emoEncoded, arrayFileName, main_root):
-    out_csv_labels_path = os.path.join(main_root+'\LablesEmotion')
+def saveEncLabelcsv(emoEncoded, arrayFileName, main_root, emoFolder):
+    out_csv_labels_path = os.path.join(main_root, emoFolder)
     i = 0
     
     while i < len(emoEncoded):
@@ -108,17 +128,21 @@ if __name__ == '__main__':
     #SET MAIN ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull') 
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull') 
      
     #READ DATAFILE AND BUILD ARRAYS
     arrayFileName, arrayEmoLabel = readDataFile(main_root)
     
     #ENCODE EMOTIONS LABELS
-    emoEncoded = encodeLabels(arrayEmoLabel)
+    joyEncoded, angEncoded, sadEncoded, neuEncoded, joyFileName, angFileName, sadFileName, neuFileName = encodeLabelsV2(arrayEmoLabel, arrayFileName)
     
     #WRITE CSV FILE
-    saveEncLabelcsv(emoEncoded, arrayFileName, main_root)
+    dir_root = os.path.normpath(main_root+'\LablesEmotion')
+    saveEncLabelcsv(joyEncoded, joyFileName, dir_root, 'joy')
+    saveEncLabelcsv(angEncoded, angFileName, dir_root, 'ang')
+    saveEncLabelcsv(sadEncoded, sadFileName, dir_root, 'sad')
+    saveEncLabelcsv(neuEncoded, neuFileName, dir_root, 'neu')
     
     print('END')
     

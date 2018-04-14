@@ -30,6 +30,32 @@ def countLabels(arrayEmoLabel):
         
     return counter
 
+def countLabelsV2(arrayEmoLabel):
+    counter = np.array([[0],[0],[0],[0],[0]])
+    i = 0
+    
+    while i < len(arrayEmoLabel):
+        emoLabel = arrayEmoLabel[i]
+        if  emoLabel == 'exc' or emoLabel == 'hap': 
+            counter[0] += 1 #JOY
+        if  emoLabel == 'ang' or emoLabel == 'fru':    
+            counter[1] += 1 #ANG
+        if  emoLabel == 'dis': 
+            counter[4] += 1 
+        if  emoLabel == 'sad': 
+            counter[2] += 1 
+        if  emoLabel == 'sur': 
+            counter[4] += 1 
+        if  emoLabel == 'fea': 
+            counter[4] += 1  
+        if  emoLabel == 'neu': 
+            counter[3] += 1
+        if  emoLabel == 'oth' or emoLabel == 'xxx': 
+            counter[4] += 1  #NOT CLASSIFIED
+        i += 1
+        
+    return counter
+
 
 def readDataFile(main_root):
     index_file_path =  os.path.join(main_root+'\AllData.txt')
@@ -57,12 +83,12 @@ if __name__ == '__main__':
     
     #SET MAIN ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     arrayFileName, arrayEmoLabel = readDataFile(main_root) 
-    counter = countLabels(arrayEmoLabel)
+    counter = countLabelsV2(arrayEmoLabel)
     print(counter)
     print('END')
     

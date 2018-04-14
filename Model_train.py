@@ -8,7 +8,35 @@ from keras.layers import Bidirectional
 from keras.models import load_model
 
 
-def readFeatures(DirRoot):
+def readFeatures(DirRoot, labelLimit):
+    listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
+    allFileFeature = []
+    allFileName = []
+    
+    i = 0
+    #READ encoded audio Features
+    for file in listA:
+        allFileName.append(file)
+        datareader = csv.reader(open(os.path.join(DirRoot, file), 'r'))
+        data = []
+        for row in datareader:
+            data.append([float(val) for val in row])
+        Y = np.array([np.array(xi) for xi in data])
+        
+        #Append all files feature in an unique array
+        allFileFeature.append(Y)
+        
+        if i > labelLimit-1:
+            break
+        else:
+            i += 1
+        
+    allFileFeature = np.asarray(allFileFeature)
+    
+    return allFileFeature, allFileName
+
+
+def readFeaturesV2(DirRoot):
     listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
     allFileFeature = []
     allFileName = []
@@ -45,10 +73,11 @@ def reshapeLSTMInOut(audFeat, label):
 
 def buildBLTSM():
     model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.5, recurrent_dropout=0.5), input_shape=(None, 129)))
+    model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.5, recurrent_dropout=0.5), input_shape=(None, 191)))
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['acc'])
-    return model
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+    #mean_squared_error
+    return model 
 
 
 def addEmoCount(emoLabel, counter):
@@ -153,7 +182,7 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                 X, Y = reshapeLSTMInOut(Features[i], Labels[i])
                 
                 #FIT MODEL for one epoch on this sequence
-                model.fit(X, Y, epochs=n_epoch, batch_size=2, verbose=2)
+                model.fit(X, Y, epochs=n_epoch, batch_size=1, verbose=0)
                 
                 #EVALUATE
                 ev = model.evaluate(X,Y)
@@ -170,7 +199,7 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                     print('Expected:', Ytest, '\nPredicted', yhat)'''
                 #predictFromSavedModel(model, Features, Labels, fileName, 20)    
     
-    return model     
+    return model    
 
  
 def predictFromSavedModel(model, inputTest, Labels, fileName, limit, labelLimit):
@@ -209,8 +238,8 @@ if __name__ == '__main__':
     #DEFINE MAIN ROOT
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -221,20 +250,49 @@ if __name__ == '__main__':
     mainRootModelAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
     mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
     
-    #EXTRACT FEATURES AND LABELS
-    allAudioFeature, allFileName = readFeatures(dirAudio)
-    allTextFeature, allFileName = readFeatures(dirText)
-    allLabels, allFileName = readFeatures(dirLabel)
-    print(allAudioFeature.shape)
-    print(allTextFeature.shape)
-    print(allLabels.shape)
-    
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    fileLimit = len(allAudioFeature) #number of file trained: len(allAudioFeature) or a number
-    labelLimit = 3 #Number of each emotion label file to process
-    n_epoch = 30 #number of epoch for each file trained
+    labelLimit = 200 #Number of each emotion label file to process
+    fileLimit = (labelLimit*4)-1 #number of file trained: len(allAudioFeature) or a number
+    n_epoch = 15 #number of epoch for each file trained
+    
+    #EXTRACT FEATURES AND LABELS
+    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
+    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
+    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
+    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
+    allTextFeature, allFileName = readFeatures(dirText, labelLimit)
+    joyLabels, joyFileName = readFeatures(os.path.join(dirLabel, 'joy'), labelLimit)
+    angLabels, angFileName = readFeatures(os.path.join(dirLabel, 'ang'), labelLimit)
+    sadLabels, sadFileName = readFeatures(os.path.join(dirLabel, 'sad'), labelLimit)
+    neuLabels, neuFileName = readFeatures(os.path.join(dirLabel, 'neu'), labelLimit)
+    '''print(allAudioFeature.shape)
+    print(allTextFeature.shape)
+    print(allLabels.shape)'''
+    
+    #BUILD SHUFFLED FEATURE FILES FOR TRAINING
+    allAudioFeature = []
+    allFileName = []
+    allLabels = []
+    i = 0
+    while i < labelLimit:
+        allAudioFeature.append(joyAudioFeature[i])
+        allAudioFeature.append(angAudioFeature[i])
+        allAudioFeature.append(sadAudioFeature[i])
+        allAudioFeature.append(neuAudioFeature[i])
+        
+        allFileName.append(joyFileName[i])
+        allFileName.append(angFileName[i])
+        allFileName.append(sadFileName[i])
+        allFileName.append(neuFileName[i])
+        
+        allLabels.append(joyLabels[i])
+        allLabels.append(angLabels[i])
+        allLabels.append(sadLabels[i])
+        allLabels.append(neuLabels[i])
+        
+        i +=1
     
     #DEFINE MODEL
     if flagLoadModel == 0:

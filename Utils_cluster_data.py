@@ -95,8 +95,8 @@ if __name__ == '__main__':
     #SET MAIN ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #SET PATH
     ZData_path = os.path.join(main_root + '\ZData')

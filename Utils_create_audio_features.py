@@ -42,8 +42,20 @@ def readWav(audioFilePath):
 def computeFeatures(monoAudio, sampleRate):
     #TODO: togliere primo e ultimo frame per tutte le feature
     
+    #SET PARAMETERS
     window = int(0.020*sampleRate)
     hop = int(0.010*sampleRate)
+    mfcc_coef_size = 12
+    
+    #STFT
+    D = librosa.core.stft(monoAudio, n_fft=window, hop_length=hop)
+    stft = librosa.amplitude_to_db(librosa.magphase(D)[0], ref=np.max)
+    stft = stft.T
+    print(np.asarray(stft).shape)
+    
+    #ZERO CORSSING RATE
+    zero_crossing = librosa.feature.zero_crossing_rate(monoAudio, frame_length=window, hop_length=hop)
+    zero_crossing_delta = librosa.feature.delta(zero_crossing, width=3)
     
     #PITCH:
     pitch, pitch_delta, pitch_delta_delta = estimate_pitch(monoAudio, sampleRate, window, hop)
@@ -56,7 +68,7 @@ def computeFeatures(monoAudio, sampleRate):
     #MFCC
     #n_fft is the window of 25ms = 400samples e hop_lenght is the step between one frame and another
     #For the deltas important to set width=3 to compute derivative of each sample with previous and next sample.
-    mfcc = librosa.feature.mfcc(monoAudio, sampleRate, n_mfcc=40, n_fft=window, hop_length=hop)
+    mfcc = librosa.feature.mfcc(monoAudio, sampleRate, n_mfcc=mfcc_coef_size, n_fft=window, hop_length=hop)
     mfcc_delta = librosa.feature.delta(mfcc, width=3)
     mfcc_delta_delta = librosa.feature.delta(mfcc, width=3, order=2)
     
@@ -66,6 +78,8 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy_delta_delta = librosa.feature.rmse(S=mfcc_delta_delta, frame_length=window, hop_length=hop)
     
     #TRASPOSE: librosa gives me the freq in the row but i want them in the collums
+    zero_crossing = zero_crossing.T
+    zero_crossing_delta = zero_crossing_delta.T
     energy = energy.T
     energy_delta = energy_delta.T
     energy_delta_delta = energy_delta_delta.T
@@ -75,7 +89,8 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy = mfcc_energy.T
     mfcc_energy_delta = mfcc_energy_delta.T
     mfcc_energy_delta_delta = mfcc_energy_delta_delta.T
-    '''print('mfcc.shape: ', mfcc.shape)
+    '''print('zero_crossing.shape: ', zero_crossing.shape)
+    print('mfcc.shape: ', mfcc.shape)
     print('mfcc_delta.shape: ', mfcc_delta.shape)
     print('mfcc_delta_delta.shape: ', mfcc_delta_delta.shape)
     print('energy.shape: ', energy.shape)
@@ -86,7 +101,8 @@ def computeFeatures(monoAudio, sampleRate):
     print('mfcc_energy_delta_delta.shape: ', mfcc_energy_delta_delta.shape)'''
     
     #CONCATENATE FEATURES PER ROWS
-    X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, mfcc, mfcc_delta, mfcc_delta_delta, mfcc_energy, mfcc_energy_delta, mfcc_energy_delta_delta))
+    #X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, mfcc, mfcc_delta, mfcc_delta_delta, mfcc_energy, mfcc_energy_delta, mfcc_energy_delta_delta))
+    X = np.hstack((stft, pitch, pitch_delta, energy, energy_delta, zero_crossing, zero_crossing_delta, mfcc, mfcc_delta))
     print(X.shape) #Features final shape for current audio file
     
     return X
@@ -105,23 +121,56 @@ def saveFeaturecsv(currentFileFeatures, csvOutputFilePath):
     f.close()
 
 
-def buildAudioFeaturesCsv(mainRoot, audioDirectoryPath, out_audio_feature_path):
+def readDataFile(main_root):
+    index_file_path =  os.path.join(main_root+'\AllData.txt')
+    
+    #Audio File Names
+    with open(index_file_path, 'r') as AllDatafile:
+        X = [line.strip() for line in AllDatafile] 
+        arrayFileName = [line.split(';')[0] for line in X] 
+    AllDatafile.close()
+    #Emotion Labels
+    with open(index_file_path, 'r') as AllDatafile:
+        Y = [line.strip() for line in AllDatafile] 
+        arrayEmoLabel = [line.split(';')[1] for line in Y]
+    AllDatafile.close()  
+    #Transcriptions   
+    with open(index_file_path, 'r') as AllDatafile:
+        Z = [line.strip() for line in AllDatafile] 
+        arrayText = [line.split(';')[2] for line in Z]
+    AllDatafile.close()
+    
+    return arrayFileName, arrayEmoLabel
+
+
+def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_path):
     currentFileFeatures = []
     audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
     
-    i = 0
     
+    i = 0
     for audioFile in audlist:
         print(i,'/',len(audlist))
         print(audioFile)
         
         audioFilePath = os.path.join(audioDirectoryPath, audioFile)
-        csvOutputFilePath = os.path.join(out_audio_feature_path, audioFile.split('.')[0])
         
         arrayAudio, sampleRate = readWav(audioFilePath)
         
         currentFileFeatures = computeFeatures(arrayAudio, sampleRate)
         
+        direc = 'oth'
+        if  arrayEmoLabel[i] == 'exc' or arrayEmoLabel[i] == 'hap': 
+            direc = 'joy' #JOY
+        if  arrayEmoLabel[i] == 'ang' or arrayEmoLabel[i] == 'fru':    
+            direc = 'ang' #ANG
+        if  arrayEmoLabel[i] == 'sad': 
+            direc = 'sad'  
+        if  arrayEmoLabel[i] == 'neu': 
+            direc = 'neu'  
+            
+        csvOutputFilePath = os.path.join(out_audio_feature_path, direc)
+        csvOutputFilePath = os.path.join(csvOutputFilePath, audioFile.split('.')[0])
         saveFeaturecsv(currentFileFeatures, csvOutputFilePath)
         
         currentFileFeatures = []
@@ -133,14 +182,19 @@ if __name__ == '__main__':
     
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     all_wav_path = os.path.join(main_root + '\AllAudioFiles')
     index_file_path =  os.path.join(main_root+'\AllData.txt')
     out_audio_feature_path = os.path.join(main_root+'\FeaturesAudio')   
     
-    buildAudioFeaturesCsv(index_file_path, all_wav_path, out_audio_feature_path)  
+    
+    #READ DATAFILE AND BUILD ARRAYS
+    arrayFileName, arrayEmoLabel = readDataFile(main_root)
+    
+    
+    buildAudioFeaturesCsv(arrayEmoLabel, all_wav_path, out_audio_feature_path)  
         
     print('****END')
         
