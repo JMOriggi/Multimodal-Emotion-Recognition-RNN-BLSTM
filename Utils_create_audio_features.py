@@ -3,6 +3,33 @@ import csv
 import numpy as np
 from scipy.io.wavfile import read
 import librosa
+import matplotlib.pyplot as plt 
+
+
+#GET THE FREQUENCY ARRAY: [timestep [freqs amplitude]], for batch size 1
+def getFreqArray(monoAudio, sampleRate): 
+    
+    window = int(0.020*sampleRate)
+    hop = int(0.010*sampleRate)
+    
+    #COMPUTE SPECTROGRAM: NFFT=how many sample in one chunk, for Fs16000 chunks20ms-->32
+    fft, freqsBins, timeBins, im = plt.specgram(monoAudio, Fs=sampleRate, NFFT=window, noverlap=hop, cmap=plt.get_cmap('autumn_r'))
+    
+    #PRINT INFO
+    '''print('shape fft: ', fft.shape)
+    print('shape timeBins ', timeBins.shape)
+    print('shape freqsBins: ', freqsBins.shape)
+    print('freqsBins: ', freqsBins)'''
+    
+    #PRINT SPECTROGRAM
+    '''cbar=plt.colorbar(im)
+    plt.xlabel('Time (s)')
+    plt.ylabel('Frequency (Hz)')
+    cbar.set_label('Intensity (dB)')
+    plt.show()'''
+    
+    return fft
+
 
 def estimate_pitch(monoAudio, sampleRate, window, hop):
     pitch , mag = librosa.core.piptrack(monoAudio, sampleRate, n_fft=window, hop_length=hop, fmin=50, fmax=1500)
@@ -38,6 +65,12 @@ def readWav(audioFilePath):
     monoAudio = np.array(monoAudio, dtype=float) #type float necessary
     return monoAudio, sampleRate
 
+def deleteFirstLastFrames(matrix):
+    matrix = np.delete(matrix, 0, 0) #delete first row 
+    matrix = np.delete(matrix, len(matrix)-1, 0) #delete last row
+    #print(matrix.shape)
+    return matrix
+
 
 def computeFeatures(monoAudio, sampleRate):
     #TODO: togliere primo e ultimo frame per tutte le feature
@@ -48,14 +81,16 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_coef_size = 12
     
     #STFT
-    D = librosa.core.stft(monoAudio, n_fft=window, hop_length=hop)
+    stft = getFreqArray(monoAudio, sampleRate)
+    ''''D = librosa.core.stft(monoAudio, n_fft=window, hop_length=hop)
     stft = librosa.amplitude_to_db(librosa.magphase(D)[0], ref=np.max)
-    stft = stft.T
-    print(np.asarray(stft).shape)
+    stft = stft.T'''
+    
     
     #ZERO CORSSING RATE
     zero_crossing = librosa.feature.zero_crossing_rate(monoAudio, frame_length=window, hop_length=hop)
     zero_crossing_delta = librosa.feature.delta(zero_crossing, width=3)
+
     
     #PITCH:
     pitch, pitch_delta, pitch_delta_delta = estimate_pitch(monoAudio, sampleRate, window, hop)
@@ -78,6 +113,7 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy_delta_delta = librosa.feature.rmse(S=mfcc_delta_delta, frame_length=window, hop_length=hop)
     
     #TRASPOSE: librosa gives me the freq in the row but i want them in the collums
+    stft = stft.T
     zero_crossing = zero_crossing.T
     zero_crossing_delta = zero_crossing_delta.T
     energy = energy.T
@@ -89,6 +125,14 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy = mfcc_energy.T
     mfcc_energy_delta = mfcc_energy_delta.T
     mfcc_energy_delta_delta = mfcc_energy_delta_delta.T
+
+    #DELETE FIRST AND LAST FRAME
+    zero_crossing = deleteFirstLastFrames(zero_crossing)
+    pitch = deleteFirstLastFrames(pitch)
+    energy = deleteFirstLastFrames(energy)
+    mfcc = deleteFirstLastFrames(mfcc)
+    
+    #CHECK ALL SHAPES
     '''print('zero_crossing.shape: ', zero_crossing.shape)
     print('mfcc.shape: ', mfcc.shape)
     print('mfcc_delta.shape: ', mfcc_delta.shape)
@@ -98,12 +142,14 @@ def computeFeatures(monoAudio, sampleRate):
     print('energy_delta_delta.shape: ', energy_delta_delta.shape)
     print('mfcc_energy.shape: ', mfcc_energy.shape)
     print('mfcc_energy_delta.shape: ', mfcc_energy_delta.shape)
-    print('mfcc_energy_delta_delta.shape: ', mfcc_energy_delta_delta.shape)'''
+    print('mfcc_energy_delta_delta.shape: ', mfcc_energy_delta_delta.shape)
+    print('stft.shape: ',stft.shape)'''
+    
     
     #CONCATENATE FEATURES PER ROWS
     #X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, mfcc, mfcc_delta, mfcc_delta_delta, mfcc_energy, mfcc_energy_delta, mfcc_energy_delta_delta))
-    X = np.hstack((stft, pitch, pitch_delta, energy, energy_delta, zero_crossing, zero_crossing_delta, mfcc, mfcc_delta))
-    print(X.shape) #Features final shape for current audio file
+    X = np.hstack((stft, pitch, energy, zero_crossing, mfcc))
+    print('Final shape: ',X.shape) #Features final shape for current audio file
     
     return X
 
@@ -150,6 +196,7 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
     
     i = 0
     for audioFile in audlist:
+        
         print(i,'/',len(audlist))
         print(audioFile)
         
