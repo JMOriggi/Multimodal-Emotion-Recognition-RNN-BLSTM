@@ -139,6 +139,7 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
+
 def reshapeLSTMInOut(audFeat, label):
     X = []
     X.append(audFeat)
@@ -194,7 +195,7 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
     
     allPrediction = []
     emoCounter = np.array([[0],[0],[0],[0]]) #count label to block after labelLimit prediction
-    correctCounter = np.array([[0],[0],[0],[0],[labelLimit]]) #count correct prediction for each label, last place is for total number of each label
+    correctCounter = np.array([[0],[0],[0],[0]]) #count correct prediction for each label, last place is for total number of each label
     
     for i in range(fileLimit):
         
@@ -224,11 +225,14 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
                 allPrediction.append(np.array([fileName[i]]))
                 allPrediction.append(Y[0])
                 allPrediction.append(yhat[0])
-                #if last prediction append also the statistics
+                
+                #IF LAST PREDICTION APPEND STATISTICS
                 if emoCounter[3] == labelLimit:
                     allPrediction.append('')
                     allPrediction.append(np.array(['----STATISTICS----']))
                     allPrediction.append(correctCounter)
+                    allPrediction.append(np.array(['TOT emo trained:',labelLimit]))
+                    allPrediction.append(np.array(['TOT Epoch:',n_epoch]))
                     
     return allPrediction
 
@@ -271,6 +275,7 @@ if __name__ == '__main__':
     
     print('Train of #file: ', fileLimit)
     print('Train number of each emotion: ', labelLimit)
+    print('Train for #epoch: ', n_epoch)
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
@@ -283,7 +288,7 @@ if __name__ == '__main__':
         model_Audio.save(modelPathAudio, overwrite=True)    
     
     #PREDICT & SAVE
-    allPrediction = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit)
+    allPrediction = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch)
     saveCsv(allPrediction, csvOutputFilePath)
     
     print('END')
