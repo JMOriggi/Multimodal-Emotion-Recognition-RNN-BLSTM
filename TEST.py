@@ -3,7 +3,22 @@ import csv
 from numpy import genfromtxt
 import os
 import librosa
+import operator
 
+
+    
+x = np.array([0.2,0.01,0.3,0.001])
+index, value = max(enumerate(x), key=operator.itemgetter(1))
+print(index, ' ', value)
+x = np.array([0.2,0.6,0.3,0.001])
+index, value = max(enumerate(x), key=operator.itemgetter(1))
+print(index, ' ', value)
+x = np.array([0.2,0.6,0.3,0.001])
+index, value = max(enumerate(x), key=operator.itemgetter(1))
+print(index, ' ', value)
+x = np.array([0.2,0.6,0.3,0.001])
+index, value = max(enumerate(x), key=operator.itemgetter(1))
+print(index, ' ', value)
 
 '''all_wav_path = os.path.join(main_root + '\AllAudioFiles')
 audioDirectoryPath = os.path.normpath(main_root + '\AllAudioFiles')
@@ -11,7 +26,7 @@ audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os
     
 print(audlist)'''
 
-if __name__ == '__main__':
+def test():
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training\FeaturesText')
     mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus\FeaturesAudio')
     list = [ item for item in os.listdir(mainRoot) if os.path.isfile(os.path.join(mainRoot, item)) ]

@@ -1,12 +1,66 @@
 import numpy as np
 import os
 import csv
+import operator
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Dense
 from keras.layers import Bidirectional
 from keras.models import load_model
 
+
+def statistics(Y, yhat, correctCounter):
+    index, value = max(enumerate(Y[0]), key=operator.itemgetter(1))
+    Pindex, Pvalue = max(enumerate(yhat[0]), key=operator.itemgetter(1))
+    '''print('index: ', index, 'value: ', value)
+    print('index: ', Pindex, 'value: ', Pvalue)'''
+    
+    if index == Pindex:
+        correctCounter[index] += 1
+    
+    return correctCounter
+
+
+def addEmoCountV2(emoLabel, counter):
+    if  emoLabel[0][0] == 1: 
+        counter[0] += 1
+    if  emoLabel[0][1] == 1:    
+        counter[1] += 1
+    if  emoLabel[0][2] == 1: 
+        counter[2] += 1
+    if  emoLabel[0][3] == 1: 
+        counter[3] += 1  
+    return counter
+
+
+def checkEmoCounterV2(emoLabel, counter, labelLimit):
+    if  emoLabel[0][0] == 1: 
+        if counter[0] > labelLimit:
+            return 'stop'
+    if  emoLabel[0][1] == 1:    
+        if counter[1] > labelLimit:
+            return 'stop'
+    if  emoLabel[0][2] == 1: 
+        if counter[2] > labelLimit:
+            return 'stop'
+    if  emoLabel[0][3] == 1: 
+        if counter[3] > labelLimit:
+            return 'stop'  
+    return 'ok'
+
+
+def saveCsv(currentFile, csvOutputFilePath):
+    csvOutputFilePath = os.path.join(csvOutputFilePath + '.csv')
+    try:
+        os.remove(csvOutputFilePath)
+    except OSError:
+        pass
+    
+    with open(csvOutputFilePath, "w", newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(np.asarray(currentFile))
+    f.close()
+    
 
 def readFeatures(DirRoot, labelLimit):
     listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
@@ -36,27 +90,54 @@ def readFeatures(DirRoot, labelLimit):
     return allFileFeature, allFileName
 
 
-def readFeaturesV2(DirRoot):
-    listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
-    allFileFeature = []
+def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
+
+    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
+    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
+    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
+    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
+    joyTextFeature, allFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
+    angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
+    sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
+    neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
+    joyLabels, joyFileName = readFeatures(os.path.join(dirLabel, 'joy'), labelLimit)
+    angLabels, angFileName = readFeatures(os.path.join(dirLabel, 'ang'), labelLimit)
+    sadLabels, sadFileName = readFeatures(os.path.join(dirLabel, 'sad'), labelLimit)
+    neuLabels, neuFileName = readFeatures(os.path.join(dirLabel, 'neu'), labelLimit)
+    '''print(allAudioFeature.shape)
+    print(allTextFeature.shape)
+    print(allLabels.shape)'''
+    
+    #BUILD SHUFFLED FEATURE FILES FOR TRAINING
+    allAudioFeature = []
+    allTextFeature = []
     allFileName = []
-    
-    #READ encoded audio Features
-    for file in listA:
-        allFileName.append(file)
-        datareader = csv.reader(open(os.path.join(DirRoot, file), 'r'))
-        data = []
-        for row in datareader:
-            data.append([float(val) for val in row])
-        Y = np.array([np.array(xi) for xi in data])
+    allLabels = []
+    i = 0
+    while i < labelLimit:
+        allAudioFeature.append(joyAudioFeature[i])
+        allAudioFeature.append(angAudioFeature[i])
+        allAudioFeature.append(sadAudioFeature[i])
+        allAudioFeature.append(neuAudioFeature[i])
         
-        #Append all files feature in an unique array
-        allFileFeature.append(Y)
+        allTextFeature.append(joyTextFeature[i])
+        allTextFeature.append(angTextFeature[i])
+        allTextFeature.append(sadTextFeature[i])
+        allTextFeature.append(neuTextFeature[i])
         
-    allFileFeature = np.asarray(allFileFeature)
-    
-    return allFileFeature, allFileName
-    
+        allFileName.append(joyFileName[i])
+        allFileName.append(angFileName[i])
+        allFileName.append(sadFileName[i])
+        allFileName.append(neuFileName[i])
+        
+        allLabels.append(joyLabels[i])
+        allLabels.append(angLabels[i])
+        allLabels.append(sadLabels[i])
+        allLabels.append(neuLabels[i])
+        
+        i +=1
+
+    return allAudioFeature, allTextFeature, allFileName, allLabels
 
 def reshapeLSTMInOut(audFeat, label):
     X = []
@@ -70,41 +151,8 @@ def buildBLTSM():
     model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.2, recurrent_dropout=0.2), input_shape=(None, 176)))
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
-    #mean_squared_error
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc']) #mean_squared_error
     return model 
-
-
-def addEmoCountV2(emoLabel, counter):
-    
-    if  emoLabel[0][0] == 1: 
-        counter[0] += 1
-    if  emoLabel[0][1] == 1:    
-        counter[1] += 1
-    if  emoLabel[0][2] == 1: 
-        counter[2] += 1
-    if  emoLabel[0][3] == 1: 
-        counter[3] += 1    
-    
-    return counter
-
-
-def checkEmoCounterV2(emoLabel, counter, labelLimit):
-    
-    if  emoLabel[0][0] == 1: 
-        if counter[0] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][1] == 1:    
-        if counter[1] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][2] == 1: 
-        if counter[2] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][3] == 1: 
-        if counter[3] > labelLimit:
-            return 'stop'    
-    
-    return 'ok'
 
 
 def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch):
@@ -135,6 +183,7 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                 ev = model.evaluate(X,Y)
                 print('Evaluation: ', ev)
                 
+                #UPDATE EMOCOUNTER
                 emoCounter = addEmoCountV2(Labels[i], emoCounter)
                 print(emoCounter) 
     
@@ -144,7 +193,8 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
 def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
     
     allPrediction = []
-    emoCounter = np.array([[0],[0],[0],[0]])
+    emoCounter = np.array([[0],[0],[0],[0]]) #count label to block after labelLimit prediction
+    correctCounter = np.array([[0],[0],[0],[0],[labelLimit]]) #count correct prediction for each label, last place is for total number of each label
     
     for i in range(fileLimit):
         
@@ -167,27 +217,20 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
                 emoCounter = addEmoCountV2(Labels[i], emoCounter)
                 print(emoCounter)
                 
+                #UPDATE CORRECT PREDICTION COUNTER
+                statistics(Y, yhat, correctCounter)
+                
                 #APPEND PREDICTED RESULT
                 allPrediction.append(np.array([fileName[i]]))
                 allPrediction.append(Y[0])
                 allPrediction.append(yhat[0])
- 
+                #if last prediction append also the statistics
+                if emoCounter[3] == labelLimit:
+                    allPrediction.append('')
+                    allPrediction.append(np.array(['----STATISTICS----']))
+                    allPrediction.append(correctCounter)
+                    
     return allPrediction
-
-
-def saveCsv(currentFileFeatures, csvOutputFilePath):
-    print(currentFileFeatures)
-    
-    csvOutputFilePath = os.path.join(csvOutputFilePath + '.csv')
-    try:
-        os.remove(csvOutputFilePath)
-    except OSError:
-        pass
-    
-    with open(csvOutputFilePath, "w", newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(np.asarray(currentFileFeatures))
-    f.close()
 
     
 if __name__ == '__main__':
@@ -195,8 +238,8 @@ if __name__ == '__main__':
     #DEFINE MAIN ROOT
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -211,46 +254,12 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 200 #Number of each emotion label file to process
+    labelLimit = 2 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 30 #number of epoch for each file trained
+    n_epoch = 5 #number of epoch for each file trained
     
-    #EXTRACT FEATURES AND LABELS
-    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
-    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
-    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
-    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
-    allTextFeature, allFileName = readFeatures(dirText, labelLimit)
-    joyLabels, joyFileName = readFeatures(os.path.join(dirLabel, 'joy'), labelLimit)
-    angLabels, angFileName = readFeatures(os.path.join(dirLabel, 'ang'), labelLimit)
-    sadLabels, sadFileName = readFeatures(os.path.join(dirLabel, 'sad'), labelLimit)
-    neuLabels, neuFileName = readFeatures(os.path.join(dirLabel, 'neu'), labelLimit)
-    '''print(allAudioFeature.shape)
-    print(allTextFeature.shape)
-    print(allLabels.shape)'''
-    
-    #BUILD SHUFFLED FEATURE FILES FOR TRAINING
-    allAudioFeature = []
-    allFileName = []
-    allLabels = []
-    i = 0
-    while i < labelLimit:
-        allAudioFeature.append(joyAudioFeature[i])
-        allAudioFeature.append(angAudioFeature[i])
-        allAudioFeature.append(sadAudioFeature[i])
-        allAudioFeature.append(neuAudioFeature[i])
-        
-        allFileName.append(joyFileName[i])
-        allFileName.append(angFileName[i])
-        allFileName.append(sadFileName[i])
-        allFileName.append(neuFileName[i])
-        
-        allLabels.append(joyLabels[i])
-        allLabels.append(angLabels[i])
-        allLabels.append(sadLabels[i])
-        allLabels.append(neuLabels[i])
-        
-        i +=1
+    #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
+    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
     #DEFINE MODEL
     if flagLoadModel == 0:

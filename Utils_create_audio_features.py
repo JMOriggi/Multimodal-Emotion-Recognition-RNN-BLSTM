@@ -229,8 +229,8 @@ if __name__ == '__main__':
     
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     all_wav_path = os.path.join(main_root + '\AllAudioFiles')
     index_file_path =  os.path.join(main_root+'\AllData.txt')

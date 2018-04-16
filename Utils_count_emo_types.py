@@ -4,6 +4,7 @@ import shutil
 import numpy as np
 import AudioUtils as aud
 
+
 def countLabels(arrayEmoLabel):
     counter = np.array([[0],[0],[0],[0],[0],[0],[0],[0]])
     i = 0
@@ -29,6 +30,7 @@ def countLabels(arrayEmoLabel):
         i += 1
         
     return counter
+
 
 def countLabelsV2(arrayEmoLabel):
     counter = np.array([[0],[0],[0],[0],[0]])
@@ -83,9 +85,9 @@ if __name__ == '__main__':
     
     #SET MAIN ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     arrayFileName, arrayEmoLabel = readDataFile(main_root) 
     counter = countLabelsV2(arrayEmoLabel)
