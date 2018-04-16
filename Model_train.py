@@ -20,7 +20,7 @@ def statistics(Y, yhat, correctCounter, predEmoCounter):
         correctCounter[index] += 1
     
     #UPDATE PREDICTED EMO COUNTER
-    predEmoCounter[index] += 1
+    predEmoCounter[Pindex] += 1
     
     return correctCounter, predEmoCounter
 
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 20 #Number of each emotion label file to process
+    labelLimit = 10 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 10 #number of epoch for each file trained
     
