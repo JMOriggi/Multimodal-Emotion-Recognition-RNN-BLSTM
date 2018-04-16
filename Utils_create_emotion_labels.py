@@ -6,7 +6,6 @@ import numpy as np
 
 def readDataFile(main_root):
     index_file_path =  os.path.join(main_root+'\AllData.txt')
-    
     #Audio File Names
     with open(index_file_path, 'r') as AllDatafile:
         X = [line.strip() for line in AllDatafile] 
@@ -26,34 +25,7 @@ def readDataFile(main_root):
     return arrayFileName, arrayEmoLabel
 
 
-def encodeLabels(arrayEmoLabel):
-    i = 0
-    emoEncoded = []
-    while i < len(arrayEmoLabel):
-        emoLabel = arrayEmoLabel[i]
-        if  emoLabel == 'exc' or emoLabel == 'hap': 
-            code = [1,0,0,0,0,0,0] #JOY
-        if  emoLabel == 'ang' or emoLabel == 'fru':    
-            code = [0,1,0,0,0,0,0] #ANG
-        if  emoLabel == 'dis': 
-            code = [0,0,1,0,0,0,0] 
-        if  emoLabel == 'sad': 
-            code = [0,0,0,1,0,0,0] 
-        if  emoLabel == 'sur': 
-            code = [0,0,0,0,1,0,0] 
-        if  emoLabel == 'fea': 
-            code = [0,0,0,0,0,1,0]  
-        if  emoLabel == 'neu': 
-            code = [0,0,0,0,0,0,1]
-        if  emoLabel == 'oth' or emoLabel == 'xxx': 
-            code = [0,0,0,0,0,0,2]  #NOT CLASSIFIED
-        emoEncoded.append(code)
-        i += 1
-        
-    return emoEncoded
-
-
-def encodeLabelsV2(arrayEmoLabel,arrayFileName):
+def encodeLabels(arrayEmoLabel,arrayFileName):
     i = 0
     joyEncoded = []
     sadEncoded = []
@@ -63,37 +35,28 @@ def encodeLabelsV2(arrayEmoLabel,arrayFileName):
     sadFileName = []
     angFileName = []
     neuFileName = []
+    
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
+        
         if  emoLabel == 'exc' or emoLabel == 'hap': 
             code = [1,0,0,0] #JOY
-        if  emoLabel == 'ang' or emoLabel == 'fru':    
-            code = [0,1,0,0] #ANG
-        if  emoLabel == 'dis': 
-            code = [0,0,0,2] 
-        if  emoLabel == 'sad': 
-            code = [0,0,1,0] 
-        if  emoLabel == 'sur': 
-            code = [0,0,0,2] 
-        if  emoLabel == 'fea': 
-            code = [0,0,0,2]  
-        if  emoLabel == 'neu': 
-            code = [0,0,0,1]
-        if  emoLabel == 'oth' or emoLabel == 'xxx': 
-            code = [0,0,0,2]  #NOT CLASSIFIED
-            
-        if code == [1,0,0,0]:
             joyEncoded.append(code)
             joyFileName.append(arrayFileName[i])
-        if code == [0,1,0,0]:   
+        if  emoLabel == 'ang' or emoLabel == 'fru':    
+            code = [0,1,0,0] #ANG
             angEncoded.append(code)
             angFileName.append(arrayFileName[i])
-        if code == [0,0,1,0]:   
+        if  emoLabel == 'sad': 
+            code = [0,0,1,0] 
             sadEncoded.append(code)
-            sadFileName.append(arrayFileName[i])
-        if code == [0,0,0,1]:   
+            sadFileName.append(arrayFileName[i])  
+        if  emoLabel == 'neu': 
+            code = [0,0,0,1]
             neuEncoded.append(code)
             neuFileName.append(arrayFileName[i])
+        if  emoLabel == 'dis' or emoLabel == 'sur' or emoLabel == 'fea' or emoLabel == 'oth' or emoLabel == 'xxx': 
+            code = [0,0,0,2]  #NOT CLASSIFIED
                         
         i += 1
         
@@ -135,7 +98,7 @@ if __name__ == '__main__':
     arrayFileName, arrayEmoLabel = readDataFile(main_root)
     
     #ENCODE EMOTIONS LABELS
-    joyEncoded, angEncoded, sadEncoded, neuEncoded, joyFileName, angFileName, sadFileName, neuFileName = encodeLabelsV2(arrayEmoLabel, arrayFileName)
+    joyEncoded, angEncoded, sadEncoded, neuEncoded, joyFileName, angFileName, sadFileName, neuFileName = encodeLabels(arrayEmoLabel, arrayFileName)
     
     #WRITE CSV FILE
     dir_root = os.path.normpath(main_root+'\LablesEmotion')

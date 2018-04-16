@@ -9,16 +9,20 @@ from keras.layers import Bidirectional
 from keras.models import load_model
 
 
-def statistics(Y, yhat, correctCounter):
+def statistics(Y, yhat, correctCounter, predEmoCounter):
     index, value = max(enumerate(Y[0]), key=operator.itemgetter(1))
     Pindex, Pvalue = max(enumerate(yhat[0]), key=operator.itemgetter(1))
     '''print('index: ', index, 'value: ', value)
     print('index: ', Pindex, 'value: ', Pvalue)'''
     
+    #UPDATE CORRECT COUNTER
     if index == Pindex:
         correctCounter[index] += 1
     
-    return correctCounter
+    #UPDATE PREDICTED EMO COUNTER
+    predEmoCounter[index] += 1
+    
+    return correctCounter, predEmoCounter
 
 
 def addEmoCountV2(emoLabel, counter):
@@ -196,6 +200,7 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
     allPrediction = []
     emoCounter = np.array([[0],[0],[0],[0]]) #count label to block after labelLimit prediction
     correctCounter = np.array([[0],[0],[0],[0]]) #count correct prediction for each label, last place is for total number of each label
+    predEmoCounter = np.array([[0],[0],[0],[0]]) #count how many prediction for each label
     
     for i in range(fileLimit):
         
@@ -219,7 +224,7 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                 print(emoCounter)
                 
                 #UPDATE CORRECT PREDICTION COUNTER
-                statistics(Y, yhat, correctCounter)
+                correctCounter, predEmoCounter = statistics(Y, yhat, correctCounter, predEmoCounter)
                 
                 #APPEND PREDICTED RESULT
                 allPrediction.append(np.array([fileName[i]]))
@@ -230,7 +235,10 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                 if emoCounter[3] == labelLimit:
                     allPrediction.append('')
                     allPrediction.append(np.array(['----STATISTICS----']))
+                    allPrediction.append(np.array(['How many correct prediction for each class']))
                     allPrediction.append(correctCounter)
+                    allPrediction.append(np.array(['Total prediction for each class']))
+                    allPrediction.append(predEmoCounter)
                     allPrediction.append(np.array(['TOT emo trained:',labelLimit]))
                     allPrediction.append(np.array(['TOT Epoch:',n_epoch]))
                     
@@ -258,9 +266,9 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 2 #Number of each emotion label file to process
+    labelLimit = 20 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 5 #number of epoch for each file trained
+    n_epoch = 10 #number of epoch for each file trained
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)

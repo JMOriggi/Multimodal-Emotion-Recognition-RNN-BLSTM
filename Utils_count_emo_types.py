@@ -2,13 +2,11 @@ import os
 import csv
 import shutil
 import numpy as np
-import AudioUtils as aud
 
 
 def countLabels(arrayEmoLabel):
     counter = np.array([[0],[0],[0],[0],[0],[0],[0],[0]])
     i = 0
-    
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
         if  emoLabel == 'exc' or emoLabel == 'hap': 
@@ -61,7 +59,6 @@ def countLabelsV2(arrayEmoLabel):
 
 def readDataFile(main_root):
     index_file_path =  os.path.join(main_root+'\AllData.txt')
-    
     #Audio File Names
     with open(index_file_path, 'r') as AllDatafile:
         X = [line.strip() for line in AllDatafile] 

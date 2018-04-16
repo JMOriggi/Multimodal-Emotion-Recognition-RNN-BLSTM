@@ -5,6 +5,47 @@ import gensim
 import numpy as np
 
 
+def saveFeaturecsv(featureEncoded, arrayFileName, dir_root, emoFolder):
+    out_csv_labels_path = os.path.join(dir_root, emoFolder)
+    i = 0
+    
+    while i < len(featureEncoded):
+        #CREATE OUTPUTS DATA FILE: remove if it already exist and recreate it new
+        out_current_file = arrayFileName[i] + '.csv'
+        out_current_file = os.path.join(out_csv_labels_path, out_current_file)
+        try:
+            os.remove(out_current_file)
+        except OSError:
+            pass
+        
+        #WRITE ON IT
+        with open(out_current_file, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(featureEncoded[i])
+        csvfile.close()
+        i += 1
+
+
+def readData(index_file_path):
+    #Audio File Names
+    with open(index_file_path, 'r') as AllDatafile:
+        X = [line.strip() for line in AllDatafile] 
+        arrayFileName = [line.split(';')[0] for line in X] 
+    AllDatafile.close()
+    #Emotion Labels
+    with open(index_file_path, 'r') as AllDatafile:
+        Y = [line.strip() for line in AllDatafile] 
+        arrayEmoLabel = [line.split(';')[1] for line in Y]
+    AllDatafile.close()
+    #Transcriptions   
+    with open(index_file_path,  encoding='utf-8') as AllDatafile:
+        Z = [line.strip() for line in AllDatafile] 
+        arrayText = [line.split(';')[2] for line in Z]
+    AllDatafile.close()
+    
+    return arrayFileName, arrayText, arrayEmoLabel
+
+
 def get_text_bynary(text, model, notFoundCounter, notFoundedWord):
     
     encodedText = []
@@ -29,47 +70,6 @@ def get_text_bynary(text, model, notFoundCounter, notFoundedWord):
     encodedText = encodedText.tobytes()'''
     
     return encodedText, notFoundCounter, notFoundedWord
-
-
-def readData(index_file_path):
-    #Audio File Names
-    with open(index_file_path, 'r') as AllDatafile:
-        X = [line.strip() for line in AllDatafile] 
-        arrayFileName = [line.split(';')[0] for line in X] 
-    AllDatafile.close()
-    #Emotion Labels
-    with open(index_file_path, 'r') as AllDatafile:
-        Y = [line.strip() for line in AllDatafile] 
-        arrayEmoLabel = [line.split(';')[1] for line in Y]
-    AllDatafile.close()
-    #Transcriptions   
-    with open(index_file_path,  encoding='utf-8') as AllDatafile:
-        Z = [line.strip() for line in AllDatafile] 
-        arrayText = [line.split(';')[2] for line in Z]
-    AllDatafile.close()
-    
-    return arrayFileName, arrayText, arrayEmoLabel
-
-
-def saveFeaturecsv(featureEncoded, arrayFileName, dir_root, emoFolder):
-    out_csv_labels_path = os.path.join(dir_root, emoFolder)
-    i = 0
-    
-    while i < len(featureEncoded):
-        #CREATE OUTPUTS DATA FILE: remove if it already exist and recreate it new
-        out_current_file = arrayFileName[i] + '.csv'
-        out_current_file = os.path.join(out_csv_labels_path, out_current_file)
-        try:
-            os.remove(out_current_file)
-        except OSError:
-            pass
-        
-        #WRITE ON IT
-        with open(out_current_file, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerows(featureEncoded[i])
-        csvfile.close()
-        i += 1
 
 
 def encodeText(arrayFileName, arrayText, arrayEmoLabel, modelPath):
@@ -147,6 +147,5 @@ if __name__ == '__main__':
     saveFeaturecsv(angEncoded, angFileName, out_text_feature_path, 'ang')
     saveFeaturecsv(sadEncoded, sadFileName, out_text_feature_path, 'sad')
     saveFeaturecsv(neuEncoded, neuFileName, out_text_feature_path, 'neu')
-    
-       
+      
     print('END')   
