@@ -191,7 +191,7 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
     return model    
 
  
-def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
+def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, n_epoch):
     
     allPrediction = []
     emoCounter = np.array([[0],[0],[0],[0]]) #count label to block after labelLimit prediction
