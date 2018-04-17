@@ -203,9 +203,9 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         
         #SAVE FILE IN CORRECT DIRECTORY
         direc = 'oth'
-        if  arrayEmoLabel[i] == 'exc' or arrayEmoLabel[i] == 'hap': 
+        if  arrayEmoLabel[i] == 'hap': 
             direc = 'joy' #JOY
-        if  arrayEmoLabel[i] == 'ang' or arrayEmoLabel[i] == 'fru':    
+        if  arrayEmoLabel[i] == 'ang':    
             direc = 'ang' #ANG
         if  arrayEmoLabel[i] == 'sad': 
             direc = 'sad'  
@@ -224,8 +224,8 @@ if __name__ == '__main__':
     #SET ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #SET PATH
     all_wav_path = os.path.join(main_root + '\AllAudioFiles')

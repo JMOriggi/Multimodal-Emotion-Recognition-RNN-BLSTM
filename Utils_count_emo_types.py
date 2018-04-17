@@ -9,9 +9,9 @@ def countLabels(arrayEmoLabel):
     i = 0
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
-        if  emoLabel == 'exc' or emoLabel == 'hap': 
+        if  emoLabel == 'hap': 
             counter[0] += 1
-        if  emoLabel == 'ang' or emoLabel == 'fru':    
+        if  emoLabel == 'ang' :    
             counter[1] += 1
         if  emoLabel == 'dis': 
             counter[2] += 1
@@ -23,7 +23,7 @@ def countLabels(arrayEmoLabel):
             counter[5] += 1  
         if  emoLabel == 'neu': 
             counter[6] += 1
-        if  emoLabel == 'oth' or emoLabel == 'xxx': 
+        if  emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'fru' or emoLabel == 'exc': 
             counter[7] += 1
         i += 1
         
@@ -36,9 +36,9 @@ def countLabelsV2(arrayEmoLabel):
     
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
-        if  emoLabel == 'exc' or emoLabel == 'hap': 
+        if  emoLabel == 'hap': 
             counter[0] += 1 #JOY
-        if  emoLabel == 'ang' or emoLabel == 'fru':    
+        if  emoLabel == 'ang':    
             counter[1] += 1 #ANG
         if  emoLabel == 'dis': 
             counter[4] += 1 
@@ -50,7 +50,7 @@ def countLabelsV2(arrayEmoLabel):
             counter[4] += 1  
         if  emoLabel == 'neu': 
             counter[3] += 1
-        if  emoLabel == 'oth' or emoLabel == 'xxx': 
+        if  emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'exc' or emoLabel == 'fru': 
             counter[4] += 1  #NOT CLASSIFIED
         i += 1
         
@@ -82,9 +82,9 @@ if __name__ == '__main__':
     
     #SET MAIN ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     arrayFileName, arrayEmoLabel = readDataFile(main_root) 
     counter = countLabelsV2(arrayEmoLabel)

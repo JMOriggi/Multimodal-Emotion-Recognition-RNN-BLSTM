@@ -39,11 +39,11 @@ def encodeLabels(arrayEmoLabel,arrayFileName):
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
         
-        if  emoLabel == 'exc' or emoLabel == 'hap': 
+        if  emoLabel == 'hap': 
             code = [1,0,0,0] #JOY
             joyEncoded.append(code)
             joyFileName.append(arrayFileName[i])
-        if  emoLabel == 'ang' or emoLabel == 'fru':    
+        if  emoLabel == 'ang' :    
             code = [0,1,0,0] #ANG
             angEncoded.append(code)
             angFileName.append(arrayFileName[i])
@@ -55,7 +55,7 @@ def encodeLabels(arrayEmoLabel,arrayFileName):
             code = [0,0,0,1]
             neuEncoded.append(code)
             neuFileName.append(arrayFileName[i])
-        if  emoLabel == 'dis' or emoLabel == 'sur' or emoLabel == 'fea' or emoLabel == 'oth' or emoLabel == 'xxx': 
+        if  emoLabel == 'dis' or emoLabel == 'sur' or emoLabel == 'fea' or emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'fru' or emoLabel == 'exc': 
             code = [0,0,0,2]  #NOT CLASSIFIED
                         
         i += 1
@@ -91,8 +91,8 @@ if __name__ == '__main__':
     #SET MAIN ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull') 
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull') 
      
     #READ DATAFILE AND BUILD ARRAYS
     arrayFileName, arrayEmoLabel = readDataFile(main_root)

@@ -102,10 +102,10 @@ def encodeText(arrayFileName, arrayText, arrayEmoLabel, modelPath):
         text_byn, notFoundCounter, notFoundedWord = get_text_bynary(current_text, model, notFoundCounter, notFoundedWord)
             
         #APPEND FOR EACH EMOTION    
-        if emoLabel == 'exc' or emoLabel == 'hap':
+        if emoLabel == 'hap':
             joyEncoded.append(text_byn)
             joyFileName.append(arrayFileName[i])
-        if emoLabel == 'ang' or emoLabel == 'fru':   
+        if emoLabel == 'ang':   
             angEncoded.append(text_byn)
             angFileName.append(arrayFileName[i])
         if emoLabel == 'sad':    
