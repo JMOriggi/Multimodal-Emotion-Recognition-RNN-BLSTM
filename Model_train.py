@@ -156,7 +156,7 @@ def buildBLTSM():
     model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.2, recurrent_dropout=0.2), input_shape=(None, 176)))
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc']) #mean_squared_error
+    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['acc']) #mean_squared_error #categorical_crossentropy
     return model 
 
 
