@@ -63,8 +63,21 @@ def saveCsv(currentFile, csvOutputFilePath):
     with open(csvOutputFilePath, "w", newline='') as f:
         writer = csv.writer(f)
         writer.writerows(np.asarray(currentFile))
-    f.close()
+    f.close() 
+
     
+def saveTxt(currentFile, txtOutputFilePath): 
+    txtOutputFilePath = os.path.join(txtOutputFilePath + '.txt') 
+    try:
+        os.remove(txtOutputFilePath)
+    except OSError:
+        pass
+    
+    with open(txtOutputFilePath, 'w') as file:      
+        for item in currentFile:
+            file.write(str(item)+'\n')  
+    file.close() 
+
 
 def readFeatures(DirRoot, labelLimit):
     listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
@@ -154,9 +167,9 @@ def reshapeLSTMInOut(audFeat, label):
 
 def buildBLTSM():
     model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.2, recurrent_dropout=0.2), input_shape=(None, 176)))
+    model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.5), input_shape=(None, 164)))
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['acc']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     return model 
 
 
@@ -231,18 +244,18 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                 allPrediction.append(Y[0])
                 allPrediction.append(yhat[0])
                 
-                #IF LAST PREDICTION APPEND STATISTICS
+                #IF LAST PREDICTION APPEND STATISTICS RIEVIEW FOR TXT
                 if emoCounter[3] == labelLimit:
-                    allPrediction.append('')
-                    allPrediction.append(np.array(['----STATISTICS----']))
-                    allPrediction.append(np.array(['How many correct prediction for each class']))
-                    allPrediction.append(correctCounter)
-                    allPrediction.append(np.array(['Total prediction for each class']))
-                    allPrediction.append(predEmoCounter)
-                    allPrediction.append(np.array(['TOT emo trained:',labelLimit]))
-                    allPrediction.append(np.array(['TOT Epoch:',n_epoch]))
+                    predReview = []
+                    predReview.append(np.array(['----STATISTICS----']))
+                    predReview.append(np.array(['How many correct prediction for each class']))
+                    predReview.append(correctCounter)
+                    predReview.append(np.array(['Total prediction for each class']))
+                    predReview.append(predEmoCounter)
+                    predReview.append(np.array(['TOT emo trained:',labelLimit]))
+                    predReview.append(np.array(['TOT Epoch:',n_epoch]))
                     
-    return allPrediction
+    return allPrediction, predReview
 
     
 if __name__ == '__main__':
@@ -257,7 +270,7 @@ if __name__ == '__main__':
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    csvOutputFilePath = os.path.join(mainRoot, 'AfterTrainPredRes')
+    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\4Emo-hap-ang-sad-neu')
     
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -268,7 +281,8 @@ if __name__ == '__main__':
     flagLoadModel = 0 #1=load, 0=new
     labelLimit = 200 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 100 #number of epoch for each file trained
+    n_epoch = 50 #number of epoch for each file trained
+    nameFileResult = 'Feat_Basic_NoMFCC'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -296,8 +310,10 @@ if __name__ == '__main__':
         model_Audio.save(modelPathAudio, overwrite=True)    
     
     #PREDICT & SAVE
-    allPrediction = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch)
-    saveCsv(allPrediction, csvOutputFilePath)
+    allPrediction, predReview = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch)
+    OutputFilePath = os.path.join(dirRes, nameFileResult)
+    saveCsv(allPrediction, OutputFilePath)
+    saveTxt(predReview, OutputFilePath)
     
     print('END')
     

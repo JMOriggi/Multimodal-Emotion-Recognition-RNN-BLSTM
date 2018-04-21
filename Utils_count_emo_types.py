@@ -40,16 +40,16 @@ def countLabelsV2(arrayEmoLabel):
             counter[0] += 1 #JOY
         if  emoLabel == 'ang':    
             counter[1] += 1 #ANG
-        if  emoLabel == 'dis': 
-            counter[4] += 1 
         if  emoLabel == 'sad': 
-            counter[2] += 1 
+            counter[2] += 1    
+        if  emoLabel == 'neu': 
+            counter[3] += 1
         if  emoLabel == 'sur': 
             counter[4] += 1 
         if  emoLabel == 'fea': 
             counter[4] += 1  
-        if  emoLabel == 'neu': 
-            counter[3] += 1
+        if  emoLabel == 'dis': 
+            counter[4] += 1  
         if  emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'exc' or emoLabel == 'fru': 
             counter[4] += 1  #NOT CLASSIFIED
         i += 1

@@ -180,7 +180,10 @@ def computeFeatures(monoAudio, sampleRate):
     
     #CONCATENATE FEATURES PER ROWS
     #X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, mfcc, mfcc_delta, mfcc_delta_delta, mfcc_energy, mfcc_energy_delta, mfcc_energy_delta_delta))
-    X = np.hstack((stft, pitch, energy, zero_crossing, mfcc))
+    #X = np.hstack((stft, pitch, energy, zero_crossing, mfcc)) #Basic setting
+    X = np.hstack((stft, pitch, energy, zero_crossing)) #Basic_NoMFCC setting
+    #X = np.hstack((pitch, energy, zero_crossing, mfcc)) #Basic_NoSTFT
+    #X = np.hstack((stft)) #Only_STFT
     print('Final shape: ',X.shape) #Features final shape for current audio file
     
     return X
