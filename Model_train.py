@@ -4,9 +4,10 @@ import csv
 import operator
 from keras.models import Sequential
 from keras.layers import LSTM
-from keras.layers import Dense
 from keras.layers import Bidirectional
 from keras.models import load_model
+from keras.layers.core import Dense, Dropout, Activation
+from keras.optimizers import SGD, Adam, RMSprop
 
 
 def statistics(Y, yhat, correctCounter, predEmoCounter):
@@ -167,9 +168,16 @@ def reshapeLSTMInOut(audFeat, label):
 
 def buildBLTSM():
     model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.5), input_shape=(None, 176)))
-    model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.add(Bidirectional(LSTM(256, return_sequences=False), input_shape=(None, 34)))
+    model.add(Dropout(0.5))
+    model.add(Activation('tanh'))
+    model.add(Dense(512))
+    model.add(Dropout(0.5))
+    model.add(Activation('tanh'))
+    model.add(Dense(4))
+    model.add(Dropout(0.5))
+    model.add(Activation('softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     return model 
 
 
@@ -200,6 +208,10 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                 #EVALUATE
                 ev = model.evaluate(X,Y)
                 print('Evaluation: ', ev)
+                
+                #PREDICT
+                yhat = model.predict_on_batch(X)
+                print('Expected:', Y, 'Predicted', yhat) 
                 
                 #UPDATE EMOCOUNTER
                 emoCounter = addEmoCountV2(Labels[i], emoCounter)
@@ -270,7 +282,7 @@ if __name__ == '__main__':
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\4Emo-hap-ang-sad-neu')
+    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\4Emo-exc-ang-sad-neu')
     
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -281,8 +293,8 @@ if __name__ == '__main__':
     flagLoadModel = 0 #1=load, 0=new
     labelLimit = 400 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 50 #number of epoch for each file trained
-    nameFileResult = 'Feat_Basic'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
+    n_epoch = 10 #number of epoch for each file trained
+    nameFileResult = 'New_FeatV2'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)

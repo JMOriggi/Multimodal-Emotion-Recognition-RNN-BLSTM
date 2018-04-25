@@ -4,6 +4,7 @@ import numpy as np
 from scipy.io.wavfile import read
 import librosa
 import matplotlib.pyplot as plt 
+import calculate_features as c_f
 
 
 def saveFeaturecsv(currentFileFeatures, csvOutputFilePath):
@@ -189,6 +190,12 @@ def computeFeatures(monoAudio, sampleRate):
     return X
 
 
+def computeFeaturesV2(arrayAudio, sampleRate):
+    currentFileFeatures = c_f.calculate_features(arrayAudio, sampleRate, False).T
+    #print(currentFileFeatures)
+    print(currentFileFeatures.shape)
+    return currentFileFeatures
+
 
 def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_path):
     currentFileFeatures = []
@@ -206,7 +213,7 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         
         #SAVE FILE IN CORRECT DIRECTORY
         direc = 'oth'
-        if  arrayEmoLabel[i] == 'hap': 
+        if  arrayEmoLabel[i] == 'exc': 
             direc = 'joy' #JOY
         if  arrayEmoLabel[i] == 'ang':    
             direc = 'ang' #ANG

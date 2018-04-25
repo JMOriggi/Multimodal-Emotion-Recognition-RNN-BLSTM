@@ -9,7 +9,7 @@ def countLabels(arrayEmoLabel):
     i = 0
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
-        if  emoLabel == 'hap': 
+        if  emoLabel == 'exc': 
             counter[0] += 1
         if  emoLabel == 'ang' :    
             counter[1] += 1
@@ -23,7 +23,7 @@ def countLabels(arrayEmoLabel):
             counter[5] += 1  
         if  emoLabel == 'neu': 
             counter[6] += 1
-        if  emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'fru' or emoLabel == 'exc': 
+        if  emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'fru' or emoLabel == 'hap': 
             counter[7] += 1
         i += 1
         
@@ -36,21 +36,15 @@ def countLabelsV2(arrayEmoLabel):
     
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
-        if  emoLabel == 'hap': 
+        if  emoLabel == 'exc': 
             counter[0] += 1 #JOY
         if  emoLabel == 'ang':    
             counter[1] += 1 #ANG
         if  emoLabel == 'sad': 
             counter[2] += 1    
         if  emoLabel == 'neu': 
-            counter[3] += 1
-        if  emoLabel == 'sur': 
-            counter[4] += 1 
-        if  emoLabel == 'fea': 
-            counter[4] += 1  
-        if  emoLabel == 'dis': 
-            counter[4] += 1  
-        if  emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'exc' or emoLabel == 'fru': 
+            counter[3] += 1  
+        if  emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'hap' or emoLabel == 'fru' or emoLabel == 'sur' or emoLabel == 'fea' or emoLabel == 'dis': 
             counter[4] += 1  #NOT CLASSIFIED
         i += 1
         

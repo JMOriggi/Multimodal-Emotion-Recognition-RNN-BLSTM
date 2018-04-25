@@ -2,7 +2,6 @@ import os
 import csv
 import shutil
 import numpy as np
-import AudioUtils as aud
 
 
 #BUILD A TXT FILE WITH ALL THE USEFULL DATA: <audioFileName>;<emo>;<transcriptionText>

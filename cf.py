@@ -3,8 +3,6 @@ import time
 import os
 import glob
 import numpy
-#import mlpy
-import cPickle
 import aifc
 import math
 from numpy import NaN, Inf, arange, isscalar, array
@@ -13,10 +11,7 @@ from scipy.fftpack import fft
 from scipy.fftpack.realtransforms import dct
 from scipy.signal import fftconvolve
 from scipy import linalg as la
-#import audioTrainTest as aT
-#import audioBasicIO
 import matplotlib.pyplot as plt 
-
 from scipy.io.wavfile import read
 from scipy.signal import lfilter, hamming
 use_pitch = False
@@ -206,6 +201,8 @@ def mfccInitFilterBanks(fs, nfft):
     heights = 2./(freqs[2:] - freqs[0:-2])
 
     # Compute filterbank coeff (in fft domain, in bins)
+    #print(nFiltTotal)
+    #print(nfft)
     fbank = numpy.zeros((nFiltTotal, nfft))
     nfreqs = numpy.arange(nfft) / (1. * nfft) * fs
 
@@ -272,7 +269,12 @@ def stChromaFeatures(X, fs, nChroma, nFreqsPerChroma):
     newD = int(numpy.ceil(C.shape[0] / 12.0) * 12)
     C2 = numpy.zeros((newD, ))
     C2[0:C.shape[0]] = C
-    C2 = C2.reshape(C2.shape[0]/12, 12)
+    
+    #MODIFICA
+    #print(C2.shape[0]/12)
+    shapC2 = int(C2.shape[0]/12)
+    
+    C2 = C2.reshape(shapC2, 12)
     #for i in range(12):
     #    finalC[i] = numpy.sum(C[i:C.shape[0]:12])
     finalC = numpy.matrix(numpy.sum(C2, axis=0)).T
@@ -429,7 +431,7 @@ def stSpectogram(signal, Fs, Win, Step, PLOT=False):
 """ Windowing and feature extraction """
 
 
-def stFeatureExtraction(signal, Fs, Win, Step):
+def stFeatureExtractionV2(signal, Fs, Win, Step):
     """
     This function implements the shor-term windowing process. For each short-term window a set of features is extracted.
     This results to a sequence of feature vectors, stored in a numpy matrix.
@@ -457,6 +459,9 @@ def stFeatureExtraction(signal, Fs, Win, Step):
     curPos = 0
     countFrames = 0
     nFFT = Win / 2
+
+    #MODIFICA
+    nFFT = int(nFFT)
 
     [fbank, freqs] = mfccInitFilterBanks(Fs, nFFT)                # compute the triangular filter banks used in the mfcc calculation
     nChroma, nFreqsPerChroma = stChromaFeaturesInit(nFFT, Fs)
@@ -525,6 +530,90 @@ def stFeatureExtraction(signal, Fs, Win, Step):
             stFeatures = numpy.concatenate((stFeatures, curFV), 1)    # update feature matrix
         Xprev = X.copy()
 
+    return numpy.array(stFeatures)
+
+
+def stFeatureExtraction(signal, Fs, Win, Step):
+    """
+    This function implements the shor-term windowing process. For each short-term window a set of features is extracted.
+    This results to a sequence of feature vectors, stored in a numpy matrix.
+    ARGUMENTS
+        signal:       the input signal samples
+        Fs:           the sampling freq (in Hz)
+        Win:          the short-term window size (in samples)
+        Step:         the short-term window step (in samples)
+    RETURNS
+        stFeatures:   a numpy array (numOfFeatures x numOfShortTermWindows)
+    """
+
+    Win = int(Win)
+    Step = int(Step)
+
+    # Signal normalization
+    signal = numpy.double(signal)
+
+    signal = signal / (2.0 ** 15)
+    DC = signal.mean()
+    MAX = (numpy.abs(signal)).max()
+    signal = (signal - DC) / (MAX + 0.0000000001)
+
+    N = len(signal)                                # total number of samples
+    curPos = 0
+    countFrames = 0
+    nFFT = Win / 2
+    
+    #MODIFICA
+    nFFT = int(nFFT)
+    
+    [fbank, freqs] = mfccInitFilterBanks(Fs, nFFT)                # compute the triangular filter banks used in the mfcc calculation
+    nChroma, nFreqsPerChroma = stChromaFeaturesInit(nFFT, Fs)
+
+    numOfTimeSpectralFeatures = 8
+    numOfHarmonicFeatures = 0
+    nceps = 13
+    numOfChromaFeatures = 13
+    totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfHarmonicFeatures + numOfChromaFeatures
+    print('totalNumOfFeatures: ',totalNumOfFeatures)
+#    totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfHarmonicFeatures
+
+    stFeatures = []
+    while (curPos + Win - 1 < N):                        # for each short-term window until the end of signal
+        countFrames += 1
+        x = signal[curPos:curPos+Win]                    # get current window
+        curPos = curPos + Step                           # update window position
+        X = abs(fft(x))                                  # get fft magnitude
+        X = X[0:nFFT]                                    # normalize fft
+        X = X / len(X)
+        if countFrames == 1:
+            Xprev = X.copy()                             # keep previous fft mag (used in spectral flux)
+        curFV = numpy.zeros((totalNumOfFeatures, 1))
+        curFV[0] = stZCR(x)                              # zero crossing rate
+        curFV[1] = stEnergy(x)                           # short-term energy
+        curFV[2] = stEnergyEntropy(x)                    # short-term entropy of energy
+        [curFV[3], curFV[4]] = stSpectralCentroidAndSpread(X, Fs)    # spectral centroid and spread
+        curFV[5] = stSpectralEntropy(X)                  # spectral entropy
+        curFV[6] = stSpectralFlux(X, Xprev)              # spectral flux
+        curFV[7] = stSpectralRollOff(X, 0.90, Fs)        # spectral rolloff
+        curFV[numOfTimeSpectralFeatures:numOfTimeSpectralFeatures+nceps, 0] = stMFCC(X, fbank, nceps).copy()    # MFCCs
+
+        chromaNames, chromaF = stChromaFeatures(X, Fs, nChroma, nFreqsPerChroma)
+        curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF
+        curFV[numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF.std()
+        stFeatures.append(curFV)
+        # delta features
+        '''
+        if countFrames>1:
+            delta = curFV - prevFV
+            curFVFinal = numpy.concatenate((curFV, delta))            
+        else:
+            curFVFinal = numpy.concatenate((curFV, curFV))
+        prevFV = curFV
+        stFeatures.append(curFVFinal)        
+        '''
+        # end of delta
+        Xprev = X.copy()
+
+    stFeatures = numpy.concatenate(stFeatures, 1)
     return numpy.array(stFeatures)
 
 
