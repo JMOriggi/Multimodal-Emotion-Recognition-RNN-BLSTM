@@ -269,11 +269,9 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                     predReview.append(correctCounter)
                     predReview.append(np.array(['Total prediction for each class']))
                     predReview.append(predEmoCounter)
-                    predReview.append(np.array(['Ratio tot emo correct recognized (over tot pred for class)']))
-                    predReview.append(np.divide(correctCounter,predEmoCounter))
-                    predReview.append(np.array(['Ratio tot emo correct recognized (over labellimit)']))
-                    predReview.append(np.divide(correctCounter,labelLimit))
-                    predReview.append(np.array(['Ratio tot emo correct recognized normalized %']))
+                    predReview.append(np.array(['Ratio tot emo correct recognized (over tot pred for class) norm %']))
+                    predReview.append(np.divide((correctCounter*100),predEmoCounter))
+                    predReview.append(np.array(['Ratio tot emo correct recognized (over labellimit) norm %']))
                     predReview.append(np.divide((correctCounter*100),labelLimit))
                     
     return allPrediction, predReview
@@ -300,9 +298,9 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 10 #Number of each emotion label file to process
+    labelLimit = 200 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 3 #number of epoch for each file trained
+    n_epoch = 2 #number of epoch for each file trained
     nameFileResult = 'New_featV3'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
