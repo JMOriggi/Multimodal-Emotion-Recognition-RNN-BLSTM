@@ -7,7 +7,7 @@ import cf
 
 def calculate_features(frames, freq, options):
     n = len(frames)
-    window_sec = 0.3
+    window_sec = 0.2
     window_n = int(freq * window_sec)
     use_derivatives = False
 

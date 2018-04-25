@@ -8,6 +8,7 @@ from keras.layers import Bidirectional
 from keras.models import load_model
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD, Adam, RMSprop
+np.seterr(divide='ignore', invalid='ignore')
 
 
 def statistics(Y, yhat, correctCounter, predEmoCounter):
@@ -166,16 +167,14 @@ def reshapeLSTMInOut(audFeat, label):
     return X, Y
 
 
-def buildBLTSM():
+def buildBLTSM(numFeatures):
     model = Sequential()
-    model.add(Bidirectional(LSTM(256, return_sequences=False), input_shape=(None, 34)))
+    model.add(Bidirectional(LSTM(256, return_sequences=False), input_shape=(None, numFeatures)))
     model.add(Dropout(0.5))
     model.add(Activation('tanh'))
     model.add(Dense(512))
-    model.add(Dropout(0.5))
     model.add(Activation('tanh'))
     model.add(Dense(4))
-    model.add(Dropout(0.5))
     model.add(Activation('softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     return model 
@@ -259,13 +258,23 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                 #IF LAST PREDICTION APPEND STATISTICS RIEVIEW FOR TXT
                 if emoCounter[3] == labelLimit:
                     predReview = []
+                    correctCounter = correctCounter.reshape(1,4)
+                    predEmoCounter = predEmoCounter.reshape(1,4)
+                    correctCounter = correctCounter[0]
+                    predEmoCounter = predEmoCounter[0]
                     predReview.append(np.array(['----STATISTICS----']))
+                    predReview.append(np.array(['TOT emo trained:',labelLimit]))
+                    predReview.append(np.array(['TOT Epoch:',n_epoch]))
                     predReview.append(np.array(['How many correct prediction for each class']))
                     predReview.append(correctCounter)
                     predReview.append(np.array(['Total prediction for each class']))
                     predReview.append(predEmoCounter)
-                    predReview.append(np.array(['TOT emo trained:',labelLimit]))
-                    predReview.append(np.array(['TOT Epoch:',n_epoch]))
+                    predReview.append(np.array(['Ratio tot emo correct recognized (over tot pred for class)']))
+                    predReview.append(np.divide(correctCounter,predEmoCounter))
+                    predReview.append(np.array(['Ratio tot emo correct recognized (over labellimit)']))
+                    predReview.append(np.divide(correctCounter,labelLimit))
+                    predReview.append(np.array(['Ratio tot emo correct recognized normalized %']))
+                    predReview.append(np.divide((correctCounter*100),labelLimit))
                     
     return allPrediction, predReview
 
@@ -291,23 +300,24 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 400 #Number of each emotion label file to process
+    labelLimit = 10 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 10 #number of epoch for each file trained
-    nameFileResult = 'New_FeatV2'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
+    n_epoch = 3 #number of epoch for each file trained
+    nameFileResult = 'New_featV3'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
     #DEFINE MODEL
     if flagLoadModel == 0:
-        modelA = buildBLTSM()
-        modelT = buildBLTSM()
+        modelA = buildBLTSM(allAudioFeature[0].shape[1])
+        #modelT = buildBLTSM()
     else:
         modelA = load_model(mainRootModelAudio)
-        modelT = load_model(mainRootModelText)
+        #modelT = load_model(mainRootModelText)
     
     print('Train of #file: ', fileLimit)
+    print('Files with #feautres: ', allAudioFeature[0].shape[1])
     print('Train number of each emotion: ', labelLimit)
     print('Train for #epoch: ', n_epoch)
     
@@ -317,7 +327,7 @@ if __name__ == '__main__':
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1 or modelType == 2:
-        modelText = trainBLSTM(allFileName, allTextFeature, allLabels, modelT, fileLimit, labelLimit, n_epoch)    
+        #modelText = trainBLSTM(allFileName, allTextFeature, allLabels, modelT, fileLimit, labelLimit, n_epoch)    
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)    
     
