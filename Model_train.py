@@ -167,7 +167,7 @@ def reshapeLSTMInOut(audFeat, label):
 
 def buildBLTSM():
     model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.5), input_shape=(None, 164)))
+    model.add(Bidirectional(LSTM(128, return_sequences=False, dropout=0.5), input_shape=(None, 176)))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     return model 
@@ -279,10 +279,10 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 200 #Number of each emotion label file to process
+    labelLimit = 400 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 50 #number of epoch for each file trained
-    nameFileResult = 'Feat_Basic_NoMFCC'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
+    nameFileResult = 'Feat_Basic'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
