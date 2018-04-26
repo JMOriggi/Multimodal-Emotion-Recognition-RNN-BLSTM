@@ -5,26 +5,30 @@ import numpy as np
 
 
 def countLabels(arrayEmoLabel):
-    counter = np.array([[0],[0],[0],[0],[0],[0],[0],[0]])
+    counter = np.array([[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]])
     i = 0
     while i < len(arrayEmoLabel):
         emoLabel = arrayEmoLabel[i]
         if  emoLabel == 'exc': 
-            counter[0] += 1
-        if  emoLabel == 'ang' :    
-            counter[1] += 1
-        if  emoLabel == 'dis': 
-            counter[2] += 1
+            counter[0] += 1 #JOY
+        if  emoLabel == 'ang':    
+            counter[1] += 1 #ANG
         if  emoLabel == 'sad': 
-            counter[3] += 1 
+            counter[2] += 1    
+        if  emoLabel == 'neu': 
+            counter[3] += 1  
         if  emoLabel == 'sur': 
             counter[4] += 1 
         if  emoLabel == 'fea': 
             counter[5] += 1  
-        if  emoLabel == 'neu': 
+        if  emoLabel == 'hap': 
             counter[6] += 1
-        if  emoLabel == 'oth' or emoLabel == 'xxx' or emoLabel == 'fru' or emoLabel == 'hap': 
+        if  emoLabel == 'dis': 
             counter[7] += 1
+        if  emoLabel == 'fru': 
+            counter[8] += 1    
+        if  emoLabel == 'oth' or emoLabel == 'xxx': 
+            counter[9] += 1
         i += 1
         
     return counter
@@ -81,7 +85,9 @@ if __name__ == '__main__':
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     arrayFileName, arrayEmoLabel = readDataFile(main_root) 
+    counter = countLabels(arrayEmoLabel)
+    print('V1: ',counter)
     counter = countLabelsV2(arrayEmoLabel)
-    print(counter)
+    print('V2: ',counter)
     print('END')
     
