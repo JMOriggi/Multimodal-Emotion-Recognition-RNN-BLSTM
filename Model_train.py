@@ -8,9 +8,52 @@ from keras.layers import Bidirectional
 from keras.models import load_model
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD, Adam, RMSprop
+import matplotlib.pyplot as plt
+from sklearn import svm, datasets
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+import itertools
 np.seterr(divide='ignore', invalid='ignore')
 
 
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    
+    
+    return plt
+    
+    
 def statistics(Y, yhat, correctCounter, predEmoCounter):
     index, value = max(enumerate(Y[0]), key=operator.itemgetter(1))
     Pindex, Pvalue = max(enumerate(yhat[0]), key=operator.itemgetter(1))
@@ -176,7 +219,7 @@ def buildBLTSM(numFeatures):
     model.add(Activation('tanh'))
     model.add(Dense(4))
     model.add(Activation('softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.000001), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     return model 
 
 
@@ -222,6 +265,8 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
 def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, n_epoch):
     
     allPrediction = []
+    allPredictionClasses = []
+    expected = []
     emoCounter = np.array([[0],[0],[0],[0]]) #count label to block after labelLimit prediction
     correctCounter = np.array([[0],[0],[0],[0]]) #count correct prediction for each label, last place is for total number of each label
     predEmoCounter = np.array([[0],[0],[0],[0]]) #count how many prediction for each label
@@ -242,6 +287,10 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                 #PREDICT
                 yhat = model.predict_on_batch(X)
                 print('Expected:', Y, 'Predicted', yhat) 
+                yhat2 = model.predict_classes(X)
+                print('Expected:', Y, 'Predicted', yhat2) 
+                allPredictionClasses.append(yhat2)
+                expected.append(Y[0])
                 
                 #UPDATE COUNTER
                 emoCounter = addEmoCountV2(Labels[i], emoCounter)
@@ -274,8 +323,8 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                     predReview.append(np.array(['Ratio tot emo correct recognized (over labellimit) norm %']))
                     predReview.append(np.divide((correctCounter*100),labelLimit))
                     
-    return allPrediction, predReview
-
+    return allPrediction, predReview, allPredictionClasses, expected
+    
     
 if __name__ == '__main__':
     
@@ -298,10 +347,10 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 200 #Number of each emotion label file to process
+    labelLimit = 20 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 2 #number of epoch for each file trained
-    nameFileResult = 'New_featV3'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
+    n_epoch = 20 #number of epoch for each file trained
+    nameFileResult = 'New_featV4.1'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -314,6 +363,8 @@ if __name__ == '__main__':
         modelA = load_model(mainRootModelAudio)
         #modelT = load_model(mainRootModelText)
     
+    #MODEL SUMMARY
+    modelA.summary()
     print('Train of #file: ', fileLimit)
     print('Files with #feautres: ', allAudioFeature[0].shape[1])
     print('Train number of each emotion: ', labelLimit)
@@ -329,11 +380,20 @@ if __name__ == '__main__':
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)    
     
+    
     #PREDICT & SAVE
-    allPrediction, predReview = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch)
+    allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch)
     OutputFilePath = os.path.join(dirRes, nameFileResult)
     saveCsv(allPrediction, OutputFilePath)
     saveTxt(predReview, OutputFilePath)
+    
+    #PLOT CONFUSION MAIRIX
+    expected = np.argmax(expected, axis=1)
+    cm = confusion_matrix(expected, allPredictionClasses)
+    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title='Confusion Matrix')
+    OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
+    plt.savefig(OutputImgPath)
+    plt.show()
     
     print('END')
     
