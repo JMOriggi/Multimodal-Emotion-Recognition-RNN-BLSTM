@@ -347,10 +347,10 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 740 #Number of each emotion label file to process
+    labelLimit = 600 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 20 #number of epoch for each file trained
-    nameFileResult = 'New_featV4.1'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
+    n_epoch = 10 #number of epoch for each file trained
+    nameFileResult = 'New_featV4.2'+'-Emo_'+str(labelLimit)+'-Epoch_'+str(n_epoch)+'-Loss_CE'
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
