@@ -12,6 +12,9 @@ import matplotlib.pyplot as plt
 from sklearn import svm, datasets
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold
+from keras.utils import np_utils
 import itertools
 np.seterr(divide='ignore', invalid='ignore')
 
@@ -306,9 +309,9 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    labelLimit = 600 #Number of each emotion label file to process
+    labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'Prediction-New_featV4.1'+'-Emo_'+str(labelLimit)+'-Epoch_'+'-Loss_CE'
+    nameFileResult = 'Prediction-1'+'-Emo_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -335,10 +338,20 @@ if __name__ == '__main__':
     #PLOT CONFUSION MAIRIX
     expected = np.argmax(expected, axis=1)
     cm = confusion_matrix(expected, allPredictionClasses)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title='Confusion Matrix')
+    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult)
     OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
     plt.savefig(OutputImgPath)
     plt.show()
+    
+    #EVALUATE THE MODEL
+    '''seed = 7
+    np.random.seed(seed)
+    dummy_y = np_utils.to_categorical(allLabels) # convert integers to dummy variables (i.e. one hot encoded)
+    kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+    results = cross_val_score(model_Audio, allAudioFeature, dummy_y, cv=kfold)
+    print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))'''
+    
+    
     
     print('END')
     
