@@ -307,7 +307,7 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                     print(emoCounter) 
     
         #AFTER EACH DB EPOCH MAKE PREDICTION
-        nameFileResult = 'Training_4'+'-'+'DBepoch_'+str(x)
+        nameFileResult = 'Training_1'+'-'+'DBepoch_'+str(x)
         OutputFilePath = os.path.join(dirRes, nameFileResult)
         allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch, db_epoch, maxTimestep)
         computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, False)
@@ -405,7 +405,7 @@ if __name__ == '__main__':
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 1 #number of epoch for each file trained
-    db_epoch = 3 #number of epoch of passing the entire db
+    db_epoch = 1 #number of epoch of passing the entire db
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
