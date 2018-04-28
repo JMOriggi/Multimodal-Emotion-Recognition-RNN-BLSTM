@@ -291,10 +291,6 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
                     predReview.append(correctCounter)
                     predReview.append(np.array(['Total prediction for each class (correct and wrong)']))
                     predReview.append(predEmoCounter)
-                    predReview.append(np.array(['Ratio tot emo correct recognized (over tot pred for class) norm %']))
-                    predReview.append(np.divide((correctCounter*100),predEmoCounter))
-                    predReview.append(np.array(['Ratio tot emo correct recognized (over labellimit) norm %']))
-                    predReview.append(np.divide((correctCounter*100),labelLimit))
                     
     return allPrediction, predReview, allPredictionClasses, expected
     
@@ -338,16 +334,12 @@ if __name__ == '__main__':
     if modelType == 1 or modelType == 2:
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
     
-    
     #PREDICT & SAVE
     allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit)
+    computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt.figure(figsize=(4,7)))
     OutputFilePath = os.path.join(dirRes, nameFileResult)
-    #saveCsv(allPrediction, OutputFilePath)
     saveTxt(predReview, OutputFilePath)
-    
-    #COMPUTE & SAVE CONFUSION MAIRIX
-    plt.figure(figsize=(4,7))
-    computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt)
+    #saveCsv(allPrediction, OutputFilePath)
     
     #EVALUATE THE MODEL
     '''seed = 7

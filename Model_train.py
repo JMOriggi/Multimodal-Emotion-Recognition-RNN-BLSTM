@@ -5,6 +5,10 @@ import operator
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Bidirectional
+from keras.layers import TimeDistributed
+from keras.layers import AveragePooling1D
+from keras.layers import Flatten
+from keras.layers import Masking
 from keras.models import load_model
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD, Adam, RMSprop
@@ -60,7 +64,7 @@ def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, pl
     
     OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
     plt.savefig(OutputImgPath)
-    plt.show()
+    #plt.show()
     
     
 def statistics(Y, yhat, correctCounter, predEmoCounter):
@@ -221,55 +225,68 @@ def reshapeLSTMInOut(audFeat, label):
 
 def buildBLTSM(numFeatures):
     model = Sequential()
-    model.add(Bidirectional(LSTM(256, return_sequences=False), input_shape=(None, numFeatures)))
-    model.add(Dropout(0.5))
-    model.add(Activation('tanh'))
+    #model.add(Masking(mask_value=0., input_shape=(None, numFeatures)))
+    #model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=(None, numFeatures)))
+    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(None, numFeatures)))
     model.add(Dense(512, activation='tanh'))
+    #model.add(TimeDistributed(Dense(512, activation='tanh')))
+    #model.add(AveragePooling1D())
+    #model.add(Flatten())
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     return model 
 
 
-def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch):
+def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch, db_epoch, dirRes):    
     
-    #emoCounter = np.array([[0],[0],[0],[0],[0],[0],[0],[0]])
-    emoCounter = np.array([[0],[0],[0],[0]])
-    
-    for i in range(fileLimit):
+    for x in range(db_epoch):
+        i = 0
+        emoCounter = np.array([[0],[0],[0],[0]])
         
-        if Labels[i][0][3] != 2:
+        for i in range(fileLimit):
             
-            #Check number of current label processed and stop if # too high
-            emoTreshStop = checkEmoCounterV2(Labels[i], emoCounter, labelLimit)
-            #print(emoTreshStop)
-            
-            if emoTreshStop == 'ok':
+            if Labels[i][0][3] != 2:
                 
-                print('\nROUND: ',i,'/',fileLimit)
-                print('TRAIN Current file:', fileName[i])
+                #Check number of current label processed and stop if # too high
+                emoTreshStop = checkEmoCounterV2(Labels[i], emoCounter, labelLimit)
+                #print(emoTreshStop)
                 
-                #Format correctly single input and output
-                X, Y = reshapeLSTMInOut(Features[i], Labels[i])
-                
-                #FIT MODEL for one epoch on this sequence
-                model.fit(X, Y, epochs=n_epoch, batch_size=1, verbose=0)
-                
-                #EVALUATE
-                ev = model.evaluate(X,Y)
-                print('Evaluation: ', ev)
-                
-                #PREDICT
-                yhat = model.predict_on_batch(X)
-                print('Expected:', Y, 'Predicted', yhat) 
-                
-                #UPDATE EMOCOUNTER
-                emoCounter = addEmoCountV2(Labels[i], emoCounter)
-                print(emoCounter) 
+                if emoTreshStop == 'ok':
+                    
+                    print('\nDB ROUND: ',x,'/',db_epoch)
+                    print('FILE ROUND: ',i,'/',fileLimit)
+                    print('TRAIN Current file:', fileName[i])
+                    
+                    #Format correctly single input and output
+                    X, Y = reshapeLSTMInOut(Features[i], Labels[i])
+                    
+                    #FIT MODEL for one epoch on this sequence
+                    model.fit(X, Y, epochs=n_epoch, batch_size=1, verbose=0)
+                    
+                    #EVALUATE
+                    ev = model.evaluate(X,Y)
+                    print('Evaluation: ', ev)
+                    
+                    #PREDICT
+                    yhat = model.predict_on_batch(X)
+                    print('Expected:', Y, 'Predicted', yhat) 
+                    
+                    #UPDATE EMOCOUNTER
+                    emoCounter = addEmoCountV2(Labels[i], emoCounter)
+                    print(emoCounter) 
     
+        #AFTER EACH DB EPOCH MAKE PREDICTION
+        nameFileResult = 'DBepoch_'+x+'-'+'Training_1'
+        OutputFilePath = os.path.join(dirRes, nameFileResult)
+        allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch, db_epoch)
+        computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt.figure(figsize=(4,7)))
+        saveTxt(predReview, OutputFilePath)
+        #saveCsv(allPrediction, OutputFilePath)
+        
     return model    
 
  
-def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, n_epoch):
+def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, n_epoch, db_epoch):
     
     allPrediction = []
     allPredictionClasses = []
@@ -322,17 +339,14 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                     print('Accurancy: ',accurancy)
                     predReview.append(np.array(['----STATISTICS----']))
                     predReview.append(np.array(['TOT emo trained:',labelLimit]))
-                    predReview.append(np.array(['TOT Epoch:',n_epoch]))
+                    predReview.append(np.array(['TOT File Epoch:',n_epoch]))
+                    predReview.append(np.array(['TOT DB Epoch:',db_epoch]))
                     predReview.append(np.array(['Accurancy']))
                     predReview.append(accurancy*100)
                     predReview.append(np.array(['Correct prediction (diagonal of the CM)']))
                     predReview.append(correctCounter)
                     predReview.append(np.array(['Total prediction for each class (correct and wrong)']))
                     predReview.append(predEmoCounter)
-                    predReview.append(np.array(['Ratio tot emo correct recognized (over tot pred for class) norm %']))
-                    predReview.append(np.divide((correctCounter*100),predEmoCounter))
-                    predReview.append(np.array(['Ratio tot emo correct recognized (over labellimit) norm %']))
-                    predReview.append(np.divide((correctCounter*100),labelLimit))
                     
     return allPrediction, predReview, allPredictionClasses, expected
     
@@ -357,10 +371,11 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 500 #Number of each emotion label file to process
+    labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 30 #number of epoch for each file trained
-    nameFileResult = 'Train1-LR^-5'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)
+    n_epoch = 1 #number of epoch for each file trained
+    db_epoch = 50 #number of epoch of passing the entire db
+    #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -378,28 +393,18 @@ if __name__ == '__main__':
     print('Train of #file: ', fileLimit)
     print('Files with #feautres: ', allAudioFeature[0].shape[1])
     print('Train number of each emotion: ', labelLimit)
-    print('Train for #epoch: ', n_epoch)
+    print('Train for file epoch: ', n_epoch)
+    print('Train of db epoch: ', db_epoch)
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        model_Audio = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, fileLimit, labelLimit, n_epoch)
+        model_Audio = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, fileLimit, labelLimit, n_epoch, db_epoch, dirRes)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1 or modelType == 2:
         #modelText = trainBLSTM(allFileName, allTextFeature, allLabels, modelT, fileLimit, labelLimit, n_epoch)    
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)    
-    
-    
-    #PREDICT & SAVE
-    allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch)
-    OutputFilePath = os.path.join(dirRes, nameFileResult)
-    #saveCsv(allPrediction, OutputFilePath)
-    saveTxt(predReview, OutputFilePath)
-    
-    #COMPUTE & SAVE CONFUSION MAIRIX
-    plt.figure(figsize=(4,7))
-    computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt)
     
     print('END')
     
