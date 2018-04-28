@@ -2,6 +2,7 @@ import numpy as np
 import os
 import csv
 import operator
+from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Bidirectional
@@ -21,13 +22,12 @@ np.seterr(divide='ignore', invalid='ignore')
 
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm):
     
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
+    plt.figure(figsize=(4,7))
+    
+    #NOT NORMALIZED
+    print('Confusion matrix, without normalization')
     print(cm)
-
+    plt.subplot(2, 1, 1)
     plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
     plt.title(title)
     plt.colorbar()
@@ -35,7 +35,30 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.xticks(tick_marks, classes, rotation=45)
     plt.yticks(tick_marks, classes)
 
-    fmt = '.2f' if normalize else 'd'
+    fmt = 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    
+    #NORMALIZED
+    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    print("Normalized confusion matrix")
+    print(cm)
+    plt.subplot(2, 1, 2)
+    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f'
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, format(cm[i, j], fmt),
@@ -49,18 +72,15 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     return plt
 
 
-def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt):
+def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
     expected = np.argmax(expected, axis=1)
     cm = confusion_matrix(expected, allPredictionClasses)
-    
-    plt.subplot(2, 1, 1)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM', normalize=False)
-    plt.subplot(2, 1, 2)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM_Norm', normalize=True)
+    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
     
     OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
     plt.savefig(OutputImgPath)
-    plt.show()
+    if flagPlotGraph:
+        plt.show()
     
     
 def statistics(Y, yhat, correctCounter, predEmoCounter):
@@ -211,28 +231,17 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
-def reshapeLSTMInOut(audFeat, label):
+def reshapeLSTMInOut(audFeat, label, maxTimestep):
     X = []
     X.append(audFeat)
     X = np.asarray(X)
-    Y = np.asarray(label)    
+    X = pad_sequences(X, maxlen=maxTimestep)
+    Y = np.asarray(label)
+    
     return X, Y
 
-
-def buildBLTSM(numFeatures):
-    model = Sequential()
-    model.add(Bidirectional(LSTM(256, return_sequences=False), input_shape=(None, numFeatures)))
-    model.add(Dropout(0.5))
-    model.add(Activation('tanh'))
-    model.add(Dense(512))
-    model.add(Activation('tanh'))
-    model.add(Dense(4))
-    model.add(Activation('softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.000001), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    return model   
-
  
-def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
+def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, maxTimestep):
     
     allPrediction = []
     allPredictionClasses = []
@@ -252,7 +261,7 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
                 print('\nROUND: ',i,'/',fileLimit)
                 
                 #FORMAT X & Y
-                X, Y = reshapeLSTMInOut(inputTest[i], Labels[i])
+                X, Y = reshapeLSTMInOut(inputTest[i], Labels[i], maxTimestep)
                 
                 #PREDICT
                 yhat = model.predict_on_batch(X)
@@ -318,13 +327,18 @@ if __name__ == '__main__':
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'Pred_1'+'-'+'#Emo_'+str(labelLimit)
+    nameFileResult = 'Pred_3'+'-'+'#Emo_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
+    #FIND MAX TIMESTEP FOR PADDING
+    maxTimestep = 290 #setted with training because no test file is longer than 290
+            
     #MODEL SUMMARY
     print('Train of #file: ', fileLimit)
+    print('Files with #feautres: ', allAudioFeature[0].shape[1])
+    print('Max time step: ',maxTimestep)
     print('Files with #feautres: ', allAudioFeature[0].shape[1])
     print('Train number of each emotion: ', labelLimit)
     
@@ -335,8 +349,8 @@ if __name__ == '__main__':
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
     
     #PREDICT & SAVE
-    allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit)
-    computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt.figure(figsize=(4,7)))
+    allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, maxTimestep)
+    computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, True)
     OutputFilePath = os.path.join(dirRes, nameFileResult)
     saveTxt(predReview, OutputFilePath)
     #saveCsv(allPrediction, OutputFilePath)

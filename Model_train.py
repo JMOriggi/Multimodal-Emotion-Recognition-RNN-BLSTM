@@ -40,7 +40,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.xticks(tick_marks, classes, rotation=45)
     plt.yticks(tick_marks, classes)
 
-    fmt = '.2f' if normalize else 'd'
+    fmt = 'd'
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, format(cm[i, j], fmt),
@@ -52,6 +52,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.xlabel('Predicted label')
     
     #NORMALIZED
+    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     print("Normalized confusion matrix")
     print(cm)
     plt.subplot(2, 1, 2)
@@ -62,7 +63,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.xticks(tick_marks, classes, rotation=45)
     plt.yticks(tick_marks, classes)
 
-    fmt = '.2f' if normalize else 'd'
+    fmt = '.2f'
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, format(cm[i, j], fmt),
@@ -259,7 +260,7 @@ def buildBLTSM(maxTimestep, numFeatures):
     model.add(AveragePooling1D())
     model.add(Flatten())
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     
     
     return model 
@@ -306,7 +307,7 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                     print(emoCounter) 
     
         #AFTER EACH DB EPOCH MAKE PREDICTION
-        nameFileResult = 'Training_1'+'-'+'DBepoch_'+str(x)
+        nameFileResult = 'Training_4'+'-'+'DBepoch_'+str(x)
         OutputFilePath = os.path.join(dirRes, nameFileResult)
         allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch, db_epoch, maxTimestep)
         computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, False)
@@ -400,11 +401,11 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    flagLoadModel = 0 #1=load, 0=new
+    flagLoadModel = 1 #1=load, 0=new
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 1 #number of epoch for each file trained
-    db_epoch = 20 #number of epoch of passing the entire db
+    db_epoch = 3 #number of epoch of passing the entire db
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
