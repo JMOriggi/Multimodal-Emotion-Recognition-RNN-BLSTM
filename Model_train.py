@@ -2,6 +2,7 @@ import numpy as np
 import os
 import csv
 import operator
+from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Bidirectional
@@ -23,15 +24,37 @@ from keras.utils import np_utils
 np.seterr(divide='ignore', invalid='ignore')
 
 
+
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm):
     
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
+    plt.figure(figsize=(4,7))
+    
+    #NOT NORMALIZED
+    print('Confusion matrix, without normalization')
     print(cm)
+    plt.subplot(2, 1, 1)
+    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
 
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    
+    #NORMALIZED
+    print("Normalized confusion matrix")
+    print(cm)
+    plt.subplot(2, 1, 2)
     plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
     plt.title(title)
     plt.colorbar()
@@ -53,18 +76,15 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     return plt
 
 
-def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt):
+def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
     expected = np.argmax(expected, axis=1)
     cm = confusion_matrix(expected, allPredictionClasses)
-    
-    plt.subplot(2, 1, 1)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM', normalize=False)
-    plt.subplot(2, 1, 2)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM_Norm', normalize=True)
+    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
     
     OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
     plt.savefig(OutputImgPath)
-    #plt.show()
+    if flagPlotGraph:
+        plt.show()
     
     
 def statistics(Y, yhat, correctCounter, predEmoCounter):
@@ -215,29 +235,37 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
-def reshapeLSTMInOut(audFeat, label):
+def reshapeLSTMInOut(audFeat, label, maxTimestep):
     X = []
     X.append(audFeat)
     X = np.asarray(X)
-    Y = np.asarray(label)    
+    X = pad_sequences(X, maxlen=maxTimestep)
+    Y = np.asarray(label)
+    
     return X, Y
 
 
-def buildBLTSM(numFeatures):
-    model = Sequential()
-    #model.add(Masking(mask_value=0., input_shape=(None, numFeatures)))
-    #model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=(None, numFeatures)))
+def buildBLTSM(maxTimestep, numFeatures):
+    '''model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(None, numFeatures)))
-    model.add(Dense(512, activation='tanh'))
-    #model.add(TimeDistributed(Dense(512, activation='tanh')))
-    #model.add(AveragePooling1D())
-    #model.add(Flatten())
+    model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    '''
+    
+    model = Sequential()
+    model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=(maxTimestep, numFeatures)))
+    model.add(TimeDistributed(Dense(512, activation='tanh')))
+    model.add(AveragePooling1D())
+    model.add(Flatten())
+    model.add(Dense(4, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    
+    
     return model 
 
 
-def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch, db_epoch, dirRes):    
+def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch, db_epoch, dirRes, maxTimestep):    
     
     for x in range(db_epoch):
         i = 0
@@ -258,7 +286,9 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                     print('TRAIN Current file:', fileName[i])
                     
                     #Format correctly single input and output
-                    X, Y = reshapeLSTMInOut(Features[i], Labels[i])
+                    #print('***************************',np.asarray(Features).shape)
+                    X, Y = reshapeLSTMInOut(Features[i], Labels[i], maxTimestep)
+                    #X, Y = reshapeLSTMInOut(Features[i], Labels[i], len(Features[i]))
                     
                     #FIT MODEL for one epoch on this sequence
                     model.fit(X, Y, epochs=n_epoch, batch_size=1, verbose=0)
@@ -276,17 +306,17 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                     print(emoCounter) 
     
         #AFTER EACH DB EPOCH MAKE PREDICTION
-        nameFileResult = 'DBepoch_'+x+'-'+'Training_1'
+        nameFileResult = 'Training_1'+'-'+'DBepoch_'+str(x)
         OutputFilePath = os.path.join(dirRes, nameFileResult)
-        allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch, db_epoch)
-        computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt.figure(figsize=(4,7)))
+        allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch, db_epoch, maxTimestep)
+        computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, False)
         saveTxt(predReview, OutputFilePath)
         #saveCsv(allPrediction, OutputFilePath)
         
     return model    
 
  
-def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, n_epoch, db_epoch):
+def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, n_epoch, db_epoch, maxTimestep):
     
     allPrediction = []
     allPredictionClasses = []
@@ -306,7 +336,7 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                 print('\nROUND: ',i,'/',fileLimit)
                 
                 #FORMAT X & Y
-                X, Y = reshapeLSTMInOut(inputTest[i], Labels[i])
+                X, Y = reshapeLSTMInOut(inputTest[i], Labels[i], maxTimestep)
                 
                 #PREDICT
                 yhat = model.predict_on_batch(X)
@@ -374,15 +404,22 @@ if __name__ == '__main__':
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 1 #number of epoch for each file trained
-    db_epoch = 50 #number of epoch of passing the entire db
+    db_epoch = 20 #number of epoch of passing the entire db
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
+    #FIND MAX TIMESTEP FOR PADDING
+    maxTimestep = 0
+    for z in allAudioFeature:
+        zStep = np.asarray(z).shape[0]
+        if maxTimestep < zStep:
+            maxTimestep = zStep
+    
     #DEFINE MODEL
     if flagLoadModel == 0:
-        modelA = buildBLTSM(allAudioFeature[0].shape[1])
+        modelA = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
         #modelT = buildBLTSM()
     else:
         modelA = load_model(mainRootModelAudio)
@@ -392,13 +429,14 @@ if __name__ == '__main__':
     modelA.summary()
     print('Train of #file: ', fileLimit)
     print('Files with #feautres: ', allAudioFeature[0].shape[1])
+    print('Max time step: ',maxTimestep)
     print('Train number of each emotion: ', labelLimit)
     print('Train for file epoch: ', n_epoch)
     print('Train of db epoch: ', db_epoch)
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        model_Audio = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, fileLimit, labelLimit, n_epoch, db_epoch, dirRes)
+        model_Audio = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, fileLimit, labelLimit, n_epoch, db_epoch, dirRes, maxTimestep)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1 or modelType == 2:
