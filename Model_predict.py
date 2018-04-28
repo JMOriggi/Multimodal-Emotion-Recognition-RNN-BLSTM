@@ -302,24 +302,25 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
+    mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\4Emo-exc-ang-sad-neu')
+    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     
     #SET MODELS PATH
-    mainRootModelAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
-    mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
+    mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
+    mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    labelLimit = 10 #Number of each emotion label file to process
+    labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     nameFileResult = 'Pred_1'+'-'+'#Emo_'+str(labelLimit)
     
@@ -333,8 +334,7 @@ if __name__ == '__main__':
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
-        model_Audio = load_model(modelPathAudio)    
+        model_Audio = load_model(mainRootModelAudio)    
     if modelType == 1 or modelType == 2:
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
     

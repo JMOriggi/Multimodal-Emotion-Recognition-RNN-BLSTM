@@ -224,11 +224,9 @@ def buildBLTSM(numFeatures):
     model.add(Bidirectional(LSTM(256, return_sequences=False), input_shape=(None, numFeatures)))
     model.add(Dropout(0.5))
     model.add(Activation('tanh'))
-    model.add(Dense(512))
-    model.add(Activation('tanh'))
-    model.add(Dense(4))
-    model.add(Activation('softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.000001), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.add(Dense(512, activation='tanh'))
+    model.add(Dense(4, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     return model 
 
 
@@ -321,6 +319,7 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
                     correctCounter = correctCounter[0]
                     predEmoCounter = predEmoCounter[0]
                     accurancy = (correctCounter[0] + correctCounter[1] + correctCounter[2] + correctCounter[3])/(labelLimit*4)
+                    print('Accurancy: ',accurancy)
                     predReview.append(np.array(['----STATISTICS----']))
                     predReview.append(np.array(['TOT emo trained:',labelLimit]))
                     predReview.append(np.array(['TOT Epoch:',n_epoch]))
@@ -341,16 +340,15 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\NewCorpus')
     mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\4Emo-exc-ang-sad-neu')
+    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -358,11 +356,11 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    flagLoadModel = 1 #1=load, 0=new
+    flagLoadModel = 0 #1=load, 0=new
     labelLimit = 500 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 10 #number of epoch for each file trained
-    nameFileResult = 'Train6'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)
+    n_epoch = 30 #number of epoch for each file trained
+    nameFileResult = 'Train1-LR^-5'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
