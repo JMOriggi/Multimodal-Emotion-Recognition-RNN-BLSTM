@@ -19,20 +19,13 @@ import itertools
 np.seterr(divide='ignore', invalid='ignore')
 
 
-def plot_confusion_matrix(cm, classes,
-                          normalize=False,
-                          title='Confusion matrix',
-                          cmap=plt.cm):
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
+def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm):
+    
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
     else:
         print('Confusion matrix, without normalization')
-
     print(cm)
 
     plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
@@ -53,8 +46,21 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     
-    
     return plt
+
+
+def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt):
+    expected = np.argmax(expected, axis=1)
+    cm = confusion_matrix(expected, allPredictionClasses)
+    
+    plt.subplot(2, 1, 1)
+    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM', normalize=False)
+    plt.subplot(2, 1, 2)
+    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM_Norm', normalize=True)
+    
+    OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
+    plt.savefig(OutputImgPath)
+    plt.show()
     
     
 def statistics(Y, yhat, correctCounter, predEmoCounter):
@@ -275,11 +281,15 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit):
                     predEmoCounter = predEmoCounter.reshape(1,4)
                     correctCounter = correctCounter[0]
                     predEmoCounter = predEmoCounter[0]
-                    predReview.append(np.array(['----STATISTICS PREDICTION----']))
+                    accurancy = (correctCounter[0] + correctCounter[1] + correctCounter[2] + correctCounter[3])/(labelLimit*4)
+                    print('Accurancy: ',accurancy)
+                    predReview.append(np.array(['----STATISTICS----']))
                     predReview.append(np.array(['TOT emo trained:',labelLimit]))
-                    predReview.append(np.array(['How many correct prediction for each class']))
+                    predReview.append(np.array(['Accurancy']))
+                    predReview.append(accurancy*100)
+                    predReview.append(np.array(['Correct prediction (diagonal of the CM)']))
                     predReview.append(correctCounter)
-                    predReview.append(np.array(['Total prediction for each class']))
+                    predReview.append(np.array(['Total prediction for each class (correct and wrong)']))
                     predReview.append(predEmoCounter)
                     predReview.append(np.array(['Ratio tot emo correct recognized (over tot pred for class) norm %']))
                     predReview.append(np.divide((correctCounter*100),predEmoCounter))
@@ -309,9 +319,9 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    labelLimit = 740 #Number of each emotion label file to process
+    labelLimit = 10 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'Prediction-1'+'-Emo_'+str(labelLimit)
+    nameFileResult = 'Pred_1'+'-'+'#Emo_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -332,16 +342,12 @@ if __name__ == '__main__':
     #PREDICT & SAVE
     allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit)
     OutputFilePath = os.path.join(dirRes, nameFileResult)
-    saveCsv(allPrediction, OutputFilePath)
+    #saveCsv(allPrediction, OutputFilePath)
     saveTxt(predReview, OutputFilePath)
     
-    #PLOT CONFUSION MAIRIX
-    expected = np.argmax(expected, axis=1)
-    cm = confusion_matrix(expected, allPredictionClasses)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult)
-    OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
-    plt.savefig(OutputImgPath)
-    plt.show()
+    #COMPUTE & SAVE CONFUSION MAIRIX
+    plt.figure(figsize=(4,7))
+    computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, plt)
     
     #EVALUATE THE MODEL
     '''seed = 7
