@@ -307,7 +307,7 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                     print(emoCounter) 
     
         #AFTER EACH DB EPOCH MAKE PREDICTION
-        nameFileResult = 'Training_1'+'-'+'DBepoch_'+str(x)
+        nameFileResult = 'Training_6'+'-'+'DBepoch_'+str(x)
         OutputFilePath = os.path.join(dirRes, nameFileResult)
         allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch, db_epoch, maxTimestep)
         computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, False)
