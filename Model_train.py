@@ -429,7 +429,7 @@ if __name__ == '__main__':
     #MODEL SUMMARY
     modelA.summary()
     print('Train of #file: ', fileLimit)
-    print('Files with #feautres: ', allAudioFeature[0].shape[1])
+    print('Files with #features: ', allAudioFeature[0].shape[1])
     print('Max time step: ',maxTimestep)
     print('Train number of each emotion: ', labelLimit)
     print('Train for file epoch: ', n_epoch)
