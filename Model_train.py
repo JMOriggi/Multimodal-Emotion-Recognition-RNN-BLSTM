@@ -236,36 +236,6 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
-def reshapeLSTMInOut(audFeat, label, maxTimestep):
-    X = []
-    X.append(audFeat)
-    X = np.asarray(X)
-    X = pad_sequences(X, maxlen=maxTimestep)
-    Y = np.asarray(label)
-    
-    return X, Y
-
-
-def buildBLTSM(maxTimestep, numFeatures):
-    '''model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(None, numFeatures)))
-    model.add(Dense(512, activation='relu'))
-    model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    '''
-    
-    model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=(maxTimestep, numFeatures)))
-    model.add(TimeDistributed(Dense(512, activation='tanh')))
-    model.add(AveragePooling1D())
-    model.add(Flatten())
-    model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    
-    
-    return model 
-
-
 def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, n_epoch, db_epoch, maxTimestep):
     
     allPrediction = []
@@ -331,6 +301,35 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
     return allPrediction, predReview, allPredictionClasses, expected
 
 
+def reshapeLSTMInOut(audFeat, label, maxTimestep):
+    X = []
+    X.append(audFeat)
+    X = np.asarray(X)
+    X = pad_sequences(X, maxlen=maxTimestep)
+    Y = np.asarray(label)
+    
+    return X, Y
+
+
+def buildBLTSM(maxTimestep, numFeatures):
+    '''model = Sequential()
+    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(None, numFeatures)))
+    model.add(Dense(512, activation='relu'))
+    model.add(Dense(4, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    '''
+    
+    model = Sequential()
+    model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=(maxTimestep, numFeatures)))
+    model.add(TimeDistributed(Dense(512, activation='relu')))
+    model.add(AveragePooling1D())
+    model.add(Flatten())
+    model.add(Dense(4, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    
+    return model 
+
+
 def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch, db_epoch, dirRes, maxTimestep):    
     
     for x in range(db_epoch):
@@ -372,7 +371,7 @@ def trainBLSTM(fileName, Features, Labels, model, fileLimit, labelLimit, n_epoch
                     print(emoCounter) 
     
         #AFTER EACH DB EPOCH MAKE PREDICTION
-        nameFileResult = 'Training_6'+'-'+'DBepoch_'+str(x)
+        nameFileResult = 'Training_9'+'-'+'DBepoch_'+str(x)
         OutputFilePath = os.path.join(dirRes, nameFileResult)
         allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, n_epoch, db_epoch, maxTimestep)
         computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, False)
@@ -405,7 +404,7 @@ if __name__ == '__main__':
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 1 #number of epoch for each file trained
-    db_epoch = 1 #number of epoch of passing the entire db
+    db_epoch = 5 #number of epoch of passing the entire db
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
