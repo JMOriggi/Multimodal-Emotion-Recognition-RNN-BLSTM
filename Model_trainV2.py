@@ -304,7 +304,7 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
 def reshapeLSTMInOut(audFeat, label, maxTimestep):
     X = []
     X = np.asarray(audFeat)
-    X = pad_sequences(X, maxlen=maxTimestep)
+    X = pad_sequences(X, maxlen=maxTimestep, dtype='float32')
     Y = np.asarray(label)
     Y = Y.reshape(len(Y), 4)
     
@@ -312,20 +312,22 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
 
 
 def buildBLTSM(maxTimestep, numFeatures):
-    '''model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(None, numFeatures)))
+    
+    model = Sequential()
+    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
     model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    '''
     
-    model = Sequential()
+    
+    '''model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=(maxTimestep, numFeatures)))
     model.add(TimeDistributed(Dense(512, activation='relu')))
     model.add(AveragePooling1D())
     model.add(Flatten())
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    '''
     
     return model 
 
@@ -334,12 +336,13 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     
     train_X = []
     train_Y = []
+    print(Features[0:3])
     print(np.asarray(Features).shape)
     print(np.asarray(Labels).shape)
     train_X, train_Y = reshapeLSTMInOut(Features, Labels, maxTimestep)
     print(np.asarray(train_X).shape)
     print(np.asarray(train_Y).shape)
-    print(train_Y)
+    print(train_X[0:3])
     
     #FIT MODEL for one epoch on this sequence
     model.fit(train_X, train_Y, validation_split=0.1, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2)
