@@ -317,7 +317,7 @@ def buildBLTSM(maxTimestep, numFeatures):
     model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
     model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.000001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     
     
     '''model = Sequential()
@@ -336,19 +336,18 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     
     train_X = []
     train_Y = []
-    print(Features[0:3])
+    '''print(Features[0:3])
     print(np.asarray(Features).shape)
-    print(np.asarray(Labels).shape)
+    print(np.asarray(Labels).shape)'''
     train_X, train_Y = reshapeLSTMInOut(Features, Labels, maxTimestep)
-    print(np.asarray(train_X).shape)
+    '''print(np.asarray(train_X).shape)
     print(np.asarray(train_Y).shape)
-    print(train_X[0:3])
+    print(train_X[0:3])'''
     
     #FIT MODEL for one epoch on this sequence
-    model.fit(train_X, train_Y, validation_split=0.1, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2)
-     
+    history = model.fit(train_X, train_Y, validation_split=0.1, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2)
         
-    return model    
+    return model, history  
   
     
 if __name__ == '__main__':
@@ -373,7 +372,7 @@ if __name__ == '__main__':
     flagLoadModel = 1 #1=load, 0=new
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 10 #number of epoch for each file trained
+    n_epoch = 50 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
@@ -404,13 +403,36 @@ if __name__ == '__main__':
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        model_Audio = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, n_epoch, dirRes, maxTimestep)
+        model_Audio, history = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, n_epoch, dirRes, maxTimestep)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1 or modelType == 2:
         #modelText = trainBLSTM(allFileName, allTextFeature, allLabels, modelT, fileLimit, labelLimit, n_epoch)    
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)
+    
+    #VISUALIZE HISTORY
+    # summarize history for accuracy
+    plt.figure(figsize=(5,8))
+    plt.subplot(2, 1, 1)
+    plt.plot(history.history['categorical_accuracy'])
+    plt.plot(history.history['val_categorical_accuracy'])
+    plt.title('model categorical_accuracy')
+    plt.ylabel('categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    # summarize history for loss
+    plt.subplot(2, 1, 2)
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    #save it
+    OutputImgPath = os.path.join(dirRes, 'Train_Metrics.png')
+    plt.savefig(OutputImgPath)
+    plt.show()
     
     print('END')
     
