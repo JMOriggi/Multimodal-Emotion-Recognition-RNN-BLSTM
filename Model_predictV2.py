@@ -76,8 +76,11 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
 
 
 def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
+    labelLimit = 170
     expected = np.argmax(expected, axis=1)
     cm = confusion_matrix(expected, allPredictionClasses)
+    accurancy = (cm[0][0] + cm[1][1] + cm[2][2] + cm[3][3])/(labelLimit*4)
+    print('Accurancy: ',accurancy)
     plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
     
     OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
@@ -277,7 +280,7 @@ if __name__ == '__main__':
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'Pred'+'-'+'#Emo_'+str(labelLimit)
+    nameFileResult = 'PredWeights'+'-'+'#Emo_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -293,10 +296,10 @@ if __name__ == '__main__':
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        #model_Audio = load_model(mainRootModelAudio) 
-        OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
-        model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
-        model_Audio.load_weights(OutputWeightsPath)
+        model_Audio = load_model(mainRootModelAudio) 
+        #OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
+        #model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        #model_Audio.load_weights(OutputWeightsPath)
     if modelType == 1 or modelType == 2:
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
     

@@ -206,7 +206,7 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
 
 def buildBLTSM(maxTimestep, numFeatures):
     
-    '''nb_lstm_cells = 128
+    nb_lstm_cells = 128
     nb_classes = 4
     nb_hidden_units = 512
     
@@ -216,8 +216,8 @@ def buildBLTSM(maxTimestep, numFeatures):
 
     # Bi-directional Long Short-Term Memory for learning the temporal aggregation
     input_feature = Input(shape=(maxTimestep,numFeatures))
-    x = Masking(mask_value=-100.0)(input_feature)
-    x = Dense(nb_hidden_units, activation='relu')(x)
+    #x = Masking(mask_value=-100.0)(input_feature)
+    x = Dense(nb_hidden_units, activation='relu')(input_feature)
     x = Dropout(0.5)(x)
     x = Dense(nb_hidden_units, activation='relu')(x)
     x = Dropout(0.5)(x)
@@ -232,17 +232,19 @@ def buildBLTSM(maxTimestep, numFeatures):
 
     # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
+    model = Model(inputs=[input_attention, input_feature], outputs=output)
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
 
-    return Model(inputs=[input_attention, input_feature], outputs=output)'''
+    return model
     
     #MODELLO BASE SEMPLICE
-    model = Sequential()
+    '''model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
     #model.add(Dropout(0.5))
     model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    
+    '''
     
     ''''model = Sequential()
     model.add(TimeDistributed(Dense(128, activation='relu'), input_shape=(maxTimestep, numFeatures)))
@@ -259,7 +261,7 @@ def buildBLTSM(maxTimestep, numFeatures):
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     '''
-    return model 
+    #return model 
 
 
 def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):    
@@ -280,7 +282,7 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
         os.remove(OutputWeightsPath)
     except OSError:
         pass
-    checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_categorical_accuracy', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     callbacks_list = [checkpoint]
     
     #FIT MODEL for one epoch on this sequence
