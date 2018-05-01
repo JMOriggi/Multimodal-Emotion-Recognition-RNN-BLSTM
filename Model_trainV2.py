@@ -21,6 +21,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 import itertools
 from keras.utils import np_utils
+from keras.callbacks import ModelCheckpoint 
 np.seterr(divide='ignore', invalid='ignore')
 
 
@@ -314,21 +315,19 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
 def buildBLTSM(maxTimestep, numFeatures):
     
     model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
-    model.add(Dense(512, activation='relu'))
+    model.add(TimeDistributed(Dense(10, activation='relu'), input_shape=(maxTimestep, numFeatures)))
+    model.add(Bidirectional(LSTM(128, return_sequences=False)))
+    #model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.000001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     
     '''model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=(maxTimestep, numFeatures)))
-    model.add(TimeDistributed(Dense(512, activation='relu')))
+    model.add(Bidirectional(LSTM(128, return_sequences=True, dropout=0.5), input_shape=(maxTimestep, numFeatures)))
     model.add(AveragePooling1D())
     model.add(Flatten())
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     '''
-    
     return model 
 
 
@@ -344,8 +343,23 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     print(np.asarray(train_Y).shape)
     print(train_X[0:3])'''
     
+    #CHECPOINT
+    OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')
+    try:
+        os.remove(OutputWeightsPath)
+    except OSError:
+        pass
+    checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_categorical_accuracy', verbose=1, save_best_only=True, mode='max')
+    callbacks_list = [checkpoint]
+    
     #FIT MODEL for one epoch on this sequence
-    history = model.fit(train_X, train_Y, validation_split=0.1, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2)
+    history = model.fit(train_X, train_Y, validation_split=0.15, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)
+        
+    #EVALUATION OF THE BEST VERSION MODEL
+    modelEv = buildBLTSM(maxTimestep, Features[0].shape[1])
+    modelEv.load_weights(OutputWeightsPath)
+    scores = modelEv.evaluate(train_X, train_Y, verbose=0)  
+    print('%s: %.2f%%' % (modelEv.metrics_names[1], scores[1]*100)) 
         
     return model, history  
   
@@ -369,10 +383,10 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    flagLoadModel = 1 #1=load, 0=new
+    flagLoadModel = 0 #1=load, 0=new
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 50 #number of epoch for each file trained
+    n_epoch = 100 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
@@ -430,7 +444,7 @@ if __name__ == '__main__':
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     #save it
-    OutputImgPath = os.path.join(dirRes, 'Train_Metrics.png')
+    OutputImgPath = os.path.join(dirRes, 'Train_mod1_LR10^-5_Metrics.png')
     plt.savefig(OutputImgPath)
     plt.show()
     
