@@ -315,11 +315,19 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
 def buildBLTSM(maxTimestep, numFeatures):
     
     model = Sequential()
-    model.add(TimeDistributed(Dense(10, activation='relu'), input_shape=(maxTimestep, numFeatures)))
+    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
+    #model.add(Dropout(0.5))
+    model.add(Dense(512, activation='relu'))
+    model.add(Dense(4, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    
+    ''''model = Sequential()
+    model.add(TimeDistributed(Dense(128, activation='relu'), input_shape=(maxTimestep, numFeatures)))
     model.add(Bidirectional(LSTM(128, return_sequences=False)))
     #model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.000001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    '''
     
     '''model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=True, dropout=0.5), input_shape=(maxTimestep, numFeatures)))
@@ -386,7 +394,7 @@ if __name__ == '__main__':
     flagLoadModel = 0 #1=load, 0=new
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 100 #number of epoch for each file trained
+    n_epoch = 200 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY

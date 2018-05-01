@@ -244,13 +244,21 @@ def buildBLTSM(maxTimestep, numFeatures):
     '''
     
     model = Sequential()
+    model.add(TimeDistributed(Dense(128, activation='relu'), input_shape=(maxTimestep, numFeatures)))
+    model.add(Bidirectional(LSTM(128, return_sequences=False)))
+    #model.add(Dense(512, activation='relu'))
+    model.add(Dense(4, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.000001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    
+    
+    '''model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=True), input_shape=(maxTimestep, numFeatures)))
     model.add(TimeDistributed(Dense(512, activation='relu')))
     model.add(AveragePooling1D())
     model.add(Flatten())
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    
+    '''
     
     return model
 
