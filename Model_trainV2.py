@@ -3,15 +3,15 @@ import os
 import csv
 import operator
 from keras.preprocessing.sequence import pad_sequences
+from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
+from keras.layers.merge import dot
+from keras.models import Model
 from keras.models import Sequential
-from keras.layers import LSTM
-from keras.layers import Bidirectional
 from keras.layers import TimeDistributed
 from keras.layers import AveragePooling1D
 from keras.layers import Flatten
 from keras.layers import Masking
 from keras.models import load_model
-from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD, Adam, RMSprop
 import matplotlib.pyplot as plt
 from sklearn import svm, datasets
@@ -87,50 +87,7 @@ def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, fl
     plt.savefig(OutputImgPath)
     if flagPlotGraph:
         plt.show()
-    
-    
-def statistics(Y, yhat, correctCounter, predEmoCounter):
-    index, value = max(enumerate(Y[0]), key=operator.itemgetter(1))
-    Pindex, Pvalue = max(enumerate(yhat[0]), key=operator.itemgetter(1))
-    '''print('index: ', index, 'value: ', value)
-    print('index: ', Pindex, 'value: ', Pvalue)'''
-    
-    #UPDATE CORRECT COUNTER
-    if index == Pindex:
-        correctCounter[index] += 1
-    
-    #UPDATE PREDICTED EMO COUNTER
-    predEmoCounter[Pindex] += 1
-    
-    return correctCounter, predEmoCounter
 
-
-def addEmoCountV2(emoLabel, counter):
-    if  emoLabel[0][0] == 1: 
-        counter[0] += 1
-    if  emoLabel[0][1] == 1:    
-        counter[1] += 1
-    if  emoLabel[0][2] == 1: 
-        counter[2] += 1
-    if  emoLabel[0][3] == 1: 
-        counter[3] += 1  
-    return counter
-
-
-def checkEmoCounterV2(emoLabel, counter, labelLimit):
-    if  emoLabel[0][0] == 1: 
-        if counter[0] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][1] == 1:    
-        if counter[1] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][2] == 1: 
-        if counter[2] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][3] == 1: 
-        if counter[3] > labelLimit:
-            return 'stop'  
-    return 'ok'
 
 
 def saveCsv(currentFile, csvOutputFilePath):
@@ -237,71 +194,6 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
-def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, n_epoch, db_epoch, maxTimestep):
-    
-    allPrediction = []
-    allPredictionClasses = []
-    expected = []
-    emoCounter = np.array([[0],[0],[0],[0]]) #count label to block after labelLimit prediction
-    correctCounter = np.array([[0],[0],[0],[0]]) #count correct prediction for each label, last place is for total number of each label
-    predEmoCounter = np.array([[0],[0],[0],[0]]) #count how many prediction for each label
-    
-    for i in range(fileLimit):
-        
-        if Labels[i][0][3] != 2:
-            
-            #Check number of current label processed and stop if # too high
-            emoTreshStop = checkEmoCounterV2(Labels[i], emoCounter, labelLimit)
-            
-            if emoTreshStop == 'ok':
-                print('\nROUND: ',i,'/',fileLimit)
-                
-                #FORMAT X & Y
-                X, Y = reshapeLSTMInOut(inputTest[i], Labels[i], maxTimestep)
-                
-                #PREDICT
-                yhat = model.predict_on_batch(X)
-                print('Expected:', Y, 'Predicted', yhat) 
-                yhat2 = model.predict_classes(X)
-                print('Expected:', Y, 'Predicted', yhat2) 
-                allPredictionClasses.append(yhat2)
-                expected.append(Y[0])
-                
-                #UPDATE COUNTER
-                emoCounter = addEmoCountV2(Labels[i], emoCounter)
-                print(emoCounter)
-                
-                #UPDATE CORRECT PREDICTION COUNTER
-                correctCounter, predEmoCounter = statistics(Y, yhat, correctCounter, predEmoCounter)
-                
-                #APPEND PREDICTED RESULT
-                allPrediction.append(np.array([fileName[i]]))
-                allPrediction.append(Y[0])
-                allPrediction.append(yhat[0])
-                
-                #IF LAST PREDICTION APPEND STATISTICS RIEVIEW FOR TXT
-                if emoCounter[3] == labelLimit:
-                    predReview = []
-                    correctCounter = correctCounter.reshape(1,4)
-                    predEmoCounter = predEmoCounter.reshape(1,4)
-                    correctCounter = correctCounter[0]
-                    predEmoCounter = predEmoCounter[0]
-                    accurancy = (correctCounter[0] + correctCounter[1] + correctCounter[2] + correctCounter[3])/(labelLimit*4)
-                    print('Accurancy: ',accurancy)
-                    predReview.append(np.array(['----STATISTICS----']))
-                    predReview.append(np.array(['TOT emo trained:',labelLimit]))
-                    predReview.append(np.array(['TOT File Epoch:',n_epoch]))
-                    predReview.append(np.array(['TOT DB Epoch:',db_epoch]))
-                    predReview.append(np.array(['Accurancy']))
-                    predReview.append(accurancy*100)
-                    predReview.append(np.array(['Correct prediction (diagonal of the CM)']))
-                    predReview.append(correctCounter)
-                    predReview.append(np.array(['Total prediction for each class (correct and wrong)']))
-                    predReview.append(predEmoCounter)
-                    
-    return allPrediction, predReview, allPredictionClasses, expected
-
-
 def reshapeLSTMInOut(audFeat, label, maxTimestep):
     X = []
     X = np.asarray(audFeat)
@@ -314,12 +206,43 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
 
 def buildBLTSM(maxTimestep, numFeatures):
     
+    '''nb_lstm_cells = 128
+    nb_classes = 4
+    nb_hidden_units = 512
+    
+    # Logistic regression for learning the attention parameters with a standalone feature as input
+    input_attention = Input(shape=(nb_lstm_cells * 2,))
+    u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
+
+    # Bi-directional Long Short-Term Memory for learning the temporal aggregation
+    input_feature = Input(shape=(maxTimestep,numFeatures))
+    x = Masking(mask_value=-100.0)(input_feature)
+    x = Dense(nb_hidden_units, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    x = Dense(nb_hidden_units, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    y = Bidirectional(LSTM(nb_lstm_cells, return_sequences=True, dropout=0.5))(x)
+
+    # To compute the final weights for the frames which sum to unity
+    alpha = dot([u, y], axes=-1)  # inner prod.
+    alpha = Activation('softmax')(alpha)
+
+    # Weighted pooling to get the utterance-level representation
+    z = dot([alpha, y], axes=1)
+
+    # Get posterior probability for each emotional class
+    output = Dense(nb_classes, activation='softmax')(z)
+
+    return Model(inputs=[input_attention, input_feature], outputs=output)'''
+    
+    #MODELLO BASE SEMPLICE
     model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
     #model.add(Dropout(0.5))
     model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    
     
     ''''model = Sequential()
     model.add(TimeDistributed(Dense(128, activation='relu'), input_shape=(maxTimestep, numFeatures)))
@@ -394,7 +317,7 @@ if __name__ == '__main__':
     flagLoadModel = 0 #1=load, 0=new
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 200 #number of epoch for each file trained
+    n_epoch = 50 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY

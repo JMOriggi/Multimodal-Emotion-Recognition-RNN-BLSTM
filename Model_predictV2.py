@@ -2,6 +2,9 @@ import numpy as np
 import os
 import csv
 import operator
+from keras.layers import TimeDistributed
+from keras.layers import AveragePooling1D
+from keras.layers import Flatten
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers import LSTM
@@ -97,34 +100,6 @@ def statistics(Y, yhat, correctCounter, predEmoCounter):
     predEmoCounter[Pindex] += 1
     
     return correctCounter, predEmoCounter
-
-
-def addEmoCountV2(emoLabel, counter):
-    if  emoLabel[0][0] == 1: 
-        counter[0] += 1
-    if  emoLabel[0][1] == 1:    
-        counter[1] += 1
-    if  emoLabel[0][2] == 1: 
-        counter[2] += 1
-    if  emoLabel[0][3] == 1: 
-        counter[3] += 1  
-    return counter
-
-
-def checkEmoCounterV2(emoLabel, counter, labelLimit):
-    if  emoLabel[0][0] == 1: 
-        if counter[0] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][1] == 1:    
-        if counter[1] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][2] == 1: 
-        if counter[2] > labelLimit:
-            return 'stop'
-    if  emoLabel[0][3] == 1: 
-        if counter[3] > labelLimit:
-            return 'stop'  
-    return 'ok'
 
 
 def saveCsv(currentFile, csvOutputFilePath):
@@ -231,12 +206,26 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
+def buildBLTSM(maxTimestep, numFeatures):
+    
+    #MODELLO BASE SEMPLICE
+    model = Sequential()
+    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
+    #model.add(Dropout(0.5))
+    model.add(Dense(512, activation='relu'))
+    model.add(Dense(4, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    
+    
+    return model
+
+
 def reshapeLSTMInOut(audFeat, label, maxTimestep):
     X = []
-    X.append(audFeat)
-    X = np.asarray(X)
+    X = np.asarray(audFeat)
     X = pad_sequences(X, maxlen=maxTimestep, dtype='float32')
     Y = np.asarray(label)
+    Y = Y.reshape(len(Y), 4)
     
     return X, Y
 
@@ -250,58 +239,19 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
     correctCounter = np.array([[0],[0],[0],[0]]) #count correct prediction for each label, last place is for total number of each label
     predEmoCounter = np.array([[0],[0],[0],[0]]) #count how many prediction for each label
     
-    for i in range(fileLimit):
-        
-        if Labels[i][0][3] != 2:
-            
-            #Check number of current label processed and stop if # too high
-            emoTreshStop = checkEmoCounterV2(Labels[i], emoCounter, labelLimit)
-            
-            if emoTreshStop == 'ok':
-                print('\nROUND: ',i,'/',fileLimit)
-                
-                #FORMAT X & Y
-                X, Y = reshapeLSTMInOut(inputTest[i], Labels[i], maxTimestep)
-                
-                #PREDICT
-                yhat = model.predict_on_batch(X)
-                print('Expected:', Y, 'Predicted', yhat) 
-                yhat2 = model.predict_classes(X)
-                print('Expected:', Y, 'Predicted', yhat2) 
-                allPredictionClasses.append(yhat2)
-                expected.append(Y[0])
-                
-                #UPDATE COUNTER
-                emoCounter = addEmoCountV2(Labels[i], emoCounter)
-                print(emoCounter)
-                
-                #UPDATE CORRECT PREDICTION COUNTER
-                correctCounter, predEmoCounter = statistics(Y, yhat, correctCounter, predEmoCounter)
-                
-                #APPEND PREDICTED RESULT
-                allPrediction.append(np.array([fileName[i]]))
-                allPrediction.append(Y[0])
-                allPrediction.append(yhat[0])
-                
-                #IF LAST PREDICTION APPEND STATISTICS RIEVIEW FOR TXT
-                if emoCounter[3] == labelLimit:
-                    predReview = []
-                    correctCounter = correctCounter.reshape(1,4)
-                    predEmoCounter = predEmoCounter.reshape(1,4)
-                    correctCounter = correctCounter[0]
-                    predEmoCounter = predEmoCounter[0]
-                    accurancy = (correctCounter[0] + correctCounter[1] + correctCounter[2] + correctCounter[3])/(labelLimit*4)
-                    print('Accurancy: ',accurancy)
-                    predReview.append(np.array(['----STATISTICS----']))
-                    predReview.append(np.array(['TOT emo trained:',labelLimit]))
-                    predReview.append(np.array(['Accurancy']))
-                    predReview.append(accurancy*100)
-                    predReview.append(np.array(['Correct prediction (diagonal of the CM)']))
-                    predReview.append(correctCounter)
-                    predReview.append(np.array(['Total prediction for each class (correct and wrong)']))
-                    predReview.append(predEmoCounter)
+    #FORMAT X & Y
+    X, Y = reshapeLSTMInOut(inputTest, Labels, maxTimestep)
+    
+    #PREDICT
+    yhat = model.predict(X)
+    yhat2 = model.predict_classes(X)
+    for i in range(len(yhat)):
+        print('Expected:', Y[i], 'Predicted', yhat[i])
+        print('Expected:', Y[i], 'Predicted', yhat2[i]) 
+        allPredictionClasses.append(yhat2[i])
+        expected.append(Y[i])
                     
-    return allPrediction, predReview, allPredictionClasses, expected
+    return allPredictionClasses, expected
     
     
 if __name__ == '__main__':
@@ -327,7 +277,7 @@ if __name__ == '__main__':
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'Pred_B2'+'-'+'#Emo_'+str(labelLimit)
+    nameFileResult = 'Pred'+'-'+'#Emo_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -343,16 +293,17 @@ if __name__ == '__main__':
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        model_Audio = load_model(mainRootModelAudio)    
+        #model_Audio = load_model(mainRootModelAudio) 
+        OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
+        model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        model_Audio.load_weights(OutputWeightsPath)
     if modelType == 1 or modelType == 2:
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
     
     #PREDICT & SAVE
-    allPrediction, predReview, allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, maxTimestep)
+    allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, maxTimestep)
     computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, True)
     OutputFilePath = os.path.join(dirRes, nameFileResult)
-    saveTxt(predReview, OutputFilePath)
-    #saveCsv(allPrediction, OutputFilePath)
     
     #EVALUATE THE MODEL
     '''seed = 7
