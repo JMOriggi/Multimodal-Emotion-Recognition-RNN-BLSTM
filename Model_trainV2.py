@@ -21,7 +21,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 import itertools
 from keras.utils import np_utils
-from keras.callbacks import ModelCheckpoint 
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 np.seterr(divide='ignore', invalid='ignore')
 
 
@@ -206,7 +206,7 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
 
 def buildBLTSM(maxTimestep, numFeatures):
     
-    '''nb_lstm_cells = 128
+    nb_lstm_cells = 128
     nb_classes = 4
     nb_hidden_units = 512
     
@@ -216,8 +216,8 @@ def buildBLTSM(maxTimestep, numFeatures):
 
     # Bi-directional Long Short-Term Memory for learning the temporal aggregation
     input_feature = Input(shape=(maxTimestep,numFeatures))
-    #x = Masking(mask_value=-100.0)(input_feature)
-    x = Dense(nb_hidden_units, activation='relu')(input_feature)
+    x = Masking(mask_value=0.)(input_feature)
+    x = Dense(nb_hidden_units, activation='relu')(x)
     x = Dropout(0.5)(x)
     x = Dense(nb_hidden_units, activation='relu')(x)
     x = Dropout(0.5)(x)
@@ -235,16 +235,18 @@ def buildBLTSM(maxTimestep, numFeatures):
     model = Model(inputs=[input_attention, input_feature], outputs=output)
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
 
-    return model'''
+    print('Ok')
+
+    return model
     
     #MODELLO BASE SEMPLICE
-    model = Sequential()
+    '''model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
     model.add(Dropout(0.5))
     model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    
+    '''
     
     ''''model = Sequential()
     model.add(TimeDistributed(Dense(128, activation='relu'), input_shape=(maxTimestep, numFeatures)))
@@ -261,7 +263,7 @@ def buildBLTSM(maxTimestep, numFeatures):
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     '''
-    return model 
+    #return model 
 
 
 def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):    
@@ -283,15 +285,35 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     except OSError:
         pass
     checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-    callbacks_list = [checkpoint]
+    #callbacks_list = [checkpoint]
+    callbacks_list = [
+        EarlyStopping(
+            monitor='val_loss',
+            patience=20,
+            verbose=1,
+            mode='auto'
+        ),
+        ModelCheckpoint(
+            filepath=OutputWeightsPath,
+            monitor='val_acc',
+            save_best_only='True',
+            verbose=1,
+            mode='max'
+        )
+    ]
+    
+    #PREPARE ATTENTION ARRAY INPUT:  training and test
+    nb_attention_param = 256
+    attention_init_value = 1.0 / 256
+    u_train = np.full((train_X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #FIT MODEL for one epoch on this sequence
-    history = model.fit(train_X, train_Y, validation_split=0.15, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)
+    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = buildBLTSM(maxTimestep, Features[0].shape[1])
     modelEv.load_weights(OutputWeightsPath)
-    scores = modelEv.evaluate(train_X, train_Y, verbose=0)  
+    scores = modelEv.evaluate([u_train, train_X], train_Y, verbose=0)  
     print('%s: %.2f%%' % (modelEv.metrics_names[1], scores[1]*100)) 
         
     return model, history  
@@ -378,7 +400,7 @@ if __name__ == '__main__':
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     #save it
-    OutputImgPath = os.path.join(dirRes, 'Train_mod1_LR10^-5_Metrics.png')
+    OutputImgPath = os.path.join(dirRes, 'Train_modNew_LR10^-5_Metrics.png')
     plt.savefig(OutputImgPath)
     plt.show()
     
