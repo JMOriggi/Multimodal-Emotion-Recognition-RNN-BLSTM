@@ -322,16 +322,16 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -342,7 +342,7 @@ if __name__ == '__main__':
     flagLoadModel = 0 #1=load, 0=new
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 300 #number of epoch for each file trained
+    n_epoch = 150 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
