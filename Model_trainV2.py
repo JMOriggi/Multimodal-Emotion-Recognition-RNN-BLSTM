@@ -233,9 +233,8 @@ def buildBLTSM(maxTimestep, numFeatures):
     # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
 
-    print('Ok')
 
     return model
     
@@ -270,13 +269,11 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     
     train_X = []
     train_Y = []
-    '''print(Features[0:3])
-    print(np.asarray(Features).shape)
+    '''print(np.asarray(Features).shape)
     print(np.asarray(Labels).shape)'''
     train_X, train_Y = reshapeLSTMInOut(Features, Labels, maxTimestep)
     '''print(np.asarray(train_X).shape)
-    print(np.asarray(train_Y).shape)
-    print(train_X[0:3])'''
+    print(np.asarray(train_Y).shape)'''
     
     #CHECPOINT
     OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')
@@ -284,7 +281,7 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
         os.remove(OutputWeightsPath)
     except OSError:
         pass
-    checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+    #checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     #callbacks_list = [checkpoint]
     callbacks_list = [
         EarlyStopping(
@@ -308,7 +305,7 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     u_train = np.full((train_X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #FIT MODEL for one epoch on this sequence
-    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)
+    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=10, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = buildBLTSM(maxTimestep, Features[0].shape[1])
@@ -322,16 +319,16 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
     #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
@@ -340,9 +337,9 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 500 #Number of each emotion label file to process
+    labelLimit = 20 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 50 #number of epoch for each file trained
+    n_epoch = 150 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
@@ -400,7 +397,7 @@ if __name__ == '__main__':
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     #save it
-    OutputImgPath = os.path.join(dirRes, 'Train_modNew_LR10^-5_Metrics.png')
+    OutputImgPath = os.path.join(dirRes, 'Train_modNew_Metrics.png')
     plt.savefig(OutputImgPath)
     plt.show()
     

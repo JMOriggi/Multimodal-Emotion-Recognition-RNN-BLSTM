@@ -2,6 +2,9 @@ import numpy as np
 import os
 import csv
 import operator
+from keras.layers.merge import dot
+from keras.models import Model
+from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
 from keras.layers import TimeDistributed
 from keras.layers import AveragePooling1D
 from keras.layers import Flatten
@@ -10,7 +13,6 @@ from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Bidirectional
 from keras.models import load_model
-from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD, Adam, RMSprop
 import matplotlib.pyplot as plt
 from sklearn import svm, datasets
@@ -211,6 +213,38 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
 def buildBLTSM(maxTimestep, numFeatures):
     
+    '''nb_lstm_cells = 128
+    nb_classes = 4
+    nb_hidden_units = 512
+    
+    # Logistic regression for learning the attention parameters with a standalone feature as input
+    input_attention = Input(shape=(nb_lstm_cells * 2,))
+    u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
+
+    # Bi-directional Long Short-Term Memory for learning the temporal aggregation
+    input_feature = Input(shape=(maxTimestep,numFeatures))
+    x = Masking(mask_value=0.)(input_feature)
+    x = Dense(nb_hidden_units, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    x = Dense(nb_hidden_units, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    y = Bidirectional(LSTM(nb_lstm_cells, return_sequences=True, dropout=0.5))(x)
+
+    # To compute the final weights for the frames which sum to unity
+    alpha = dot([u, y], axes=-1)  # inner prod.
+    alpha = Activation('softmax')(alpha)
+
+    # Weighted pooling to get the utterance-level representation
+    z = dot([alpha, y], axes=1)
+
+    # Get posterior probability for each emotional class
+    output = Dense(nb_classes, activation='softmax')(z)
+    model = Model(inputs=[input_attention, input_feature], outputs=output)
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+
+
+    return model'''
+    
     #MODELLO BASE SEMPLICE
     model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
@@ -218,7 +252,6 @@ def buildBLTSM(maxTimestep, numFeatures):
     model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    
     
     return model
 
@@ -245,7 +278,14 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
     #FORMAT X & Y
     X, Y = reshapeLSTMInOut(inputTest, Labels, maxTimestep)
     
+    #PREPARE ATTENTION ARRAY INPUT:  training and test
+    '''nb_attention_param = 256
+    attention_init_value = 1.0 / 256
+    u_train = np.full((X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)'''
+    
     #PREDICT
+    '''yhat = model.predict([u_train,X])
+    yhat2 = model.predict_classes([u_train,X])'''
     yhat = model.predict(X)
     yhat2 = model.predict_classes(X)
     for i in range(len(yhat)):
@@ -278,7 +318,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    labelLimit = 170 #Number of each emotion label file to process
+    labelLimit = 20#170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     nameFileResult = 'PredWeights'+'-'+'#Emo_'+str(labelLimit)
     
@@ -287,13 +327,7 @@ if __name__ == '__main__':
     
     #FIND MAX TIMESTEP FOR PADDING
     maxTimestep = 290 #setted with training because no test file is longer than 290
-            
-    #MODEL SUMMARY
-    print('Train of #file: ', fileLimit)
-    print('Files with #features: ', allAudioFeature[0].shape[1])
-    print('Max time step: ',maxTimestep)
-    print('Train number of each emotion: ', labelLimit)
-    
+     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
         model_Audio = load_model(mainRootModelAudio) 
@@ -302,6 +336,13 @@ if __name__ == '__main__':
         #model_Audio.load_weights(OutputWeightsPath)
     if modelType == 1 or modelType == 2:
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
+    
+     #MODEL SUMMARY
+    model_Audio.summary()
+    print('Train of #file: ', fileLimit)
+    print('Files with #features: ', allAudioFeature[0].shape[1])
+    print('Max time step: ',maxTimestep)
+    print('Train number of each emotion: ', labelLimit)
     
     #PREDICT & SAVE
     allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, maxTimestep)
