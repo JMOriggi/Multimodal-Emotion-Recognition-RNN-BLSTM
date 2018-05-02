@@ -295,7 +295,7 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
         ),
         ModelCheckpoint(
             filepath=OutputWeightsPath,
-            monitor='val_acc',
+            monitor='val_categorical_accuracy',
             save_best_only='True',
             verbose=1,
             mode='max'
@@ -340,9 +340,9 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 740 #Number of each emotion label file to process
+    labelLimit = 500 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 150 #number of epoch for each file trained
+    n_epoch = 50 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
