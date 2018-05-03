@@ -213,7 +213,7 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
 def buildBLTSM(maxTimestep, numFeatures):
     
-    '''nb_lstm_cells = 128
+    nb_lstm_cells = 128
     nb_classes = 4
     nb_hidden_units = 512
     
@@ -243,17 +243,17 @@ def buildBLTSM(maxTimestep, numFeatures):
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
 
 
-    return model'''
+    return model
     
     #MODELLO BASE SEMPLICE
-    model = Sequential()
+    '''model = Sequential()
     model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
     model.add(Dropout(0.5))
     model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     
-    return model
+    return model'''
 
 
 def reshapeLSTMInOut(audFeat, label, maxTimestep):
@@ -279,19 +279,22 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
     X, Y = reshapeLSTMInOut(inputTest, Labels, maxTimestep)
     
     #PREPARE ATTENTION ARRAY INPUT:  training and test
-    '''nb_attention_param = 256
+    nb_attention_param = 256
     attention_init_value = 1.0 / 256
-    u_train = np.full((X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)'''
+    u_train = np.full((X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #PREDICT
-    '''yhat = model.predict([u_train,X])
-    yhat2 = model.predict_classes([u_train,X])'''
+    yhat = model.predict([u_train,X])
+    scores = model.evaluate([u_train, X], Y, verbose=0)  
+    print('EVALUATIOn %s: %.2f%%' % (model.metrics_names[1], scores[1]*100)) 
+    '''yhat2 = model.predict_classes([u_train,X])
     yhat = model.predict(X)
-    yhat2 = model.predict_classes(X)
+    yhat2 = model.predict_classes(X)'''
     for i in range(len(yhat)):
         print('Expected:', Y[i], 'Predicted', yhat[i])
-        print('Expected:', Y[i], 'Predicted', yhat2[i]) 
-        allPredictionClasses.append(yhat2[i])
+        #print('Expected:', Y[i], 'Predicted', yhat2[i]) 
+        Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
+        allPredictionClasses.append(Pindex)
         expected.append(Y[i])
                     
     return allPredictionClasses, expected
@@ -318,7 +321,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    labelLimit = 20#170 #Number of each emotion label file to process
+    labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     nameFileResult = 'PredWeights'+'-'+'#Emo_'+str(labelLimit)
     
