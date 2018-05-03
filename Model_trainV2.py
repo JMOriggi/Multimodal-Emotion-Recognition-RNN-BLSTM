@@ -233,7 +233,7 @@ def buildBLTSM(maxTimestep, numFeatures):
     # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.0001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
 
 
     return model
@@ -305,7 +305,7 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     u_train = np.full((train_X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #FIT MODEL for one epoch on this sequence
-    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=10, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)
+    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=10, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = buildBLTSM(maxTimestep, Features[0].shape[1])

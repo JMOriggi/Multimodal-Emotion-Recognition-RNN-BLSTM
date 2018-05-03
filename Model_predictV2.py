@@ -286,7 +286,6 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
     #PREDICT
     yhat = model.predict([u_train,X])
     scores = model.evaluate([u_train, X], Y, verbose=0)  
-    print('EVALUATIOn %s: %.2f%%' % (model.metrics_names[1], scores[1]*100)) 
     '''yhat2 = model.predict_classes([u_train,X])
     yhat = model.predict(X)
     yhat2 = model.predict_classes(X)'''
@@ -296,7 +295,9 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
         Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
         allPredictionClasses.append(Pindex)
         expected.append(Y[i])
-                    
+        
+    print('EVALUATION %s: %.2f%%' % (model.metrics_names[1], scores[1]*100))                
+    
     return allPredictionClasses, expected
     
     
@@ -333,19 +334,19 @@ if __name__ == '__main__':
      
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        model_Audio = load_model(mainRootModelAudio) 
-        #OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
-        #model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
-        #model_Audio.load_weights(OutputWeightsPath)
+        #model_Audio = load_model(mainRootModelAudio) 
+        OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
+        model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        model_Audio.load_weights(OutputWeightsPath)
     if modelType == 1 or modelType == 2:
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
     
      #MODEL SUMMARY
     model_Audio.summary()
-    print('Train of #file: ', fileLimit)
+    print('Predict of #file: ', fileLimit)
     print('Files with #features: ', allAudioFeature[0].shape[1])
     print('Max time step: ',maxTimestep)
-    print('Train number of each emotion: ', labelLimit)
+    print('Predict number of each emotion: ', labelLimit)
     
     #PREDICT & SAVE
     allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, maxTimestep)
