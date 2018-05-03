@@ -233,7 +233,7 @@ def buildBLTSM(maxTimestep, numFeatures):
     # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.0001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
 
 
     return model
@@ -337,9 +337,9 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 20 #Number of each emotion label file to process
+    labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 150 #number of epoch for each file trained
+    n_epoch = 300 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
@@ -397,7 +397,7 @@ if __name__ == '__main__':
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     #save it
-    OutputImgPath = os.path.join(dirRes, 'Train_modNew_Metrics.png')
+    OutputImgPath = os.path.join(dirRes, 'Train_modNew2_Metrics.png')
     plt.savefig(OutputImgPath)
     plt.show()
     
