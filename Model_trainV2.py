@@ -204,7 +204,7 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
     return X, Y
 
 
-def buildBLTSM(maxTimestep, numFeatures):
+def buildBLTSM(maxTimestep, numFeatures, LRate):
     
     #MODEL WITH ATTENTION
     nb_lstm_cells = 128
@@ -229,8 +229,8 @@ def buildBLTSM(maxTimestep, numFeatures):
     # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
-    #model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.01, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=0.001), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=LRate, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    #model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     
     #MODELLO BASE SEMPLICE
     '''model = Sequential()
@@ -259,7 +259,7 @@ def buildBLTSM(maxTimestep, numFeatures):
     return model 
 
 
-def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):    
+def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep, batchSize):    
     
     #RESHAPE TRAIN DATA
     train_X = []
@@ -278,22 +278,13 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
         pass
     #checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     #callbacks_list = [checkpoint]
-    '''callbacks_list = [
+    callbacks_list = [
         EarlyStopping(
             monitor='val_loss',
-            patience=20,
+            patience=15,
             verbose=1,
             mode='auto'
         ),
-        ModelCheckpoint(
-            filepath=OutputWeightsPath,
-            monitor='val_categorical_accuracy',
-            save_best_only='True',
-            verbose=1,
-            mode='max'
-        )
-    ]'''
-    callbacks_list = [
         ModelCheckpoint(
             filepath=OutputWeightsPath,
             monitor='val_categorical_accuracy',
@@ -309,7 +300,7 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     u_train = np.full((train_X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #FIT MODEL for one epoch on this sequence
-    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
+    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = buildBLTSM(maxTimestep, Features[0].shape[1])
@@ -341,9 +332,11 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 400#740 #Number of each emotion label file to process
+    labelLimit = 735 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 100 #number of epoch for each file trained
+    n_epoch = 200 #number of epoch for each file trained
+    batchSize = 160
+    LRate = 0.001
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
@@ -358,7 +351,7 @@ if __name__ == '__main__':
     
     #DEFINE MODEL
     if flagLoadModel == 0:
-        modelA = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        modelA = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1], LRate)
         #modelT = buildBLTSM()
     else:
         modelA = load_model(mainRootModelAudio)
@@ -366,15 +359,15 @@ if __name__ == '__main__':
     
     #MODEL SUMMARY
     modelA.summary()
-    print('Train of #file: ', fileLimit)
-    print('Files with #features: ', allAudioFeature[0].shape[1])
+    SummaryText = 'Att_Model-RMS-LR_'+str(LRate)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])
+    print(SummaryText)
     print('Max time step: ',maxTimestep)
     print('Train number of each emotion: ', labelLimit)
-    print('Train for file epoch: ', n_epoch)
+    print('Train of #file: ', fileLimit)
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        model_Audio, history = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, n_epoch, dirRes, maxTimestep)
+        model_Audio, history = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, n_epoch, dirRes, maxTimestep, batchSize, LRate)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1 or modelType == 2:

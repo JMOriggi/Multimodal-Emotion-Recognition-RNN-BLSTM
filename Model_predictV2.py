@@ -325,7 +325,7 @@ if __name__ == '__main__':
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredWeights'+'-'+'#Emo_'+str(labelLimit)
+    nameFileResult = 'PredModel'+'-'+'#Emo_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -335,10 +335,10 @@ if __name__ == '__main__':
      
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        #model_Audio = load_model(mainRootModelAudio) 
-        OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
-        model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
-        model_Audio.load_weights(OutputWeightsPath)
+        model_Audio = load_model(mainRootModelAudio) 
+        #OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
+        #model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        #model_Audio.load_weights(OutputWeightsPath)
     if modelType == 1 or modelType == 2:
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
     
