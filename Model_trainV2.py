@@ -206,14 +206,13 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
 
 def buildBLTSM(maxTimestep, numFeatures):
     
+    #MODEL WITH ATTENTION
     nb_lstm_cells = 128
     nb_classes = 4
     nb_hidden_units = 512
-    
     # Logistic regression for learning the attention parameters with a standalone feature as input
     input_attention = Input(shape=(nb_lstm_cells * 2,))
     u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
-
     # Bi-directional Long Short-Term Memory for learning the temporal aggregation
     input_feature = Input(shape=(maxTimestep,numFeatures))
     x = Masking(mask_value=0.)(input_feature)
@@ -222,21 +221,16 @@ def buildBLTSM(maxTimestep, numFeatures):
     x = Dense(nb_hidden_units, activation='relu')(x)
     x = Dropout(0.5)(x)
     y = Bidirectional(LSTM(nb_lstm_cells, return_sequences=True, dropout=0.5))(x)
-
     # To compute the final weights for the frames which sum to unity
     alpha = dot([u, y], axes=-1)  # inner prod.
     alpha = Activation('softmax')(alpha)
-
     # Weighted pooling to get the utterance-level representation
     z = dot([alpha, y], axes=1)
-
     # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-
-
-    return model
+    #model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.01, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     
     #MODELLO BASE SEMPLICE
     '''model = Sequential()
@@ -262,11 +256,12 @@ def buildBLTSM(maxTimestep, numFeatures):
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     '''
-    #return model 
+    return model 
 
 
 def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):    
     
+    #RESHAPE TRAIN DATA
     train_X = []
     train_Y = []
     '''print(np.asarray(Features).shape)
@@ -283,13 +278,22 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
         pass
     #checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     #callbacks_list = [checkpoint]
-    callbacks_list = [
+    '''callbacks_list = [
         EarlyStopping(
             monitor='val_loss',
             patience=20,
             verbose=1,
             mode='auto'
         ),
+        ModelCheckpoint(
+            filepath=OutputWeightsPath,
+            monitor='val_categorical_accuracy',
+            save_best_only='True',
+            verbose=1,
+            mode='max'
+        )
+    ]'''
+    callbacks_list = [
         ModelCheckpoint(
             filepath=OutputWeightsPath,
             monitor='val_categorical_accuracy',
@@ -305,7 +309,7 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep):
     u_train = np.full((train_X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #FIT MODEL for one epoch on this sequence
-    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=10, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
+    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=20, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = buildBLTSM(maxTimestep, Features[0].shape[1])
@@ -339,7 +343,7 @@ if __name__ == '__main__':
     flagLoadModel = 0 #1=load, 0=new
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 300 #number of epoch for each file trained
+    n_epoch = 50 #number of epoch for each file trained
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY

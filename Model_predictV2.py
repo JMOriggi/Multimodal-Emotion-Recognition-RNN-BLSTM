@@ -213,14 +213,13 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
 def buildBLTSM(maxTimestep, numFeatures):
     
+    #MODEL WITH ATTENTION
     nb_lstm_cells = 128
     nb_classes = 4
     nb_hidden_units = 512
-    
     # Logistic regression for learning the attention parameters with a standalone feature as input
     input_attention = Input(shape=(nb_lstm_cells * 2,))
     u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
-
     # Bi-directional Long Short-Term Memory for learning the temporal aggregation
     input_feature = Input(shape=(maxTimestep,numFeatures))
     x = Masking(mask_value=0.)(input_feature)
@@ -229,21 +228,16 @@ def buildBLTSM(maxTimestep, numFeatures):
     x = Dense(nb_hidden_units, activation='relu')(x)
     x = Dropout(0.5)(x)
     y = Bidirectional(LSTM(nb_lstm_cells, return_sequences=True, dropout=0.5))(x)
-
     # To compute the final weights for the frames which sum to unity
     alpha = dot([u, y], axes=-1)  # inner prod.
     alpha = Activation('softmax')(alpha)
-
     # Weighted pooling to get the utterance-level representation
     z = dot([alpha, y], axes=1)
-
     # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-
-
-    return model
+    #model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.01, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     
     #MODELLO BASE SEMPLICE
     '''model = Sequential()
@@ -252,8 +246,9 @@ def buildBLTSM(maxTimestep, numFeatures):
     model.add(Dense(512, activation='relu'))
     model.add(Dense(4, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    '''
     
-    return model'''
+    return model
 
 
 def reshapeLSTMInOut(audFeat, label, maxTimestep):
@@ -285,18 +280,24 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
     
     #PREDICT
     yhat = model.predict([u_train,X])
-    scores = model.evaluate([u_train, X], Y, verbose=0)  
-    '''yhat2 = model.predict_classes([u_train,X])
-    yhat = model.predict(X)
-    yhat2 = model.predict_classes(X)'''
     for i in range(len(yhat)):
         print('Expected:', Y[i], 'Predicted', yhat[i])
         #print('Expected:', Y[i], 'Predicted', yhat2[i]) 
         Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
         allPredictionClasses.append(Pindex)
         expected.append(Y[i])
-        
-    print('EVALUATION %s: %.2f%%' % (model.metrics_names[1], scores[1]*100))                
+    
+    #EVALUATE THE MODEL  
+    scores = model.evaluate([u_train, X], Y, verbose=0)  
+    print('NORMAL EVALUATION %s: %.2f%%' % (model.metrics_names[1], scores[1]*100))                
+    
+    #K-FOLD EVALUATION
+    '''seed = 7
+    np.random.seed(seed)
+    dummy_y = np_utils.to_categorical(Y) # convert integers to dummy variables (i.e. one hot encoded)
+    kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
+    results = cross_val_score(model, [u_train, X], dummy_y, cv=kfold)
+    print("K-FOLD EVALUATION: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))'''
     
     return allPredictionClasses, expected
     
@@ -352,14 +353,6 @@ if __name__ == '__main__':
     allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, maxTimestep)
     computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, True)
     OutputFilePath = os.path.join(dirRes, nameFileResult)
-    
-    #EVALUATE THE MODEL
-    '''seed = 7
-    np.random.seed(seed)
-    dummy_y = np_utils.to_categorical(allLabels) # convert integers to dummy variables (i.e. one hot encoded)
-    kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
-    results = cross_val_score(model_Audio, allAudioFeature, dummy_y, cv=kfold)
-    print("Baseline: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))'''
     
     
     
