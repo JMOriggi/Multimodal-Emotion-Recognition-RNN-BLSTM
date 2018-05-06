@@ -289,7 +289,7 @@ def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize)
     scores = modelEv.evaluate([u_train, train_X], train_Y, verbose=0)  
     print('Evaluation model saved %s: %.2f%%' % (modelEv.metrics_names[1], scores[1]*100)) 
         
-    return model, history  
+    return model, history, scores[1]*100  
   
     
 if __name__ == '__main__':
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=Audio, 1=Text
     flagLoadModel = 0 #0=new, 1=load
-    labelLimit = 400 #Number of each emotion label file to process
+    labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 100 #number of epoch for each file trained
     batchSize = 160
@@ -344,11 +344,11 @@ if __name__ == '__main__':
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0:
-        model_Audio, history = trainBLSTM(model, allAudioFeature, allLabels, n_epoch, dirRes, maxTimestep, batchSize)
+        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, n_epoch, dirRes, maxTimestep, batchSize)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1:
-        model_Text, history = trainBLSTM(model, allTextFeature, allLabels, n_epoch, dirRes, maxTimestep, batchSize)    
+        model_Text, history, evAcc = trainBLSTM(model, allTextFeature, allLabels, n_epoch, dirRes, maxTimestep, batchSize)    
         modelPathText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Text.save(modelPathText, overwrite=True)
     
@@ -371,7 +371,7 @@ if __name__ == '__main__':
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     #save it
-    OutputImgPath = os.path.join(dirRes, 'Train_History.png')
+    OutputImgPath = os.path.join(dirRes, 'Train_History-EvAcc_'+str(evAcc)+'.png')
     plt.savefig(OutputImgPath)
     plt.show()
     
