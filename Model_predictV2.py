@@ -251,9 +251,9 @@ def buildBLTSM(maxTimestep, numFeatures):
     return model
 
 
-def reshapeLSTMInOut(audFeat, label, maxTimestep):
+def reshapeLSTMInOut(Feat, label, maxTimestep):
     X = []
-    X = np.asarray(audFeat)
+    X = np.asarray(Feat)
     X = pad_sequences(X, maxlen=maxTimestep, dtype='float32')
     Y = np.asarray(label)
     Y = Y.reshape(len(Y), 4)
@@ -261,14 +261,11 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
     return X, Y
 
  
-def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, maxTimestep):
+def predictFromModel(model, inputTest, Labels, maxTimestep):
     
     allPrediction = []
     allPredictionClasses = []
     expected = []
-    emoCounter = np.array([[0],[0],[0],[0]]) #count label to block after labelLimit prediction
-    correctCounter = np.array([[0],[0],[0],[0]]) #count correct prediction for each label, last place is for total number of each label
-    predEmoCounter = np.array([[0],[0],[0],[0]]) #count how many prediction for each label
     
     #FORMAT X & Y
     X, Y = reshapeLSTMInOut(inputTest, Labels, maxTimestep)
@@ -282,7 +279,6 @@ def predictFromModel(model, inputTest, Labels, fileName, fileLimit, labelLimit, 
     yhat = model.predict([u_train,X])
     for i in range(len(yhat)):
         print('Expected:', Y[i], 'Predicted', yhat[i])
-        #print('Expected:', Y[i], 'Predicted', yhat2[i]) 
         Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
         allPredictionClasses.append(Pindex)
         expected.append(Y[i])
@@ -307,19 +303,20 @@ if __name__ == '__main__':
     #DEFINE MAIN ROOT
     #mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
     #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     mainRootModelFile = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
     mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
+    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
     mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
+    OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
@@ -332,25 +329,30 @@ if __name__ == '__main__':
     
     #FIND MAX TIMESTEP FOR PADDING
     maxTimestep = 290 #setted with training because no test file is longer than 290
-     
-    #TRAIN & SAVE LSTM: considering one at time
-    if modelType == 0 or modelType == 2:
-        model_Audio = load_model(mainRootModelAudio) 
-        #OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
-        #model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
-        #model_Audio.load_weights(OutputWeightsPath)
-    if modelType == 1 or modelType == 2:
-        modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5') 
+    #maxTimestep = 300
     
     #MODEL SUMMARY
-    model_Audio.summary()
     print('Predict of #file: ', fileLimit)
     print('Files with #features: ', allAudioFeature[0].shape[1])
     print('Max time step: ',maxTimestep)
     print('Predict number of each emotion: ', labelLimit)
+     
+    #BUILD MODEL AND SET FEATURES
+    if modelType == 0:
+        model_Audio = load_model(mainRootModelAudio) 
+        #model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        #model_Audio.load_weights(OutputWeightsPath)
+        allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestep)
+    if modelType == 1:
+        model_Text = load_model(mainRootModelText)   
+        #model_Text = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        #model_Text.load_weights(OutputWeightsPath) 
+        allPredictionClasses, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestep)
+    if modelType == 2:
+        model_Audio = load_model(mainRootModelAudio) 
+        model_Text = load_model(mainRootModelText)  
     
     #PREDICT & SAVE
-    allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, allFileName, fileLimit, labelLimit, maxTimestep)
     computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, True)
     
     print('END')
