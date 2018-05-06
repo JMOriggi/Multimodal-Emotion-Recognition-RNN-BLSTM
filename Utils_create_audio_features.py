@@ -64,6 +64,11 @@ def getFreqArray(monoAudio, sampleRate):
     #COMPUTE SPECTROGRAM: NFFT=how many sample in one chunk, for Fs16000 chunks20ms-->32
     fft, freqsBins, timeBins, im = plt.specgram(monoAudio, Fs=sampleRate, NFFT=window, noverlap=hop, cmap=plt.get_cmap('autumn_r'))
     
+    #CUT UNEEDED FREQ BINS
+    fft = fft.T
+    fft = fft[:,6:61] #Select from 300-3000 HZ - len(55bins)
+    fft = fft.T
+    
     #PRINT INFO
     '''print('shape fft: ', fft.shape)
     print('shape timeBins ', timeBins.shape)
@@ -143,6 +148,12 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy = librosa.feature.rmse(S=mfcc, frame_length=window, hop_length=hop)
     mfcc_energy_delta = librosa.feature.rmse(S=mfcc_delta, frame_length=window, hop_length=hop)
     mfcc_energy_delta_delta = librosa.feature.rmse(S=mfcc_delta_delta, frame_length=window, hop_length=hop)
+
+    #DELETE FIRST AND LAST FRAME
+    zero_crossing = deleteFirstLastFrames(zero_crossing)
+    pitch = deleteFirstLastFrames(pitch)
+    energy = deleteFirstLastFrames(energy)
+    mfcc = deleteFirstLastFrames(mfcc)
     
     #TRASPOSE: librosa gives me the freq in the row but i want them in the collums
     stft = stft.T
@@ -157,12 +168,6 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy = mfcc_energy.T
     mfcc_energy_delta = mfcc_energy_delta.T
     mfcc_energy_delta_delta = mfcc_energy_delta_delta.T
-
-    #DELETE FIRST AND LAST FRAME
-    zero_crossing = deleteFirstLastFrames(zero_crossing)
-    pitch = deleteFirstLastFrames(pitch)
-    energy = deleteFirstLastFrames(energy)
-    mfcc = deleteFirstLastFrames(mfcc)
     
     #CHECK ALL SHAPES
     '''print('stft.shape: ',stft.shape)
@@ -181,9 +186,9 @@ def computeFeatures(monoAudio, sampleRate):
     
     #CONCATENATE FEATURES PER ROWS
     #X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, mfcc, mfcc_delta, mfcc_delta_delta, mfcc_energy, mfcc_energy_delta, mfcc_energy_delta_delta))
-    X = np.hstack((stft, pitch, energy, zero_crossing, mfcc)) #Basic setting
+    #X = np.hstack((stft, pitch, energy, zero_crossing, mfcc)) #Basic setting
     #X = np.hstack((stft, pitch, energy, zero_crossing)) #Basic_NoMFCC setting
-    #X = np.hstack((pitch, energy, zero_crossing, mfcc)) #Basic_NoSTFT
+    X = np.hstack((pitch, energy, energy_delta, energy_delta_delta, zero_crossing, zero_crossing_delta, mfcc, mfcc_delta, mfcc_delta_delta)) #Basic_NoSTFT & delta
     #X = stft #Only_STFT
     print('Final shape: ',X.shape) #Features final shape for current audio file
     
@@ -233,9 +238,9 @@ if __name__ == '__main__':
     
     #SET ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
     
     #SET PATH
     all_wav_path = os.path.join(main_root + '\AllAudioFiles')
