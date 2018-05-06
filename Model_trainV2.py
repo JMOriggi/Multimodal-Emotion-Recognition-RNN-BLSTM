@@ -271,17 +271,18 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep, 
     print(np.asarray(train_Y).shape)'''
     
     #CHECPOINT
-    OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')
+    #OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')
+    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{val_categorical_accuracy:.2f}.hdf5')
     try:
         os.remove(OutputWeightsPath)
     except OSError:
         pass
-    #checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-    #callbacks_list = [checkpoint]
+    '''checkpoint = ModelCheckpoint(OutputWeightsPath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+    callbacks_list = [checkpoint]'''
     callbacks_list = [
         EarlyStopping(
             monitor='val_loss',
-            patience=15,
+            patience=10,
             verbose=1,
             mode='auto'
         ),
@@ -303,10 +304,11 @@ def trainBLSTM(fileName, Features, Labels, model, n_epoch, dirRes, maxTimestep, 
     history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
         
     #EVALUATION OF THE BEST VERSION MODEL
-    modelEv = buildBLTSM(maxTimestep, Features[0].shape[1])
-    modelEv.load_weights(OutputWeightsPath)
+    '''modelEv = buildBLTSM(maxTimestep, Features[0].shape[1])
+    modelEv.load_weights(OutputWeightsPath)'''
+    modelEv = model
     scores = modelEv.evaluate([u_train, train_X], train_Y, verbose=0)  
-    print('%s: %.2f%%' % (modelEv.metrics_names[1], scores[1]*100)) 
+    print('Evaluation model saved %s: %.2f%%' % (modelEv.metrics_names[1], scores[1]*100)) 
         
     return model, history  
   
@@ -332,9 +334,9 @@ if __name__ == '__main__':
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModel = 0 #1=load, 0=new
-    labelLimit = 735 #Number of each emotion label file to process
+    labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 200 #number of epoch for each file trained
+    n_epoch = 100 #number of epoch for each file trained
     batchSize = 160
     LRate = 0.001
     #nameFileResult = 'Train8'+'-'+'#Emo_'+str(labelLimit)+'-'+'Epoch_'+str(n_epoch)+'-'+'DBEpoch_'+str(db_epoch)
@@ -359,7 +361,7 @@ if __name__ == '__main__':
     
     #MODEL SUMMARY
     modelA.summary()
-    SummaryText = 'Att_Model-RMS-LR_'+str(LRate)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])
+    SummaryText = 'Att_Model-RMS-LR_'+str(LRate)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
     print(SummaryText)
     print('Max time step: ',maxTimestep)
     print('Train number of each emotion: ', labelLimit)
@@ -367,7 +369,7 @@ if __name__ == '__main__':
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0 or modelType == 2:
-        model_Audio, history = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, n_epoch, dirRes, maxTimestep, batchSize, LRate)
+        model_Audio, history = trainBLSTM(allFileName, allAudioFeature, allLabels, modelA, n_epoch, dirRes, maxTimestep, batchSize)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1 or modelType == 2:
@@ -394,10 +396,11 @@ if __name__ == '__main__':
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     #save it
-    OutputImgPath = os.path.join(dirRes, 'Train_modNew2_Metrics.png')
+    OutputImgPath = os.path.join(dirRes, 'Train_History.png')
     plt.savefig(OutputImgPath)
     plt.show()
     
+    print(SummaryText)
     print('END')
     
     
