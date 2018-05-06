@@ -49,9 +49,13 @@ def readWav(audioFilePath):
 
 
 def deleteFirstLastFrames(matrix):
+    #print(matrix.shape)
+    
     matrix = np.delete(matrix, 0, 0) #delete first row 
     matrix = np.delete(matrix, len(matrix)-1, 0) #delete last row
+    
     #print(matrix.shape)
+    
     return matrix
 
 
@@ -149,12 +153,6 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy_delta = librosa.feature.rmse(S=mfcc_delta, frame_length=window, hop_length=hop)
     mfcc_energy_delta_delta = librosa.feature.rmse(S=mfcc_delta_delta, frame_length=window, hop_length=hop)
 
-    #DELETE FIRST AND LAST FRAME
-    zero_crossing = deleteFirstLastFrames(zero_crossing)
-    pitch = deleteFirstLastFrames(pitch)
-    energy = deleteFirstLastFrames(energy)
-    mfcc = deleteFirstLastFrames(mfcc)
-    
     #TRASPOSE: librosa gives me the freq in the row but i want them in the collums
     stft = stft.T
     zero_crossing = zero_crossing.T
@@ -169,6 +167,12 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy_delta = mfcc_energy_delta.T
     mfcc_energy_delta_delta = mfcc_energy_delta_delta.T
     
+    #DELETE FIRST AND LAST FRAME: needed if I use pitch
+    '''zero_crossing = deleteFirstLastFrames(zero_crossing)
+    pitch = deleteFirstLastFrames(pitch)
+    energy = deleteFirstLastFrames(energy)
+    mfcc = deleteFirstLastFrames(mfcc)'''
+    
     #CHECK ALL SHAPES
     '''print('stft.shape: ',stft.shape)
     print('zero_crossing.shape: ', zero_crossing.shape)
@@ -181,8 +185,8 @@ def computeFeatures(monoAudio, sampleRate):
     print('mfcc_delta_delta.shape: ', mfcc_delta_delta.shape)
     print('mfcc_energy.shape: ', mfcc_energy.shape)
     print('mfcc_energy_delta.shape: ', mfcc_energy_delta.shape)
-    print('mfcc_energy_delta_delta.shape: ', mfcc_energy_delta_delta.shape)
-    '''
+    print('mfcc_energy_delta_delta.shape: ', mfcc_energy_delta_delta.shape)'''
+    
     
     #CONCATENATE FEATURES PER ROWS
     #X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, mfcc, mfcc_delta, mfcc_delta_delta, mfcc_energy, mfcc_energy_delta, mfcc_energy_delta_delta))
