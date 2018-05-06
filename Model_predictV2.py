@@ -285,15 +285,7 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
     
     #EVALUATE THE MODEL  
     scores = model.evaluate([u_train, X], Y, verbose=0)  
-    print('NORMAL EVALUATION %s: %.2f%%' % (model.metrics_names[1], scores[1]*100))                
-    
-    #K-FOLD EVALUATION
-    '''seed = 7
-    np.random.seed(seed)
-    dummy_y = np_utils.to_categorical(Y) # convert integers to dummy variables (i.e. one hot encoded)
-    kfold = KFold(n_splits=10, shuffle=True, random_state=seed)
-    results = cross_val_score(model, [u_train, X], dummy_y, cv=kfold)
-    print("K-FOLD EVALUATION: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))'''
+    print('NORMAL EVALUATION %s: %.2f%%' % (model.metrics_names[1], scores[1]*100))         
     
     return allPredictionClasses, expected
     
