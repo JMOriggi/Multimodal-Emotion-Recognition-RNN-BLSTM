@@ -308,25 +308,27 @@ if __name__ == '__main__':
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
     mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
+    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-57-0.58.hdf5')  
     
     #DEFINE PARAMETERS
-    modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
+    modelType = 1 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredModel_'+str(modelType)+'-'+'Label_'+str(labelLimit)
+    nameFileResult = 'PredW7_Epoch57_'+str(modelType)+'-'+'Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
     #FIND MAX TIMESTEP FOR PADDING
-    maxTimestep = 290 #setted with training because no test file is longer than 290
-    #maxTimestep = 300
+    maxTimestepAudio = 290 #setted with training because no test file is longer than 290
+    maxTimestepText = 85 #text
     
     #MODEL SUMMARY
     print('Predict of #file: ', fileLimit)
-    print('Files with #features: ', allAudioFeature[0].shape[1])
-    print('Max time step: ',maxTimestep)
+    print('AUDIO Files with #features: ', allAudioFeature[0].shape[1])
+    print('AUDIO Max time step: ',maxTimestepAudio)
+    print('TEXT Files with #features: ', allTextFeature[0].shape[1])
+    print('TEXT Max time step: ',maxTimestepText)
     print('Predict number of each emotion: ', labelLimit)
      
     #BUILD MODEL AND SET FEATURES
@@ -334,12 +336,12 @@ if __name__ == '__main__':
         model_Audio = load_model(mainRootModelAudio) 
         #model_Audio = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
         #model_Audio.load_weights(OutputWeightsPath)
-        allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestep)
+        allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
     if modelType == 1:
-        model_Text = load_model(mainRootModelText)   
-        #model_Text = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
-        #model_Text.load_weights(OutputWeightsPath) 
-        allPredictionClasses, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestep)
+        #model_Text = load_model(mainRootModelText)   
+        model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
+        model_Text.load_weights(OutputWeightsPath) 
+        allPredictionClasses, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
     if modelType == 2:
         model_Audio = load_model(mainRootModelAudio) 
         model_Text = load_model(mainRootModelText)  
