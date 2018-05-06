@@ -214,7 +214,7 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         #CURRENT FILE FEATURE
         audioFilePath = os.path.join(audioDirectoryPath, audioFile)
         arrayAudio, sampleRate = readWav(audioFilePath)
-        currentFileFeatures = computeFeaturesV2(arrayAudio, sampleRate)
+        currentFileFeatures = computeFeatures(arrayAudio, sampleRate)
         
         #SAVE FILE IN CORRECT DIRECTORY
         direc = 'oth'
