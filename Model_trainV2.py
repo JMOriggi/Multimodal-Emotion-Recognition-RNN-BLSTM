@@ -361,10 +361,10 @@ def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize)
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
-    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -376,8 +376,8 @@ if __name__ == '__main__':
     mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
     
     #DEFINE PARAMETERS
-    modelType = 1 #0=Audio, 1=Text
-    flagLoadModel = 0 #0=new, 1=load
+    modelType = 0 #0=Audio, 1=Text
+    flagLoadModel = 1 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 150 #number of epoch for each file trained
@@ -412,7 +412,10 @@ if __name__ == '__main__':
             model = buildBLTSMText(maxTimestepText, allTextFeature[0].shape[1], LRateText)
             SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateText)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allTextFeature[0].shape[1])+'-labelLimit_'+str(labelLimit) 
     else:
-        model = load_model(mainRootModelAudio)
+        model = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-64-0.55.hdf5') 
+        model.load_weights(OutputWeightsPath)
+        #model = load_model(mainRootModelAudio)
     
     #MODEL SUMMARY
     model.summary()
