@@ -305,7 +305,7 @@ def trainBLSTMText(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchS
     except OSError:
         pass
     callbacks_list = [
-        EarlyStopping(monitor='val_loss', patience=20, verbose=1, mode='auto'),
+        EarlyStopping(monitor='val_loss', patience=35, verbose=1, mode='auto'),
         ModelCheckpoint(filepath=OutputWeightsPath, monitor='val_categorical_accuracy', save_best_only='True', verbose=1, mode='max')
     ]
     
@@ -361,10 +361,10 @@ def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize)
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
-    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -376,11 +376,11 @@ if __name__ == '__main__':
     mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
     
     #DEFINE PARAMETERS
-    modelType = 0 #0=Audio, 1=Text
+    modelType = 1 #0=Audio, 1=Text
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 200 #number of epoch for each file trained
+    n_epoch = 800 #number of epoch for each file trained
     batchSize = 160
     LRateAudio = 0.0001
     LRateText = 0.00001
