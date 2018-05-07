@@ -376,7 +376,7 @@ if __name__ == '__main__':
     mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
     
     #DEFINE PARAMETERS
-    modelType = 1 #0=Audio, 1=Text
+    modelType = 0 #0=Audio, 1=Text
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
