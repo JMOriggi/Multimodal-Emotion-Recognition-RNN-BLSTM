@@ -338,7 +338,7 @@ def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize)
     except OSError:
         pass
     callbacks_list = [
-        EarlyStopping(monitor='val_loss', patience=20, verbose=1, mode='auto'),
+        EarlyStopping(monitor='val_loss', patience=35, verbose=1, mode='auto'),
         ModelCheckpoint(filepath=OutputWeightsPath, monitor='val_categorical_accuracy', save_best_only='True', verbose=1, mode='max')
     ]
     
