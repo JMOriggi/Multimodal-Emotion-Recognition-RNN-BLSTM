@@ -412,7 +412,7 @@ if __name__ == '__main__':
             model = buildBLTSMText(maxTimestepText, allTextFeature[0].shape[1], LRateText)
             SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateText)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allTextFeature[0].shape[1])+'-labelLimit_'+str(labelLimit) 
     else:
-        model = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1])
+        model = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1], LRateAudio)
         OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-64-0.55.hdf5') 
         model.load_weights(OutputWeightsPath)
         #model = load_model(mainRootModelAudio)
