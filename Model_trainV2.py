@@ -380,7 +380,7 @@ if __name__ == '__main__':
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    n_epoch = 150 #number of epoch for each file trained
+    n_epoch = 200 #number of epoch for each file trained
     batchSize = 160
     LRateAudio = 0.0001
     LRateText = 0.00001
