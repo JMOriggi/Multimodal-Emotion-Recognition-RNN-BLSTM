@@ -377,7 +377,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=Audio, 1=Text
-    flagLoadModel = 0 #0=new, 1=load
+    flagLoadModel = 1 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 200 #number of epoch for each file trained
@@ -413,7 +413,7 @@ if __name__ == '__main__':
             SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateText)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allTextFeature[0].shape[1])+'-labelLimit_'+str(labelLimit) 
     else:
         model = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1], LRateAudio)
-        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-64-0.55.hdf5') 
+        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-90-0.55.hdf5') 
         model.load_weights(OutputWeightsPath)
         SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
         #model = load_model(mainRootModelAudio)
