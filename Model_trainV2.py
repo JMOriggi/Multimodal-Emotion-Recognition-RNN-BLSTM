@@ -292,7 +292,7 @@ def buildBLTSM(maxTimestep, numFeatures, LRate):
     return modelAudio
 
 
-def trainBLSTMText(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize):    
+def trainBLSTMText(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize, Patience):    
     
     #RESHAPE TRAIN DATA
     train_X, train_Y = reshapeLSTMInOut(Features, Labels, maxTimestep)
@@ -305,7 +305,7 @@ def trainBLSTMText(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchS
     except OSError:
         pass
     callbacks_list = [
-        EarlyStopping(monitor='val_loss', patience=20, verbose=1, mode='auto'),
+        EarlyStopping(monitor='val_loss', patience=Patience, verbose=1, mode='auto'),
         ModelCheckpoint(filepath=OutputWeightsPath, monitor='val_categorical_accuracy', save_best_only='True', verbose=1, mode='max')
     ]
     
@@ -325,7 +325,7 @@ def trainBLSTMText(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchS
     return model, history, scores[1]*100   
 
 
-def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize):    
+def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize, Patience):    
     
     #RESHAPE TRAIN DATA
     train_X, train_Y = reshapeLSTMInOut(Features, Labels, maxTimestep)
@@ -338,7 +338,7 @@ def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize)
     except OSError:
         pass
     callbacks_list = [
-        EarlyStopping(monitor='val_loss', patience=35, verbose=1, mode='auto'),
+        EarlyStopping(monitor='val_loss', patience=Patience, verbose=1, mode='auto'),
         ModelCheckpoint(filepath=OutputWeightsPath, monitor='val_categorical_accuracy', save_best_only='True', verbose=1, mode='max')
     ]
     
@@ -376,14 +376,16 @@ if __name__ == '__main__':
     mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
     
     #DEFINE PARAMETERS
-    modelType = 0 #0=Audio, 1=Text
-    flagLoadModel = 1 #0=new, 1=load
+    modelType = 1 #0=Audio, 1=Text
+    flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     n_epoch = 200 #number of epoch for each file trained
     batchSize = 160
     LRateAudio = 0.0001
-    LRateText = 0.00001
+    LRateText = 0.0001
+    PatienceAudio = 35
+    PatienceText = 35
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -414,6 +416,13 @@ if __name__ == '__main__':
     else:
         model = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1], LRateAudio)
         OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-90-0.55.hdf5') 
+        if modelType == 0:
+            model = buildBLTSM(maxTimestep, allAudioFeature[0].shape[1], LRateAudio)
+            SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
+        else:
+            model = buildBLTSMText(maxTimestepText, allTextFeature[0].shape[1], LRateText)
+            SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateText)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allTextFeature[0].shape[1])+'-labelLimit_'+str(labelLimit) 
+        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-786-0.59.hdf5') 
         model.load_weights(OutputWeightsPath)
         SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
         #model = load_model(mainRootModelAudio)
@@ -428,11 +437,11 @@ if __name__ == '__main__':
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0:
-        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, n_epoch, dirRes, maxTimestep, batchSize)
+        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, n_epoch, dirRes, maxTimestep, batchSize, PatienceAudio)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1:
-        model_Text, history, evAcc = trainBLSTMText(model, allTextFeature, allLabels, n_epoch, dirRes, maxTimestepText, batchSize)    
+        model_Text, history, evAcc = trainBLSTMText(model, allTextFeature, allLabels, n_epoch, dirRes, maxTimestepText, batchSize, PatienceText)    
         modelPathText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Text.save(modelPathText, overwrite=True)
     
