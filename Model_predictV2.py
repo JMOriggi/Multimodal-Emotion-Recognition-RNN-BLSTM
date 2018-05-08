@@ -211,16 +211,32 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
+def mergePrediction(allPredictionAudio, allPredictionText, expected):
+    
+    for i in range(len(allPredictionAudio)):
+        #AVERAGE BETWEEN 2 PREDICTION
+        yhat = (allPredictionAudio[i]+allPredictionText[i])/2
+        
+        Pindex, Pvalue = max(enumerate(yhat), key=operator.itemgetter(1))
+        allPredictionClasses.append(Pindex)
+        
+        print('Audio pred: ', allPredictionAudio[i], ' Text pred: ', allPredictionText[i])
+        print('Pred after merge: ', yhat)
+        print('Expected: ', expected[i])
+        
+    return allPredictionClasses
+
+
 def buildBLTSM(maxTimestep, numFeatures):
     
-    #MODEL WITH ATTENTION
+    #SET PARAMETERS
     nb_lstm_cells = 128
     nb_classes = 4
     nb_hidden_units = 512
-    # Logistic regression for learning the attention parameters with a standalone feature as input
+    
+    #MODEL WITH ATTENTION
     input_attention = Input(shape=(nb_lstm_cells * 2,))
     u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
-    # Bi-directional Long Short-Term Memory for learning the temporal aggregation
     input_feature = Input(shape=(maxTimestep,numFeatures))
     x = Masking(mask_value=0.)(input_feature)
     x = Dense(nb_hidden_units, activation='relu')(x)
@@ -228,25 +244,11 @@ def buildBLTSM(maxTimestep, numFeatures):
     x = Dense(nb_hidden_units, activation='relu')(x)
     x = Dropout(0.5)(x)
     y = Bidirectional(LSTM(nb_lstm_cells, return_sequences=True, dropout=0.5))(x)
-    # To compute the final weights for the frames which sum to unity
-    alpha = dot([u, y], axes=-1)  # inner prod.
+    alpha = dot([u, y], axes=-1)
     alpha = Activation('softmax')(alpha)
-    # Weighted pooling to get the utterance-level representation
     z = dot([alpha, y], axes=1)
-    # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
-    #model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.01, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    
-    #MODELLO BASE SEMPLICE
-    '''model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
-    model.add(Dropout(0.5))
-    model.add(Dense(512, activation='relu'))
-    model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    '''
     
     return model
 
@@ -265,6 +267,7 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
     
     allPrediction = []
     allPredictionClasses = []
+    allPredictionClassesMerged = []
     expected = []
     
     #FORMAT X & Y
@@ -281,13 +284,14 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
         print('Expected:', Y[i], 'Predicted', yhat[i])
         Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
         allPredictionClasses.append(Pindex)
+        allPrediction.append(yhat[i])
         expected.append(Y[i])
     
     #EVALUATE THE MODEL  
     scores = model.evaluate([u_train, X], Y, verbose=0)  
     print('NORMAL EVALUATION %s: %.2f%%' % (model.metrics_names[1], scores[1]*100))         
     
-    return allPredictionClasses, expected
+    return allPredictionClasses, allPrediction, expected
     
     
 if __name__ == '__main__':
@@ -336,15 +340,22 @@ if __name__ == '__main__':
         #model_Audio = load_model(mainRootModelAudio) 
         model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
         model_Audio.load_weights(OutputWeightsPath)
-        allPredictionClasses, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
+        allPredictionClasses, allPrediction, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
     if modelType == 1:
         model_Text = load_model(mainRootModelText)   
         #model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
         #model_Text.load_weights(OutputWeightsPath) 
-        allPredictionClasses, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
+        allPredictionClasses, allPrediction, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
     if modelType == 2:
         model_Audio = load_model(mainRootModelAudio) 
         model_Text = load_model(mainRootModelText)  
+        print('*******************AUDIO******************')
+        allPredictionClassesAudio, allPredictionAudio, expected = predictFromModel(model_Audio, allTextFeature, allLabels, maxTimestepText)
+        print('*******************TEXT******************')
+        allPredictionClassesText, allPredictionText, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
+        print('*******************MERGE******************')
+        allPredictionClasses = mergePrediction(allPredictionAudio, allPredictionText, expected)
+        
     
     #PREDICT & SAVE
     computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, True)
