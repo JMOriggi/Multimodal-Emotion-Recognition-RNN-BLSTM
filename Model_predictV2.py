@@ -213,6 +213,8 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
 def mergePrediction(allPredictionAudio, allPredictionText, expected):
     
+    allPredictionClasses = []
+    
     for i in range(len(allPredictionAudio)):
         #AVERAGE BETWEEN 2 PREDICTION
         yhat = (allPredictionAudio[i]+allPredictionText[i])/2
@@ -249,6 +251,7 @@ def buildBLTSM(maxTimestep, numFeatures):
     z = dot([alpha, y], axes=1)
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
     
     return model
 
@@ -297,12 +300,12 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    #mainRootModelFile = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
-    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
-    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    #mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    mainRootModelFile = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
+    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -312,13 +315,13 @@ if __name__ == '__main__':
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
     mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-35-0.63.hdf5')  
+    OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
     
     #DEFINE PARAMETERS
-    modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
+    modelType = 2 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredW_Epoch35_'+str(modelType)+'-'+'Label_'+str(labelLimit)
+    nameFileResult = 'PredM_testAudio_'+str(modelType)+'-'+'Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -347,12 +350,14 @@ if __name__ == '__main__':
         #model_Text.load_weights(OutputWeightsPath) 
         allPredictionClasses, allPrediction, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
     if modelType == 2:
-        model_Audio = load_model(mainRootModelAudio) 
+        #model_Audio = load_model(mainRootModelAudio) 
+        model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
+        model_Audio.load_weights(OutputWeightsPath)
         model_Text = load_model(mainRootModelText)  
         print('*******************AUDIO******************')
-        allPredictionClassesAudio, allPredictionAudio, expected = predictFromModel(model_Audio, allTextFeature, allLabels, maxTimestepText)
+        allPredictionClassesAudio, allPredictionAudio, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
         print('*******************TEXT******************')
-        allPredictionClassesText, allPredictionText, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
+        allPredictionClassesText, allPredictionText, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
         print('*******************MERGE******************')
         allPredictionClasses = mergePrediction(allPredictionAudio, allPredictionText, expected)
         
