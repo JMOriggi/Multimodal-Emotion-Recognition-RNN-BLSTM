@@ -300,12 +300,12 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    #mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    mainRootModelFile = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
-    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
-    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    #mainRootModelFile = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
+    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -315,13 +315,14 @@ if __name__ == '__main__':
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
     mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')  
+    OutputWeightsPathAudio = os.path.join(dirRes, 'weights.best.hdf5')
+    OutputWeightsPathText = os.path.join(dirRes, 'weights-improvement-94-0.64.hdf5')    
     
     #DEFINE PARAMETERS
     modelType = 2 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredM_testAudio_'+str(modelType)+'-'+'Label_'+str(labelLimit)
+    nameFileResult = 'PredW_'+str(modelType)+'-'+'Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -342,18 +343,20 @@ if __name__ == '__main__':
     if modelType == 0:
         #model_Audio = load_model(mainRootModelAudio) 
         model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
-        model_Audio.load_weights(OutputWeightsPath)
+        model_Audio.load_weights(OutputWeightsPathAudio)
         allPredictionClasses, allPrediction, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
     if modelType == 1:
         model_Text = load_model(mainRootModelText)   
         #model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
-        #model_Text.load_weights(OutputWeightsPath) 
+        #model_Text.load_weights(OutputWeightsPathText) 
         allPredictionClasses, allPrediction, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
     if modelType == 2:
         #model_Audio = load_model(mainRootModelAudio) 
         model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
-        model_Audio.load_weights(OutputWeightsPath)
-        model_Text = load_model(mainRootModelText)  
+        model_Audio.load_weights(OutputWeightsPathAudio)
+        #model_Text = load_model(mainRootModelText) 
+        model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
+        model_Text.load_weights(OutputWeightsPathText)  
         print('*******************AUDIO******************')
         allPredictionClassesAudio, allPredictionAudio, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
         print('*******************TEXT******************')

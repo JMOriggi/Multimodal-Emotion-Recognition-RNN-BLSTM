@@ -314,10 +314,11 @@ if __name__ == '__main__':
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     n_epoch = 200 #number of epoch for each file trained
-    batchSize = 160
+    batchSizeAudio = 20
+    batchSizeText = 160
     LRateAudio = 0.001
     LRateText = 0.0001
-    PatienceAudio = 35
+    PatienceAudio = 20
     PatienceText = 35
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
@@ -340,16 +341,16 @@ if __name__ == '__main__':
     #BUILD MODEL
     if modelType == 0:
         model = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1], LRateAudio)
-        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
+        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSizeAudio)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
     else:
         model = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1], LRateText)
-        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateText)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allTextFeature[0].shape[1])+'-labelLimit_'+str(labelLimit) 
+        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateText)+'-BatchSize_'+str(batchSizeText)+'-FeatNumb_'+str(allTextFeature[0].shape[1])+'-labelLimit_'+str(labelLimit) 
     
     #LOAD MODEL OR WEIGHT if choose
     if flagLoadModel == 1:
         OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-786-0.59.hdf5') 
         model.load_weights(OutputWeightsPath)
-        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
+        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSizeAudio)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
         #model = load_model(mainRootModelAudio)
     
     #MODEL SUMMARY
@@ -362,11 +363,11 @@ if __name__ == '__main__':
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0:
-        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, n_epoch, dirRes, maxTimestepAudio, batchSize, PatienceAudio)
+        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, n_epoch, dirRes, maxTimestepAudio, batchSizeAudio, PatienceAudio)
         modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1:
-        model_Text, history, evAcc = trainBLSTM(model, allTextFeature, allLabels, n_epoch, dirRes, maxTimestepText, batchSize, PatienceText)    
+        model_Text, history, evAcc = trainBLSTM(model, allTextFeature, allLabels, n_epoch, dirRes, maxTimestepText, batchSizeText, PatienceText)    
         modelPathText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
         model_Text.save(modelPathText, overwrite=True)
     
