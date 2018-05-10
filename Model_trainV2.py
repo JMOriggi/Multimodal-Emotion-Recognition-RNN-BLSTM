@@ -310,16 +310,16 @@ if __name__ == '__main__':
     mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
     
     #DEFINE PARAMETERS
-    modelType = 0 #0=Audio, 1=Text
+    modelType = 1 #0=Audio, 1=Text
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     n_epoch = 200 #number of epoch for each file trained
     batchSizeAudio = 20
-    batchSizeText = 160
+    batchSizeText = 20
     LRateAudio = 0.001
     LRateText = 0.0001
     PatienceAudio = 20
-    PatienceText = 35
+    PatienceText = 20
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
