@@ -310,26 +310,26 @@ if __name__ == '__main__':
     mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
     
     #DEFINE PARAMETERS
-    modelType = 1 #0=Audio, 1=Text
+    modelType = 0 #0=Audio, 1=Text
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     n_epoch = 200 #number of epoch for each file trained
-    batchSizeAudio = 20
+    batchSizeAudio = 50
     batchSizeText = 20
-    LRateAudio = 0.001
+    LRateAudio = 0.0001#0.001
     LRateText = 0.0001
-    PatienceAudio = 20
+    PatienceAudio = 40
     PatienceText = 20
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
     #FIND MAX TIMESTEP FOR PADDING AUDIO
-    maxTimestepAudio = 0
-    for z in allAudioFeature:
+    maxTimestepAudio = 500
+    '''for z in allAudioFeature:
         zStep = np.asarray(z).shape[0]
         if maxTimestepAudio < zStep:
-            maxTimestepAudio = zStep
+            maxTimestepAudio = zStep'''
     
     #FIND MAX TIMESTEP FOR PADDING TEXT
     maxTimestepText = 0

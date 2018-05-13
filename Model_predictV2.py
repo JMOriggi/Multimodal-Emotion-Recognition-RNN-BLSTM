@@ -315,22 +315,22 @@ if __name__ == '__main__':
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
     mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
-    OutputWeightsPathAudio = os.path.join(dirRes, 'weights-improvement-60-0.67.hdf5')
+    OutputWeightsPathAudio = os.path.join(dirRes, 'weights-improvement-28-0.64.hdf5')
     OutputWeightsPathText = os.path.join(dirRes, 'weights-improvement-52-0.64.hdf5')    
     
     #DEFINE PARAMETERS
-    modelType = 2 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
+    modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModelAudio = 0 #0=model, 1=weight
     flagLoadModelText = 0 #0=model, 1=weight
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredMerged_'+str(modelType)+'-'+'Label_'+str(labelLimit)
+    nameFileResult = 'PredW_epoch28_'+str(modelType)+'-'+'Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
     #FIND MAX TIMESTEP FOR PADDING
-    maxTimestepAudio = 290 #setted with training because no test file is longer than 290
+    maxTimestepAudio = 600#290 #setted with training because no test file is longer than 290
     maxTimestepText = 85 #text
     
     #MODEL SUMMARY

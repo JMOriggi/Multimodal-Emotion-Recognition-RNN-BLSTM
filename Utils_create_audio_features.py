@@ -121,7 +121,7 @@ def computeFeatures(monoAudio, sampleRate):
     #SET PARAMETERS
     window = int(0.020*sampleRate)
     hop = int(0.010*sampleRate)
-    mfcc_coef_size = 12
+    mfcc_coef_size = 24
     
     #STFT
     stft = getFreqArray(monoAudio, sampleRate)
@@ -168,10 +168,17 @@ def computeFeatures(monoAudio, sampleRate):
     mfcc_energy_delta_delta = mfcc_energy_delta_delta.T
     
     #DELETE FIRST AND LAST FRAME: needed if I use pitch
-    '''zero_crossing = deleteFirstLastFrames(zero_crossing)
+    zero_crossing = deleteFirstLastFrames(zero_crossing)
+    zero_crossing_delta = deleteFirstLastFrames(zero_crossing_delta)
     pitch = deleteFirstLastFrames(pitch)
+    pitch_delta = deleteFirstLastFrames(pitch_delta)
+    pitch_delta_delta = deleteFirstLastFrames(pitch_delta_delta)
     energy = deleteFirstLastFrames(energy)
-    mfcc = deleteFirstLastFrames(mfcc)'''
+    energy_delta = deleteFirstLastFrames(energy_delta)
+    energy_delta_delta = deleteFirstLastFrames(energy_delta_delta)
+    mfcc = deleteFirstLastFrames(mfcc)
+    mfcc_delta = deleteFirstLastFrames(mfcc_delta)
+    mfcc_delta_delta = deleteFirstLastFrames(mfcc_delta_delta)
     
     #CHECK ALL SHAPES
     '''print('stft.shape: ',stft.shape)
@@ -190,9 +197,9 @@ def computeFeatures(monoAudio, sampleRate):
     
     #CONCATENATE FEATURES PER ROWS
     #X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, mfcc, mfcc_delta, mfcc_delta_delta, mfcc_energy, mfcc_energy_delta, mfcc_energy_delta_delta))
-    #X = np.hstack((stft, pitch, energy, zero_crossing, mfcc)) #Basic setting
+    X = np.hstack((stft, pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, zero_crossing, zero_crossing_delta, mfcc, mfcc_delta, mfcc_delta_delta)) #Basic setting
     #X = np.hstack((stft, pitch, energy, zero_crossing)) #Basic_NoMFCC setting
-    X = np.hstack((pitch, energy, energy_delta, energy_delta_delta, zero_crossing, zero_crossing_delta, mfcc, mfcc_delta, mfcc_delta_delta)) #Basic_NoSTFT & delta
+    #X = np.hstack((pitch, pitch_delta, pitch_delta_delta, energy, energy_delta, energy_delta_delta, zero_crossing, zero_crossing_delta, mfcc, mfcc_delta, mfcc_delta_delta)) #Basic_NoSTFT & delta
     #X = stft #Only_STFT
     print('Final shape: ',X.shape) #Features final shape for current audio file
     
@@ -218,7 +225,7 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         #CURRENT FILE FEATURE
         audioFilePath = os.path.join(audioDirectoryPath, audioFile)
         arrayAudio, sampleRate = readWav(audioFilePath)
-        currentFileFeatures = computeFeaturesV2(arrayAudio, sampleRate)
+        currentFileFeatures = computeFeatures(arrayAudio, sampleRate)
         
         #SAVE FILE IN CORRECT DIRECTORY
         direc = 'oth'
@@ -242,9 +249,9 @@ if __name__ == '__main__':
     
     #SET ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
-    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
+    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
     
     #SET PATH
     all_wav_path = os.path.join(main_root + '\AllAudioFiles')
