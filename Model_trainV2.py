@@ -282,7 +282,7 @@ def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize,
     u_train = np.full((train_X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #FIT MODEL for one epoch on this sequence
-    history = model.fit([u_train, train_X], train_Y, validation_split=0.15, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
+    history = model.fit([u_train, train_X], train_Y, validation_split=0.20, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = model
@@ -313,10 +313,10 @@ if __name__ == '__main__':
     modelType = 0 #0=Audio, 1=Text
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
-    n_epoch = 200 #number of epoch for each file trained
-    batchSizeAudio = 50
+    n_epoch = 200 #number of epoch 
+    batchSizeAudio = 20
     batchSizeText = 20
-    LRateAudio = 0.0001#0.001
+    LRateAudio = 0.001
     LRateText = 0.0001
     PatienceAudio = 40
     PatienceText = 20
