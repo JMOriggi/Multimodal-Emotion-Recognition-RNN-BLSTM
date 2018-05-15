@@ -5,7 +5,7 @@ from scipy.fftpack import fft
 from scipy.fftpack.realtransforms import dct
 import matplotlib.pyplot as plt 
 from scipy.io.wavfile import read
-use_pitch = False
+use_pitch = True
 if use_pitch:
     import pitch
 eps = 0.00000001
@@ -574,25 +574,28 @@ def stFeatureExtraction(signal, Fs, Win, Step):
     #PARAMETERS INITIALIZATION
     Win = int(Win)
     Step = int(Step)
-    N = len(signal)                                # total number of samples
+    N = len(signal) # total number of samples
     curPos = 0
     countFrames = 0
     nFFT = Win / 2
     prevFV = []
     nFFT = int(nFFT)
-    [fbank, freqs] = mfccInitFilterBanks(Fs, nFFT)                # compute the triangular filter banks used in the mfcc calculation
+    [fbank, freqs] = mfccInitFilterBanks(Fs, nFFT)  # compute the triangular filter banks used in the mfcc calculation
     nChroma, nFreqsPerChroma = stChromaFeaturesInit(nFFT, Fs)
 
     #PARAMETERS
+    numOfPitches = 5
+    numOfPeaks = 10
     numOfTimeSpectralFeatures = 8
-    numOfHarmonicFeatures = 0
     nceps = 40#13
     numOfChromaFeatures = 0#13
-    totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfHarmonicFeatures + numOfChromaFeatures
-    print('totalNumOfFeatures: ',totalNumOfFeatures)
+    if use_pitch:
+        totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfChromaFeatures + numOfPeaks + numOfPitches
+    else:
+        totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfChromaFeatures
+    #print('totalNumOfFeatures: ',totalNumOfFeatures*2)
 
     stFeatures = []
-    print('Lenght: ',N)
     while (curPos + Win - 1 < N):                        # for each short-term window until the end of signal
         #INITIALIZE
         countFrames += 1
@@ -623,9 +626,17 @@ def stFeatureExtraction(signal, Fs, Win, Step):
         #curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + nFFT - 1] = X
 
         #CHROMA
-        chromaNames, chromaF = stChromaFeatures(X, Fs, nChroma, nFreqsPerChroma)
-        #curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF
-        #curFV[numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF.std()
+        '''chromaNames, chromaF = stChromaFeatures(X, Fs, nChroma, nFreqsPerChroma)
+        curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF
+        curFV[numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF.std()'''
+        
+        #PITCH
+        if use_pitch:
+            p = pitch.ppitch(x, sr=Fs, num_pitches=numOfPitches, num_peaks=numOfPeaks, win_length=Win, hop_length=Win*2)
+            pitches = p[1][0:1, :].T * 1.e-3
+            peaks = p[3][0:1, :].T * 1.e-3
+            curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + numOfPeaks] = peaks
+            curFV[numOfTimeSpectralFeatures + nceps + numOfPeaks: numOfTimeSpectralFeatures + nceps + numOfPeaks + numOfPitches] = pitches
         
         #DELTA FEATURES
         if countFrames>1:
@@ -637,11 +648,9 @@ def stFeatureExtraction(signal, Fs, Win, Step):
         Xprev = X.copy()
         
         #stFeatures.append(curFV)
-        stFeatures.append(curFVFinal.reshape(len(curFVFinal)))  
-        print('curFVFinal shape: ',numpy.asarray(curFVFinal).shape)     
+        stFeatures.append(curFVFinal.reshape(len(curFVFinal)))      
         
-    #stFeatures = numpy.concatenate(stFeatures, 1)
-    print('Shape: ',numpy.asarray(stFeatures).shape)  
+    #print('Shape: ',numpy.asarray(stFeatures).shape)  
     
     return numpy.array(stFeatures)
 

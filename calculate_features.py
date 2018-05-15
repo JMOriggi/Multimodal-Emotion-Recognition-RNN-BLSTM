@@ -13,7 +13,7 @@ def calculate_features(frames, freq, options):
 
     st_f = cf.stFeatureExtraction(frames, freq, window_n, window_n / 2)
     
-    print(st_f.shape)
+    #print(st_f.shape)
     
     return st_f
 
