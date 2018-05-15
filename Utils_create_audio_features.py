@@ -207,7 +207,7 @@ def computeFeatures(monoAudio, sampleRate):
 
 
 def computeFeaturesV2(arrayAudio, sampleRate):
-    currentFileFeatures = c_f.calculate_features(arrayAudio, sampleRate, False).T
+    currentFileFeatures = c_f.calculate_features(arrayAudio, sampleRate, False)
     #print(currentFileFeatures)
     print(currentFileFeatures.shape)
     return currentFileFeatures
@@ -248,9 +248,9 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
 if __name__ == '__main__':
     
     #SET ROOT
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
     
     #SET PATH
@@ -265,6 +265,4 @@ if __name__ == '__main__':
     buildAudioFeaturesCsv(arrayEmoLabel, all_wav_path, out_audio_feature_path)  
         
     print('****END')
-        
-        
-        
+     
