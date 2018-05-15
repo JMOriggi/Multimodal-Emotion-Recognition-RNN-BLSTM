@@ -207,7 +207,7 @@ def computeFeatures(monoAudio, sampleRate):
 
 
 def computeFeaturesV2(arrayAudio, sampleRate):
-    currentFileFeatures = c_f.calculate_features(arrayAudio, sampleRate, False).T
+    currentFileFeatures = c_f.calculate_features(arrayAudio, sampleRate, False)
     #print(currentFileFeatures)
     print(currentFileFeatures.shape)
     return currentFileFeatures
@@ -225,7 +225,7 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         #CURRENT FILE FEATURE
         audioFilePath = os.path.join(audioDirectoryPath, audioFile)
         arrayAudio, sampleRate = readWav(audioFilePath)
-        currentFileFeatures = computeFeatures(arrayAudio, sampleRate)
+        currentFileFeatures = computeFeaturesV2(arrayAudio, sampleRate)
         
         #SAVE FILE IN CORRECT DIRECTORY
         direc = 'oth'
@@ -249,8 +249,8 @@ if __name__ == '__main__':
     
     #SET ROOT
     #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
     
     #SET PATH
