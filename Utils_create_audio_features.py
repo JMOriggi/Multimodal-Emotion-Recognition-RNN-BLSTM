@@ -225,7 +225,7 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         #CURRENT FILE FEATURE
         audioFilePath = os.path.join(audioDirectoryPath, audioFile)
         arrayAudio, sampleRate = readWav(audioFilePath)
-        currentFileFeatures = computeFeatures(arrayAudio, sampleRate)
+        currentFileFeatures = computeFeaturesV2(arrayAudio, sampleRate)
         
         #SAVE FILE IN CORRECT DIRECTORY
         direc = 'oth'
@@ -248,8 +248,8 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
 if __name__ == '__main__':
     
     #SET ROOT
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
     #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
     

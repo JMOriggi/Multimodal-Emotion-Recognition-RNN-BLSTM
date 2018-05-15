@@ -209,7 +209,7 @@ def buildBLTSM(maxTimestep, numFeatures, LRate):
     #MODEL WITH ATTENTION
     nb_lstm_cells = 128
     nb_classes = 4
-    nb_hidden_units = 512
+    nb_hidden_units = 128 #512
     # Logistic regression for learning the attention parameters with a standalone feature as input
     input_attention = Input(shape=(nb_lstm_cells * 2,))
     u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
@@ -314,11 +314,11 @@ if __name__ == '__main__':
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     n_epoch = 200 #number of epoch 
-    batchSizeAudio = 20
+    batchSizeAudio = 160
     batchSizeText = 20
-    LRateAudio = 0.001
+    LRateAudio = 0.0005
     LRateText = 0.0001
-    PatienceAudio = 40
+    PatienceAudio = 100
     PatienceText = 20
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY

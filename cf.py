@@ -570,7 +570,7 @@ def stFeatureExtraction(signal, Fs, Win, Step):
 
     numOfTimeSpectralFeatures = 8
     numOfHarmonicFeatures = 0
-    nceps = 13
+    nceps = 40 #13
     numOfChromaFeatures = 13
     totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfHarmonicFeatures + numOfChromaFeatures
     print('totalNumOfFeatures: ',totalNumOfFeatures)
@@ -597,8 +597,8 @@ def stFeatureExtraction(signal, Fs, Win, Step):
         curFV[numOfTimeSpectralFeatures:numOfTimeSpectralFeatures+nceps, 0] = stMFCC(X, fbank, nceps).copy()    # MFCCs
 
         chromaNames, chromaF = stChromaFeatures(X, Fs, nChroma, nFreqsPerChroma)
-        curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF
-        curFV[numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF.std()
+        #curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF
+        #curFV[numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF.std()
         stFeatures.append(curFV)
         # delta features
         '''
