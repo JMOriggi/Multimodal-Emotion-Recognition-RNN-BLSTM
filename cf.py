@@ -647,7 +647,6 @@ def stFeatureExtraction(signal, Fs, Win, Step):
         prevFV = curFV
         Xprev = X.copy()
         
-        #stFeatures.append(curFV)
         stFeatures.append(curFVFinal.reshape(len(curFVFinal)))      
         
     #print('Shape: ',numpy.asarray(stFeatures).shape)  
