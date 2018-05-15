@@ -311,9 +311,9 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     modelType = 0 #0=Audio, 1=Text
-    flagLoadModel = 0 #0=new, 1=load
+    flagLoadModel = 1 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
-    n_epoch = 200 #number of epoch 
+    n_epoch = 150 #number of epoch 
     batchSizeAudio = 160
     batchSizeText = 20
     LRateAudio = 0.0005
@@ -348,7 +348,7 @@ if __name__ == '__main__':
     
     #LOAD MODEL OR WEIGHT if choose
     if flagLoadModel == 1:
-        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-786-0.59.hdf5') 
+        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-51-0.59.hdf5') 
         model.load_weights(OutputWeightsPath)
         SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSizeAudio)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
         #model = load_model(mainRootModelAudio)
