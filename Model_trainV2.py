@@ -295,10 +295,10 @@ def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize,
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
-    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -310,26 +310,26 @@ if __name__ == '__main__':
     mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
     
     #DEFINE PARAMETERS
-    modelType = 0 #0=Audio, 1=Text
-    flagLoadModel = 1 #0=new, 1=load
+    modelType = 1 #0=Audio, 1=Text
+    flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
-    n_epoch = 50 #number of epoch 
+    n_epoch = 200 #number of epoch 
     batchSizeAudio = 160
     batchSizeText = 20
     LRateAudio = 0.0005
     LRateText = 0.0001
-    PatienceAudio = 100
-    PatienceText = 20
+    PatienceAudio = 20
+    PatienceText = 40
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
     #FIND MAX TIMESTEP FOR PADDING AUDIO
-    maxTimestepAudio = 500
-    '''for z in allAudioFeature:
+    maxTimestepAudio = 0 #500
+    for z in allAudioFeature:
         zStep = np.asarray(z).shape[0]
         if maxTimestepAudio < zStep:
-            maxTimestepAudio = zStep'''
+            maxTimestepAudio = zStep
     
     #FIND MAX TIMESTEP FOR PADDING TEXT
     maxTimestepText = 0
@@ -348,10 +348,10 @@ if __name__ == '__main__':
     
     #LOAD MODEL OR WEIGHT if choose
     if flagLoadModel == 1:
-        #OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-51-0.59.hdf5') 
-        #model.load_weights(OutputWeightsPath)
+        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-51-0.59.hdf5') 
+        model.load_weights(OutputWeightsPath)
         SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSizeAudio)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
-        model = load_model(mainRootModelAudio)
+        #model = load_model(mainRootModelAudio)
     
     #MODEL SUMMARY
     model.summary()
