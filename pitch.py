@@ -9,32 +9,32 @@ import math
 # --------------------------------------------------------------------------- #
 
 def ratio_to_cents(r): 
-  return 1200.0 * np.log2(r)
+    return 1200.0 * np.log2(r)
 
 def ratio_to_cents_protected(f1, f2): 
-  """avoid divide by zero in here, but expects np.arrays"""
-  out = np.zeros_like(f1)
-  key = (f1!=0.0) * (f2!=0.0)
-  out[key] = 1200.0 * np.log2(f1[key]/f2[key])
-  out[f1==0.0] = -np.inf
-  out[f2==0.0] = np.inf
-  out[(f1==0.0) * (f2==0.0)] = 0.0
-  return out
+    """avoid divide by zero in here, but expects np.arrays"""
+    out = np.zeros_like(f1)
+    key = (f1!=0.0) * (f2!=0.0)
+    out[key] = 1200.0 * np.log2(f1[key]/f2[key])
+    out[f1==0.0] = -np.inf
+    out[f2==0.0] = np.inf
+    out[(f1==0.0) * (f2==0.0)] = 0.0
+    return out
 
 def cents_to_ratio(c): 
-  return np.power(2, c/1200.0)
+    return np.power(2, c/1200.0)
 
 def freq_to_midi(f): 
-  return 69.0 + 12.0 * np.log2(f/440.0)
+    return 69.0 + 12.0 * np.log2(f/440.0)
 
 def midi_to_freq(m): 
-  return np.power(2, (m-69.0)/12.0) * 440.0 if m!= 0.0 else 0.0
+    return np.power(2, (m-69.0)/12.0) * 440.0 if m!= 0.0 else 0.0
 
 def bin_to_freq(b, sr, n_fft):
-  return b * float(sr) / float(n_fft)
+    return b * float(sr) / float(n_fft)
 
 def freq_to_bin(f, sr, n_fft): 
-  return np.round(f/(float(sr)/float(n_fft))).astype('int')
+    return np.round(f/(float(sr)/float(n_fft))).astype('int')
 
 # --------------------------------------------------------------------------- #
 # ppitch
@@ -169,31 +169,31 @@ def ppitch(y, sr=44100, n_fft=8820, win_length=1024, hop_length=2048,
 
     # likelihood function for each bin frequency
     def ml_a(amp): 
-      """a factor depending on the amplitude of the ith peak"""
-      return np.sqrt(np.sqrt(amp/max_amp))
-      # return np.sqrt(np.sqrt(amp))
-      # return np.ones_like(amp)
-      # return amp
+        """a factor depending on the amplitude of the ith peak"""
+        return np.sqrt(np.sqrt(amp/max_amp))
+        # return np.sqrt(np.sqrt(amp))
+        # return np.ones_like(amp)
+        # return amp
 
     def ml_t(r1, r2):
-      """how closely the ith peak is tuned to a multiple of f"""
-      max_dist = ml_width # cents
-      cents = np.abs(ratio_to_cents_protected(r1,r2))
-      dist = np.clip(1.0 - (cents / max_dist), 0, 1)
-      return dist 
+        """how closely the ith peak is tuned to a multiple of f"""
+        max_dist = ml_width # cents
+        cents = np.abs(ratio_to_cents_protected(r1,r2))
+        dist = np.clip(1.0 - (cents / max_dist), 0, 1)
+        return dist 
 
     def ml_i(nearest_multiple): 
-      """whether the peak is closest to a high or low multiple of f"""
-      out = np.zeros_like(nearest_multiple)
-      out[nearest_multiple.nonzero()] = 1/np.power(nearest_multiple[nearest_multiple.nonzero()], harm_rolloff) 
-      return out
-      # return 1/np.power(np.clip(nearest_multiple + harm_offset, 1, 32767), harm_rolloff) * (nearest_multiple <= max_harm) 
-      # return 1/np.power(nearest_multiple+1, 2)
-      # return np.ones_like(nearest_multiple)
+        """whether the peak is closest to a high or low multiple of f"""
+        out = np.zeros_like(nearest_multiple)
+        out[nearest_multiple.nonzero()] = 1/np.power(nearest_multiple[nearest_multiple.nonzero()], harm_rolloff) 
+        return out
+        # return 1/np.power(np.clip(nearest_multiple + harm_offset, 1, 32767), harm_rolloff) * (nearest_multiple <= max_harm) 
+        # return 1/np.power(nearest_multiple+1, 2)
+        # return np.ones_like(nearest_multiple)
 
     ml = (ml_a(mags_tile) * \
-      ml_t((frqs_tile/histo), (frqs_tile/histo).round()) * \
-      ml_i((frqs_tile/histo).round())).sum(axis=0)
+    ml_t((frqs_tile/histo), (frqs_tile/histo).round()) * \
+    ml_i((frqs_tile/histo).round())).sum(axis=0)
 
     # for debugging
     # ml_hat = (ml_a(mags_tile) * \
@@ -300,132 +300,3 @@ def ppitch(y, sr=44100, n_fft=8820, win_length=1024, hop_length=2048,
   tracks = np.copy(pitches)
 
   return fundamentals, pitches, D, peaks, confidences, tracks
-
-
-# --------------------------------------------------------------------------- #
-# extras
-# --------------------------------------------------------------------------- #
-
-def voice_tracks(pitches, confidences):
-
-  # alloc output data
-  out = np.zeros_like(pitches)
-  out[0] = pitches[0]
-
-  out_confidences = np.zeros_like(confidences)
-  out_confidences[0] = confidences[0]
-
-  num_frames, num_voices = pitches.shape
-
-  # loop through frames
-  for i in range(1,num_frames):
-
-    # setup
-    prev_frame = out[i-1]
-    next_frame = pitches[i]
-
-    # pairwise distances indexed [from, to]
-    delta = np.abs(ratio_to_cents(np.atleast_2d(prev_frame).T/np.repeat(
-      np.atleast_2d(next_frame),num_voices,axis=0)))
-    # delta = np.abs(ratio_to_cents_protected(np.atleast_2d(prev_frame).T,
-      # np.repeat(np.atleast_2d(next_frame),num_voices,axis=0)))
-
-    # indices of sorted delta [from, to]
-    delta_sorted = np.unravel_index(np.argsort(delta.ravel()), delta.shape)
-
-    # step through and reject if either prev or next is already found
-    num_found = 0; found_prevs = []; found_nexts = []; index = 0
-
-    while num_found < num_voices:
-      prev_voice,next_voice = delta_sorted[0][index], delta_sorted[1][index]
-      if prev_voice not in found_prevs and next_voice not in found_nexts:
-        out[i][prev_voice] = pitches[i][next_voice]
-        out_confidences[i][prev_voice] = confidences[i][next_voice]
-        found_prevs += [prev_voice]
-        found_nexts += [next_voice]
-        num_found += 1
-      index += 1
-
-  return out, out_confidences
-
-# --------------------------------------------------------------------------- #
-
-"""pitchsets.
-  this is slightly ineffient b/c we filter twice
-    1. first for change (vibrato depth)
-    2. then for sustain (vibrato length)
-    3. whatever is left are ampsets
-    - it could all be done in one pass, but this makes it easier to swap in
-      change measures (absolute vs relative grid) and sustain measures
-  * currently pitchsets are detected by voice but reported by frame to be 
-    consistent with ampsets. 
-    
-  -> this should change.
-"""
-
-def pitchsets(pitches, win=3):
-
-  # 1. filter for change on an asbolute 1/2-tone grid (depth)
-  pitches_change = change_filter(pitches)
-
-  # 2. filter for sustain (length)
-  pitches_sustain = sustain_filter(pitches_change, win=win)
-
-  # 3. what is left are pitchsets
-  pitchsets = np.sort(np.array(list(set(np.argwhere(np.nan_to_num(pitches_sustain))[:,0]))))
-  
-  return pitchsets, np.where(np.nan_to_num(pitches_sustain))
-
-# --------------------------------------------------------------------------- #
-
-"""filter for change.
-  * filter for change on grid rounded to nearest 1/2 tone
-  * non-change pitches are changed to 0's
-  -> maybe this should be np.nan's instead
-"""
-
-def change_filter(pitches):
-
-  # copy working data
-  wpitches = np.copy(pitches)
-
-  # alloc output data
-  out = np.zeros_like(wpitches)
-  out[out==0] = np.nan
-
-  # convert to midi pitch and round
-  wpitches = freq_to_midi(wpitches).round()
-
-  # indices of pitch change
-  indices = np.diff(wpitches, axis=0).nonzero()
-
-  # copy pitch values from original data where change
-  out[0] = pitches[0]
-  out[1:][indices] = pitches[1:][indices]
-
-  return out 
-
-# --------------------------------------------------------------------------- #
-
-"""filter for sustain.
-  * say something here: wish could be numpy...
-"""
-
-def sustain_filter(pitches, win=3):
-
-  # alloc output data
-  out = np.zeros_like(pitches)
-
-  # loop through frames and pitches
-  for i in range(pitches.shape[0]-win):
-    for j in range(pitches.shape[1]):
-
-        # keep pitch if win after are nan
-        out[i,j] = pitches[i,j] * np.isnan(pitches[i+1:i+win,j]).all()
-
-  # convert 0 to nan
-  out[out==0] = np.nan
-
-  return out 
-
-# --------------------------------------------------------------------------- #
