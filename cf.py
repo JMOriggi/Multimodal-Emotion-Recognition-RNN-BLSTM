@@ -5,7 +5,7 @@ from scipy.fftpack import fft
 from scipy.fftpack.realtransforms import dct
 import matplotlib.pyplot as plt 
 from scipy.io.wavfile import read
-use_pitch = True
+use_pitch = False
 if use_pitch:
     import pitch
 eps = 0.00000001
