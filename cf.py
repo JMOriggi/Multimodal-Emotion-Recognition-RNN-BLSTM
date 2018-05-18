@@ -588,7 +588,7 @@ def stFeatureExtraction(signal, Fs, Win, Step):
     numOfPeaks = 10
     numOfTimeSpectralFeatures = 8
     nceps = 40#13
-    numOfChromaFeatures = 0#13
+    numOfChromaFeatures = 13#13
     if use_pitch:
         totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfChromaFeatures + numOfPeaks + numOfPitches
     else:
@@ -626,9 +626,9 @@ def stFeatureExtraction(signal, Fs, Win, Step):
         #curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + nFFT - 1] = X
 
         #CHROMA
-        '''chromaNames, chromaF = stChromaFeatures(X, Fs, nChroma, nFreqsPerChroma)
+        chromaNames, chromaF = stChromaFeatures(X, Fs, nChroma, nFreqsPerChroma)
         curFV[numOfTimeSpectralFeatures + nceps: numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF
-        curFV[numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF.std()'''
+        curFV[numOfTimeSpectralFeatures + nceps + numOfChromaFeatures - 1] = chromaF.std()
         
         #PITCH
         if use_pitch:
