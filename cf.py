@@ -587,7 +587,7 @@ def stFeatureExtraction(signal, Fs, Win, Step):
     numOfPitches = 5
     numOfPeaks = 10
     numOfTimeSpectralFeatures = 8
-    nceps = 13#13
+    nceps = 40#13
     numOfChromaFeatures = 13#13
     if use_pitch:
         totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfChromaFeatures + numOfPeaks + numOfPitches
@@ -639,7 +639,7 @@ def stFeatureExtraction(signal, Fs, Win, Step):
             curFV[numOfTimeSpectralFeatures + nceps + numOfPeaks: numOfTimeSpectralFeatures + nceps + numOfPeaks + numOfPitches] = pitches
         
         #DELTA FEATURES
-        if countFrames>1:
+        '''if countFrames>1:
             delta = curFV - prevFV
             curFVFinal = numpy.concatenate((curFV, delta))            
         else:
@@ -647,7 +647,8 @@ def stFeatureExtraction(signal, Fs, Win, Step):
         prevFV = curFV
         Xprev = X.copy()
         
-        stFeatures.append(curFVFinal.reshape(len(curFVFinal)))      
+        stFeatures.append(curFVFinal.reshape(len(curFVFinal))) ''' 
+        stFeatures.append(curFV.reshape(len(curFV)))
         
     #print('Shape: ',numpy.asarray(stFeatures).shape)  
     
