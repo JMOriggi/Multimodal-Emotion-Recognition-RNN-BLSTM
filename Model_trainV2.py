@@ -314,7 +314,7 @@ if __name__ == '__main__':
     flagLoadModel = 0 #0=new, 1=load
     labelLimit = 740 #Number of each emotion label file to process
     n_epoch = 200 #number of epoch 
-    batchSizeAudio = 160
+    batchSizeAudio = 320
     batchSizeText = 20
     LRateAudio = 0.001
     LRateText = 0.0001

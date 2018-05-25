@@ -300,12 +300,12 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    #mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    #mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    mainRootModelFile = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
-    mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
-    dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    #mainRootModelFile = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
+    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
+    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -315,16 +315,16 @@ if __name__ == '__main__':
     #SET MODELS PATH
     mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
     mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
-    OutputWeightsPathAudio = os.path.join(dirRes, 'weights-improvement-19-0.60.hdf5')
+    OutputWeightsPathAudio = os.path.join(dirRes, 'weights-improvement-28-0.60.hdf5')
     OutputWeightsPathText = os.path.join(dirRes, 'weights-improvement-170-0.61.hdf5')   
     
     #DEFINE PARAMETERS
-    modelType = 1 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    flagLoadModelAudio = 1 #0=model, 1=weight
+    modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
+    flagLoadModelAudio = 0 #0=model, 1=weight
     flagLoadModelText = 1 #0=model, 1=weight
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredW_19e_-'+str(modelType)+'-'+'Label_'+str(labelLimit)
+    nameFileResult = 'PredM_-'+str(modelType)+'-'+'Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
