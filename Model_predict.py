@@ -268,21 +268,17 @@ def mergePrediction(allPredictionAudio, allPredictionText, expected):
 
 def mergeWithReferee(refModel, yhatAudio, yhatText, expected):
     
-    allPrediction = []
     allPredictionClasses = []
-    allPredictionClassesMerged = []
-    expected = []
     
     #PREDICT
     yhat = refModel.predict([yhatAudio,yhatText])         
     for i in range(len(yhat)):
-        print('Expected:', expected[i], 'Predicted', yhat[i])
         Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
         allPredictionClasses.append(Pindex)
         
-        print('Audio pred: ', yhatAudio[i], ' Text pred: ', yhatText[i])
+        '''print('Audio pred: ', yhatAudio[i], ' Text pred: ', yhatText[i])
         print('Pred after merge: ', yhat[i])
-        print('Expected: ', expected[i])
+        print('Expected: ', expected[i])'''
         
     return allPredictionClasses
  
@@ -305,7 +301,7 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
     #PREDICT
     yhat = model.predict([u_train,X])
     for i in range(len(yhat)):
-        print('Expected:', Y[i], 'Predicted', yhat[i])
+        #print('Expected:', Y[i], 'Predicted', yhat[i])
         Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
         allPredictionClasses.append(Pindex)
         allPrediction.append(yhat[i])
@@ -338,17 +334,16 @@ if __name__ == '__main__':
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
     
     #SET MODELS PATH
-    mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
-    mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
-    mainRootModelReferee = os.path.normpath(mainRootModelFile + '\Referee_Model_saved.h5')
-    OutputWeightsPathAudio = os.path.join(dirRes, 'weights-improvement-28-0.60.hdf5')
-    OutputWeightsPathText = os.path.join(dirRes, 'weights-improvement-170-0.61.hdf5')
-    OutputWeightsPathReferee = os.path.join(dirRes, 'weights-improvement-170-0.61.hdf5')   
+    mainRootModelAudio = os.path.normpath(dirRes + '\RNN_Model_AUDIO_saved.h5')
+    mainRootModelText = os.path.normpath(dirRes + '\RNN_Model_TEXT_saved.h5')
+    mainRootModelReferee = os.path.normpath(dirRes + '\Referee_Model_saved.h5')
+    OutputWeightsPathAudio = os.path.join(dirRes, 'weightsA-improvement-27-0.64.hdf5')
+    OutputWeightsPathText = os.path.join(dirRes, 'weightsT-improvement-71-0.65.hdf5')  
     
     #DEFINE PARAMETERS
-    mergingType = 0 #0=simple merge, 1=referee merge
-    modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    flagLoadModelAudio = 0 #0=model, 1=weight
+    mergingType = 1 #0=simple merge, 1=referee merge
+    modelType = 2 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
+    flagLoadModelAudio = 1 #0=model, 1=weight
     flagLoadModelText = 1 #0=model, 1=weight
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number

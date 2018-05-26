@@ -197,10 +197,10 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
     return allPredictionClasses, allPrediction, expected, yhat
 
 
-def buildRefereeModel(yhatAudioShape, yhatTextShape): 
+def buildRefereeModel(): 
 
-    input_A = Input(shape=yhatAudioShape)
-    input_T = Input(shape=yhatTextShape)
+    input_A = Input(shape=(4,))
+    input_T = Input(shape=(4,))
     mergedOutput = Concatenate()([input_A, input_T])
      
     refOut = Dense(512, activation='relu')(mergedOutput)
@@ -210,7 +210,7 @@ def buildRefereeModel(yhatAudioShape, yhatTextShape):
     refOut = Dense(4, activation='softmax')(refOut)
     
     modelReferee = Model([input_A, input_T], refOut)  
-    modelReferee.compile(loss='categorical_crossentropy', optimizer=RMSprop(), metrics=['categorical_accuracy'])
+    modelReferee.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
     
     return modelReferee
  
@@ -218,12 +218,12 @@ def buildRefereeModel(yhatAudioShape, yhatTextShape):
 def trainReferee(model, yhatAudio, yhatText, allLabel):    
     
     Y = np.asarray(allLabel)
-    Y = Y.reshape(1,len(Y), 4)
-    yhatAudio = yhatAudio.reshape(1,len(yhatAudio),4) 
-    yhatText = yhatText.reshape(1,len(yhatText),4) 
+    Y = Y.reshape(len(Y), 4)
+    '''yhatAudio = yhatAudio.reshape(len(yhatAudio),1,4) 
+    yhatText = yhatText.reshape(len(yhatText),1,4)''' 
     
     #FIT MODEL for one epoch on this sequence
-    history = model.fit([yhatAudio, yhatText], Y, validation_split=0.20, batch_size=1, epochs=100, shuffle=True, verbose=2)  
+    history = model.fit([yhatAudio, yhatText], Y, batch_size=20, epochs=100, shuffle=True, verbose=2)  
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = model
@@ -239,8 +239,10 @@ if __name__ == '__main__':
     Computer = 'new'
     #Computer = 'old'
     if Computer == 'new':
+        #mainRootModelFile = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+        #mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
         mainRootModelFile = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+        mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
         dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     if Computer == 'old':    
         mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
@@ -262,7 +264,7 @@ if __name__ == '__main__':
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
     flagLoadModelAudio = 1 #0=model, 1=weight
     flagLoadModelText = 0 #0=model, 1=weight
-    labelLimit = 170 #Number of each emotion label file to process
+    labelLimit = 740 #170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     nameFileResult = 'PredMerged_-'+str(modelType)+'-'+'Label_'+str(labelLimit)
     
@@ -294,16 +296,16 @@ if __name__ == '__main__':
     else:
         model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
         model_Text.load_weights(OutputWeightsPathText) 
-        
-    #TRAIN MERGING
+    
+    #PREDICT TEXT AND AUDIO: build input data for referee model  
     allPredictionClassesAudio, allPredictionAudio, expected, yhatAudio = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
     allPredictionClassesText, allPredictionText, expected, yhatText = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
-    print(yhatAudio.shape)
-    print(yhatText.shape)
-    model_Referee = buildRefereeModel(yhatAudio.shape, yhatText.shape) 
+    
+    #BUILD REFEREE AND TRAIN
+    model_Referee = buildRefereeModel() 
     model_Referee.summary()
     model_Referee, history, evAcc = trainReferee(model_Referee, yhatAudio, yhatText, allLabels)
-    modelPath = os.path.normpath(mainRoot + '\Referee_Model_saved.h5')
+    modelPath = os.path.normpath(dirRes + '\Referee_Model_saved.h5')
     model_Referee.save(modelPath, overwrite=True)
     
     #VISUALIZE HISTORY

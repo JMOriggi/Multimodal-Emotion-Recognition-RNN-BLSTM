@@ -368,11 +368,11 @@ if __name__ == '__main__':
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0:
         model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, n_epoch, dirRes, maxTimestepAudio, batchSizeAudio, PatienceAudio)
-        modelPathAudio = os.path.normpath(mainRoot + '\RNN_Model_AUDIO_saved.h5')
+        modelPathAudio = os.path.normpath(dirRes + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1:
         model_Text, history, evAcc = trainBLSTM(model, allTextFeature, allLabels, n_epoch, dirRes, maxTimestepText, batchSizeText, PatienceText)    
-        modelPathText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
+        modelPathText = os.path.normpath(dirRes + '\RNN_Model_TEXT_saved.h5')
         model_Text.save(modelPathText, overwrite=True)
     
     #VISUALIZE HISTORY
