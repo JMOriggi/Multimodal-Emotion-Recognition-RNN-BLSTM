@@ -587,7 +587,7 @@ def stFeatureExtraction(signal, Fs, Win, Step):
     numOfPitches = 5
     numOfPeaks = 10
     numOfTimeSpectralFeatures = 8
-    nceps = 40#13
+    nceps = 13
     numOfChromaFeatures = 13#13
     if use_pitch:
         totalNumOfFeatures = numOfTimeSpectralFeatures + nceps + numOfChromaFeatures + numOfPeaks + numOfPitches

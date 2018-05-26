@@ -4,7 +4,7 @@ import csv
 import operator
 from keras.layers.merge import dot
 from keras.models import Model
-from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
+from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation, Concatenate
 from keras.layers import TimeDistributed
 from keras.layers import AveragePooling1D
 from keras.layers import Flatten
@@ -23,88 +23,6 @@ from sklearn.model_selection import KFold
 from keras.utils import np_utils
 import itertools
 np.seterr(divide='ignore', invalid='ignore')
-
-
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm):
-    
-    plt.figure(figsize=(4,7))
-    
-    #NOT NORMALIZED
-    print('Confusion matrix, without normalization')
-    print(cm)
-    plt.subplot(2, 1, 1)
-    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    fmt = 'd'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    
-    #NORMALIZED
-    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    print("Normalized confusion matrix")
-    print(cm)
-    plt.subplot(2, 1, 2)
-    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    fmt = '.2f'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    
-    return plt
-
-
-def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
-    labelLimit = 170
-    expected = np.argmax(expected, axis=1)
-    cm = confusion_matrix(expected, allPredictionClasses)
-    accurancy = (cm[0][0] + cm[1][1] + cm[2][2] + cm[3][3])/(labelLimit*4)
-    print('Accurancy: ',accurancy)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
-    
-    OutputImgPath = os.path.join(dirRes, nameFileResult+'-Acc_'+str(accurancy)+'-CM.png')
-    plt.savefig(OutputImgPath)
-    if flagPlotGraph:
-        plt.show()
-    
-    
-def statistics(Y, yhat, correctCounter, predEmoCounter):
-    index, value = max(enumerate(Y[0]), key=operator.itemgetter(1))
-    Pindex, Pvalue = max(enumerate(yhat[0]), key=operator.itemgetter(1))
-    '''print('index: ', index, 'value: ', value)
-    print('index: ', Pindex, 'value: ', Pvalue)'''
-    
-    #UPDATE CORRECT COUNTER
-    if index == Pindex:
-        correctCounter[index] += 1
-    
-    #UPDATE PREDICTED EMO COUNTER
-    predEmoCounter[Pindex] += 1
-    
-    return correctCounter, predEmoCounter
 
 
 def saveCsv(currentFile, csvOutputFilePath):
@@ -211,24 +129,6 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
-def mergePrediction(allPredictionAudio, allPredictionText, expected):
-    
-    allPredictionClasses = []
-    
-    for i in range(len(allPredictionAudio)):
-        #AVERAGE BETWEEN 2 PREDICTION
-        yhat = (allPredictionAudio[i]+allPredictionText[i])/2
-        
-        Pindex, Pvalue = max(enumerate(yhat), key=operator.itemgetter(1))
-        allPredictionClasses.append(Pindex)
-        
-        print('Audio pred: ', allPredictionAudio[i], ' Text pred: ', allPredictionText[i])
-        print('Pred after merge: ', yhat)
-        print('Expected: ', expected[i])
-        
-    return allPredictionClasses
-
-
 def buildBLTSM(maxTimestep, numFeatures):
     
     #SET PARAMETERS
@@ -264,7 +164,7 @@ def reshapeLSTMInOut(Feat, label, maxTimestep):
     Y = Y.reshape(len(Y), 4)
     
     return X, Y
-
+ 
  
 def predictFromModel(model, inputTest, Labels, maxTimestep):
     
@@ -284,7 +184,7 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
     #PREDICT
     yhat = model.predict([u_train,X])
     for i in range(len(yhat)):
-        print('Expected:', Y[i], 'Predicted', yhat[i])
+        #print('Expected:', Y[i], 'Predicted', yhat[i])
         Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
         allPredictionClasses.append(Pindex)
         allPrediction.append(yhat[i])
@@ -294,37 +194,77 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
     scores = model.evaluate([u_train, X], Y, verbose=0)  
     print('NORMAL EVALUATION %s: %.2f%%' % (model.metrics_names[1], scores[1]*100))         
     
-    return allPredictionClasses, allPrediction, expected
+    return allPredictionClasses, allPrediction, expected, yhat
+
+
+def buildRefereeModel(yhatAudioShape, yhatTextShape): 
+
+    input_A = Input(shape=yhatAudioShape)
+    input_T = Input(shape=yhatTextShape)
+    mergedOutput = Concatenate()([input_A, input_T])
+     
+    refOut = Dense(512, activation='relu')(mergedOutput)
+    refOut = Dropout(0.5)(refOut)
+    refOut = Dense(512, activation='relu')(refOut)
+    refOut = Dropout(0.5)(refOut)
+    refOut = Dense(4, activation='softmax')(refOut)
+    
+    modelReferee = Model([input_A, input_T], refOut)  
+    modelReferee.compile(loss='categorical_crossentropy', optimizer=RMSprop(), metrics=['categorical_accuracy'])
+    
+    return modelReferee
+ 
+ 
+def trainReferee(model, yhatAudio, yhatText, allLabel):    
+    
+    Y = np.asarray(allLabel)
+    Y = Y.reshape(1,len(Y), 4)
+    yhatAudio = yhatAudio.reshape(1,len(yhatAudio),4) 
+    yhatText = yhatText.reshape(1,len(yhatText),4) 
+    
+    #FIT MODEL for one epoch on this sequence
+    history = model.fit([yhatAudio, yhatText], Y, validation_split=0.20, batch_size=1, epochs=100, shuffle=True, verbose=2)  
+        
+    #EVALUATION OF THE BEST VERSION MODEL
+    modelEv = model
+    scores = modelEv.evaluate([yhatAudio, yhatText], Y, verbose=0)  
+    print('Evaluation model saved %s: %.2f%%' % (modelEv.metrics_names[1], scores[1]*100)) 
+        
+    return model, history, scores[1]*100  
     
     
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    #mainRootModelFile = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Training')
-    #mainRoot = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test')
-    #dirRes = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Z_Results\Recent_Results')
+    Computer = 'new'
+    #Computer = 'old'
+    if Computer == 'new':
+        mainRootModelFile = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+        mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+        dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    if Computer == 'old':    
+        mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+        mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+        dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
     dirText = os.path.join(mainRoot + '\FeaturesText')
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
     
-    #SET MODELS PATH
+    #SET MODELS PATH AND WEIGHTS
     mainRootModelAudio = os.path.normpath(mainRootModelFile + '\RNN_Model_AUDIO_saved.h5')
     mainRootModelText = os.path.normpath(mainRootModelFile + '\RNN_Model_TEXT_saved.h5')
-    OutputWeightsPathAudio = os.path.join(dirRes, 'weights-improvement-28-0.60.hdf5')
+    OutputWeightsPathAudio = os.path.join(dirRes, 'weights.best.hdf5')
     OutputWeightsPathText = os.path.join(dirRes, 'weights-improvement-170-0.61.hdf5')   
     
     #DEFINE PARAMETERS
     modelType = 0 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
-    flagLoadModelAudio = 0 #0=model, 1=weight
-    flagLoadModelText = 1 #0=model, 1=weight
+    flagLoadModelAudio = 1 #0=model, 1=weight
+    flagLoadModelText = 0 #0=model, 1=weight
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredM_-'+str(modelType)+'-'+'Label_'+str(labelLimit)
+    nameFileResult = 'PredMerged_-'+str(modelType)+'-'+'Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -340,43 +280,54 @@ if __name__ == '__main__':
     print('TEXT Files with #features: ', allTextFeature[0].shape[1])
     print('TEXT Max time step: ',maxTimestepText)
     print('Predict number of each emotion: ', labelLimit)
-     
-    #BUILD MODEL AND SET FEATURES
-    if modelType == 0:
-        if flagLoadModelAudio == 0:
-            model_Audio = load_model(mainRootModelAudio) 
-        else:    
-            model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
-            model_Audio.load_weights(OutputWeightsPathAudio)
-        allPredictionClasses, allPrediction, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
-    if modelType == 1:
-        if flagLoadModelText == 0:
-            model_Text = load_model(mainRootModelText)   
-        else:
-            model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
-            model_Text.load_weights(OutputWeightsPathText) 
-        allPredictionClasses, allPrediction, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
-    if modelType == 2:
-        if flagLoadModelAudio == 0:
-            model_Audio = load_model(mainRootModelAudio) 
-        else:
-            model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
-            model_Audio.load_weights(OutputWeightsPathAudio)
-        if flagLoadModelText == 0:
-            model_Text = load_model(mainRootModelText) 
-        else:
-            model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
-            model_Text.load_weights(OutputWeightsPathText)  
-        print('*******************AUDIO******************')
-        allPredictionClassesAudio, allPredictionAudio, expected = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
-        print('*******************TEXT******************')
-        allPredictionClassesText, allPredictionText, expected = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
-        print('*******************MERGE******************')
-        allPredictionClasses = mergePrediction(allPredictionAudio, allPredictionText, expected)
-        
     
-    #PREDICT & SAVE
-    computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, True)
+    #LOAD MODEL OR WEIGHTS FOR AUDIO AND TEXT MODEL
+    #Audio
+    if flagLoadModelAudio == 0:
+            model_Audio = load_model(mainRootModelAudio) 
+    else:    
+        model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
+        model_Audio.load_weights(OutputWeightsPathAudio)
+    #Text
+    if flagLoadModelText == 0:
+            model_Text = load_model(mainRootModelText)   
+    else:
+        model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
+        model_Text.load_weights(OutputWeightsPathText) 
+        
+    #TRAIN MERGING
+    allPredictionClassesAudio, allPredictionAudio, expected, yhatAudio = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
+    allPredictionClassesText, allPredictionText, expected, yhatText = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
+    print(yhatAudio.shape)
+    print(yhatText.shape)
+    model_Referee = buildRefereeModel(yhatAudio.shape, yhatText.shape) 
+    model_Referee.summary()
+    model_Referee, history, evAcc = trainReferee(model_Referee, yhatAudio, yhatText, allLabels)
+    modelPath = os.path.normpath(mainRoot + '\Referee_Model_saved.h5')
+    model_Referee.save(modelPath, overwrite=True)
+    
+    #VISUALIZE HISTORY
+    # summarize history for accuracy
+    plt.figure(figsize=(5,8))
+    plt.subplot(2, 1, 1)
+    plt.plot(history.history['categorical_accuracy'])
+    plt.plot(history.history['val_categorical_accuracy'])
+    plt.title('model categorical_accuracy')
+    plt.ylabel('categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    # summarize history for loss
+    plt.subplot(2, 1, 2)
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    #save it
+    OutputImgPath = os.path.join(dirRes, 'Train_History-EvAcc_'+str(evAcc)+'.png')
+    plt.savefig(OutputImgPath)
+    plt.show()
     
     print('END')
     
