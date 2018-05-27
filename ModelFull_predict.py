@@ -215,7 +215,7 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     
     nb_lstm_cells = 128
     nb_classes = 4
-    nb_hidden_units = 128
+    nb_hidden_units = 512 #128
     
     #MODEL AUDIO WITH ATTENTION
     #Input attention
@@ -247,7 +247,7 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     output = Dense(nb_classes, activation='softmax')(mrg)
     
     model = Model(inputs=[input_attention, input_featureAudio, input_featureText], outputs=output)
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop()) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
 
     
     return model
@@ -292,7 +292,7 @@ def predictFromModel(model, inputTestAudio, inputTestText, Labels, maxTimestepAu
     scores = model.evaluate([u_train, X_Audio, X_Text], Y, verbose=0)  
     print('NORMAL EVALUATION %s: %.2f%%' % (model.metrics_names[1], scores[1]*100))         
     
-    return allPredictionClasses, allPrediction, expected, yhat
+    return allPredictionClasses, allPrediction, expected
     
     
 if __name__ == '__main__':
@@ -301,11 +301,9 @@ if __name__ == '__main__':
     Computer = 'new'
     #Computer = 'old'
     if Computer == 'new':
-        mainRootModelFile = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
         mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
         dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     if Computer == 'old':    
-        mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
         mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
         dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     
@@ -315,14 +313,14 @@ if __name__ == '__main__':
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
     
     #SET MODELS PATH
-    mainRootModel = os.path.normpath(dirRes + '\RNN_Model_AUDIO_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weightsA-improvement-27-0.64.hdf5')
+    mainRootModel = os.path.join(dirRes, 'RNN_Model_FULL_saved.h5')
+    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-18-0.73.hdf5')
     
     #DEFINE PARAMETERS
-    flagLoadModel = 0 #0=model, 1=weight
+    flagLoadModel = 1 #0=model, 1=weight
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredM-FULL-Label_'+str(labelLimit)
+    nameFileResult = 'PredW_epoch18-FULL-Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
@@ -343,7 +341,7 @@ if __name__ == '__main__':
     if flagLoadModel == 0:
         model = load_model(mainRootModel) 
     else:
-        model = buildBLTSM(maxTimestepAudio, maxTimestepText, allAudioFeature[0].shape[1], maxTimestepText, allTextFeature[0].shape[1])
+        model = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1], maxTimestepText, allTextFeature[0].shape[1])
         model.load_weights(OutputWeightsPath)
         
     #PREDICT  

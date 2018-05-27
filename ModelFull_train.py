@@ -208,7 +208,7 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     
     nb_lstm_cells = 128
     nb_classes = 4
-    nb_hidden_units = 128
+    nb_hidden_units = 512 #128
     
     #MODEL AUDIO WITH ATTENTION
     #Input attention
@@ -299,7 +299,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     labelLimit = 740 #Number of each emotion label file to process
-    n_epoch = 100 #number of epoch 
+    n_epoch = 70 #number of epoch 
     batchSize= 30
     LRateAudio = 0.001
     
