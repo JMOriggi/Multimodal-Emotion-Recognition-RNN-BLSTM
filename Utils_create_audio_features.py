@@ -251,8 +251,8 @@ if __name__ == '__main__':
     Computer = 'new'
     #Computer = 'old'
     if Computer == 'new':
-        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        #main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+        #main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
     if Computer == 'old': 
         main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
         #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')

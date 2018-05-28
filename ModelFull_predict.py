@@ -215,7 +215,7 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     
     nb_lstm_cells = 128
     nb_classes = 4
-    nb_hidden_units = 128 #512
+    nb_hidden_units = 512 #128
         
     #MODEL AUDIO WITH ATTENTION
     #Input attention
@@ -318,13 +318,13 @@ if __name__ == '__main__':
     
     #SET MODELS PATH
     mainRootModel = os.path.join(dirRes, 'RNN_Model_FULL_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-24-0.71.hdf5')
+    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-77-0.73.hdf5')
     
     #DEFINE PARAMETERS
     flagLoadModel = 1 #0=model, 1=weight
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredM-FULL-Label_'+str(labelLimit)
+    nameFileResult = 'PredW_epoch877-FULL-Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
