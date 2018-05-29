@@ -303,7 +303,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     labelLimit = 740 #Number of each emotion label file to process
-    n_epoch = 120 #number of epoch 
+    n_epoch = 90 #number of epoch 
     batchSize= 20
     LRateAudio = 0.0001
     

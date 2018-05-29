@@ -318,13 +318,13 @@ if __name__ == '__main__':
     
     #SET MODELS PATH
     mainRootModel = os.path.join(dirRes, 'RNN_Model_FULL_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-77-0.73.hdf5')
+    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-54-0.72.hdf5')
     
     #DEFINE PARAMETERS
-    flagLoadModel = 1 #0=model, 1=weight
+    flagLoadModel = 0 #0=model, 1=weight
     labelLimit = 170 #Number of each emotion label file to process
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredW_epoch877-FULL-Label_'+str(labelLimit)
+    nameFileResult = 'PredM-FULL-Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
