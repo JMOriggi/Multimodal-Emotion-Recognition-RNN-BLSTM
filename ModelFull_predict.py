@@ -248,6 +248,7 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     mrg = Merge(mode='concat')([z1,z2])
     #Dense layer and final output
     refOut = Dense(nb_hidden_units, activation='relu')(mrg)
+    refOut = Dense(nb_hidden_units, activation='relu')(refOut)
     output = Dense(nb_classes, activation='softmax')(refOut)
     
     model = Model(inputs=[input_attention, input_featureAudio, input_featureText], outputs=output)
@@ -318,7 +319,7 @@ if __name__ == '__main__':
     
     #SET MODELS PATH
     mainRootModel = os.path.join(dirRes, 'RNN_Model_FULL_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-54-0.72.hdf5')
+    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-66-0.72.hdf5')
     
     #DEFINE PARAMETERS
     flagLoadModel = 0 #0=model, 1=weight
