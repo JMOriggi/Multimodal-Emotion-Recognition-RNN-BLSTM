@@ -78,13 +78,17 @@ def readDataFile(main_root):
 
 if __name__ == '__main__':
     
-    #SET MAIN ROOT
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    #DEFINE MAIN ROOT
+    Computer = 'new'
+    #Computer = 'old'
+    if Computer == 'new':
+        mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+        #mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    if Computer == 'old':    
+        mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
+        mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
     
-    arrayFileName, arrayEmoLabel = readDataFile(main_root) 
+    arrayFileName, arrayEmoLabel = readDataFile(mainRoot) 
     counter = countLabels(arrayEmoLabel)
     print('V1: ',counter)
     counter = countLabelsV2(arrayEmoLabel)

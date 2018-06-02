@@ -161,6 +161,60 @@ def readFeatures(DirRoot, labelLimit):
     return allFileFeature, allFileName
 
 
+def organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit):
+
+    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
+    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
+    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
+    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
+    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
+    angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
+    sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
+    neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
+    joyLabels, joyFileName = readFeatures(os.path.join(dirLabel, 'joy'), labelLimit)
+    angLabels, angFileName = readFeatures(os.path.join(dirLabel, 'ang'), labelLimit)
+    sadLabels, sadFileName = readFeatures(os.path.join(dirLabel, 'sad'), labelLimit)
+    neuLabels, neuFileName = readFeatures(os.path.join(dirLabel, 'neu'), labelLimit)
+    '''print(allAudioFeature.shape)
+    print(allTextFeature.shape)
+    print(allLabels.shape)'''
+    
+    #BUILD SHUFFLED FEATURE FILES FOR TRAINING
+    allAudioFeature = []
+    allTextFeature = []
+    allFileName = []
+    allLabels = []
+    i = 0
+    while i < labelLimit:
+        if i < len(joyAudioFeature):
+            allAudioFeature.append(joyAudioFeature[i])
+            allTextFeature.append(joyTextFeature[i])
+            allFileName.append(joyFileName[i])
+            allLabels.append(joyLabels[i])
+        
+        if i < len(angAudioFeature):
+            allAudioFeature.append(angAudioFeature[i])
+            allTextFeature.append(angTextFeature[i])
+            allFileName.append(angFileName[i])
+            allLabels.append(angLabels[i])
+        
+        if i < len(sadAudioFeature):
+            allAudioFeature.append(sadAudioFeature[i])
+            allTextFeature.append(sadTextFeature[i])
+            allFileName.append(sadFileName[i])
+            allLabels.append(sadLabels[i])
+        
+        if i < len(neuAudioFeature):
+            allAudioFeature.append(neuAudioFeature[i])
+            allTextFeature.append(neuTextFeature[i])
+            allFileName.append(neuFileName[i])
+            allLabels.append(neuLabels[i])
+
+        i +=1
+
+    return allAudioFeature, allTextFeature, allFileName, allLabels
+
+
 def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
     joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
@@ -248,7 +302,6 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     mrg = Merge(mode='concat')([z1,z2])
     #Dense layer and final output
     refOut = Dense(nb_hidden_units, activation='relu')(mrg)
-    refOut = Dense(nb_hidden_units, activation='relu')(refOut)
     output = Dense(nb_classes, activation='softmax')(refOut)
     
     model = Model(inputs=[input_attention, input_featureAudio, input_featureText], outputs=output)
@@ -323,12 +376,12 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     flagLoadModel = 0 #0=model, 1=weight
-    labelLimit = 170 #Number of each emotion label file to process
+    labelLimit = 380 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384]
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     nameFileResult = 'PredM-FULL-Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
-    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
+    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit)
     
     #FIND MAX TIMESTEP FOR PADDING
     maxTimestepAudio = 290 #setted with training because no test file is longer than 290

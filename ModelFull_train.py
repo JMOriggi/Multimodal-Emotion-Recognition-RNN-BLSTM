@@ -144,13 +144,67 @@ def readFeatures(DirRoot, labelLimit):
     return allFileFeature, allFileName
 
 
+def organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit):
+
+    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
+    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
+    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
+    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
+    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
+    angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
+    sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
+    neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
+    joyLabels, joyFileName = readFeatures(os.path.join(dirLabel, 'joy'), labelLimit)
+    angLabels, angFileName = readFeatures(os.path.join(dirLabel, 'ang'), labelLimit)
+    sadLabels, sadFileName = readFeatures(os.path.join(dirLabel, 'sad'), labelLimit)
+    neuLabels, neuFileName = readFeatures(os.path.join(dirLabel, 'neu'), labelLimit)
+    '''print(allAudioFeature.shape)
+    print(allTextFeature.shape)
+    print(allLabels.shape)'''
+    
+    #BUILD SHUFFLED FEATURE FILES FOR TRAINING
+    allAudioFeature = []
+    allTextFeature = []
+    allFileName = []
+    allLabels = []
+    i = 0
+    while i < labelLimit:
+        if i < len(joyAudioFeature):
+            allAudioFeature.append(joyAudioFeature[i])
+            allTextFeature.append(joyTextFeature[i])
+            allFileName.append(joyFileName[i])
+            allLabels.append(joyLabels[i])
+        
+        if i < len(angAudioFeature):
+            allAudioFeature.append(angAudioFeature[i])
+            allTextFeature.append(angTextFeature[i])
+            allFileName.append(angFileName[i])
+            allLabels.append(angLabels[i])
+        
+        if i < len(sadAudioFeature):
+            allAudioFeature.append(sadAudioFeature[i])
+            allTextFeature.append(sadTextFeature[i])
+            allFileName.append(sadFileName[i])
+            allLabels.append(sadLabels[i])
+        
+        if i < len(neuAudioFeature):
+            allAudioFeature.append(neuAudioFeature[i])
+            allTextFeature.append(neuTextFeature[i])
+            allFileName.append(neuFileName[i])
+            allLabels.append(neuLabels[i])
+
+        i +=1
+
+    return allAudioFeature, allTextFeature, allFileName, allLabels
+
+
 def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
     joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
     angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
     sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
     neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
-    joyTextFeature, allFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
+    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
     angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
     sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
     neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
@@ -302,13 +356,13 @@ if __name__ == '__main__':
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
     
     #DEFINE PARAMETERS
-    labelLimit = 740 #Number of each emotion label file to process
+    labelLimit = 1300 #720 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324]
     n_epoch = 100 #number of epoch 
     batchSize= 20
     LRateAudio = 0.0001
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
-    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
+    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit)
     
     #FIND MAX TIMESTEP FOR PADDING AUDIO
     maxTimestepAudio = 0 #500
