@@ -372,13 +372,13 @@ if __name__ == '__main__':
     
     #SET MODELS PATH
     mainRootModel = os.path.join(dirRes, 'RNN_Model_FULL_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-66-0.72.hdf5')
+    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-60-0.64.hdf5')
     
     #DEFINE PARAMETERS
-    flagLoadModel = 0 #0=model, 1=weight
-    labelLimit = 380 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384]
+    flagLoadModel = 1 #0=model, 1=weight
+    labelLimit = 380 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredM-FULL-Label_'+str(labelLimit)
+    nameFileResult = 'Predw60-FULL-Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit)
