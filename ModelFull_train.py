@@ -328,7 +328,8 @@ def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, n_epoch, dirRes, 
     u_train = np.full((train_Audio.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #FIT MODEL for one epoch on this sequence
-    history = model.fit([u_train, train_Audio, train_Text], train_Y, validation_split=0.20, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
+    #history = model.fit([u_train, train_Audio, train_Text], train_Y, validation_split=0.20, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
+    history = model.fit([u_train, train_Audio, train_Text], train_Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2)  
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = model
@@ -356,7 +357,7 @@ if __name__ == '__main__':
     dirLabel = os.path.join(mainRoot + '\LablesEmotion')
     
     #DEFINE PARAMETERS
-    labelLimit = 1300 #720 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324]
+    labelLimit = 1300 #720 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
     n_epoch = 80 #number of epoch 
     batchSize= 20
     LRateAudio = 0.0001

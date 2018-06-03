@@ -74,16 +74,23 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     
-    return plt
+    return plt, cm
 
 
 def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
     labelLimit = 170
+    allfile = 1094#(labelLimit*4)#1098
+    
     expected = np.argmax(expected, axis=1)
-    cm = confusion_matrix(expected, allPredictionClasses)
-    accurancy = (cm[0][0] + cm[1][1] + cm[2][2] + cm[3][3])/(labelLimit*4)
-    print('Accurancy: ',accurancy)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
+    cmUA = confusion_matrix(expected, allPredictionClasses)
+    plt, cmWA = plot_confusion_matrix(cmUA, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
+    
+    accurancyUA = (cmUA[0][0] + cmUA[1][1] + cmUA[2][2] + cmUA[3][3])/(allfile)
+    print('Accurancy UA: ',accurancyUA)
+    accurancyWA = (cmWA[0][0] + cmWA[1][1] + cmWA[2][2] + cmWA[3][3])/4
+    print('Accurancy WA: ',accurancyWA)
+    
+    accurancy = max(accurancyUA, accurancyWA)
     
     OutputImgPath = os.path.join(dirRes, nameFileResult+'-Acc_'+str(accurancy)+'-CM.png')
     plt.savefig(OutputImgPath)
@@ -375,10 +382,10 @@ if __name__ == '__main__':
     OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-60-0.64.hdf5')
     
     #DEFINE PARAMETERS
-    flagLoadModel = 1 #0=model, 1=weight
+    flagLoadModel = 0 #0=model, 1=weight
     labelLimit = 380 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'Predw60-FULL-Label_'+str(labelLimit)
+    nameFileResult = 'PredM-FULL-Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit)
