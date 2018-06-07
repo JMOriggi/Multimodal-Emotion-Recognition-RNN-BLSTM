@@ -399,7 +399,7 @@ if __name__ == '__main__':
     #VISUALIZE HISTORY
     # summarize history for accuracy
     plt.figure(figsize=(5,8))
-    plt.subplot(2, 1, 1)
+    '''plt.subplot(2, 1, 1)
     plt.plot(history.history['categorical_accuracy'])
     plt.plot(history.history['val_categorical_accuracy'])
     plt.title('model categorical_accuracy')
@@ -407,7 +407,7 @@ if __name__ == '__main__':
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     # summarize history for loss
-    plt.subplot(2, 1, 2)
+    plt.subplot(2, 1, 2)'''
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('model loss')

@@ -5,7 +5,8 @@ from scipy.io.wavfile import read
 import librosa
 import matplotlib.pyplot as plt 
 import calculate_features as c_f
-
+#pip install audio_degrader for Data extension throught brown noize
+import audio_degrader
 
 def saveFeaturecsv(currentFileFeatures, csvOutputFilePath):
     csvOutputFilePath = os.path.join(csvOutputFilePath + '.csv')
@@ -50,12 +51,9 @@ def readWav(audioFilePath):
 
 def deleteFirstLastFrames(matrix):
     #print(matrix.shape)
-    
     matrix = np.delete(matrix, 0, 0) #delete first row 
     matrix = np.delete(matrix, len(matrix)-1, 0) #delete last row
-    
     #print(matrix.shape)
-    
     return matrix
 
 
@@ -213,7 +211,7 @@ def computeFeaturesV2(arrayAudio, sampleRate):
     return currentFileFeatures
 
 
-def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_path):
+def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_path, out_audio_feature_path_dirty):
     currentFileFeatures = []
     audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
     
@@ -241,6 +239,13 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         csvOutputFilePath = os.path.join(csvOutputFilePath, audioFile.split('.')[0])
         saveFeaturecsv(currentFileFeatures, csvOutputFilePath)
         
+        #SAVE DIRTY COPY OF THE FILE FOR DATA EXTENSION
+        dataExt_flag = True
+        if dataExt_flag == True:
+            csvOutputFilePath_dirty = os.path.join(out_audio_feature_path_dirty, direc)
+            csvOutputFilePath_dirty = os.path.join(csvOutputFilePath_dirty, audioFile.split('.')[0]+'_dirty')
+            currentFileFeatures_dirty = audio_degrader.main(audioFilePath,['mix,sounds/brown-noise.wav//18'],csvOutputFilePath_dirty)
+        
         currentFileFeatures = []
         i += 1
     
@@ -261,12 +266,13 @@ if __name__ == '__main__':
     all_wav_path = os.path.join(main_root + '\AllAudioFiles')
     index_file_path =  os.path.join(main_root+'\AllData.txt')
     out_audio_feature_path = os.path.join(main_root+'\FeaturesAudio')   
+    out_audio_feature_path_dirty = os.path.join(main_root+'\FeaturesAudio\Z_DataExt') 
     
     #READ DATAFILE AND BUILD ARRAYS
     arrayFileName, arrayEmoLabel = readDataFile(main_root)
     
     #BUILD AUDIO FEATURE ROUTINE
-    buildAudioFeaturesCsv(arrayEmoLabel, all_wav_path, out_audio_feature_path)  
+    buildAudioFeaturesCsv(arrayEmoLabel, all_wav_path, out_audio_feature_path, out_audio_feature_path_dirty)  
         
     print('****END')
      
