@@ -6,7 +6,9 @@ import librosa
 import matplotlib.pyplot as plt 
 import calculate_features as c_f
 #pip install audio_degrader for Data extension throught brown noize
-import audio_degrader
+import subprocess
+import tempfile
+import logging
 
 def saveFeaturecsv(currentFileFeatures, csvOutputFilePath):
     csvOutputFilePath = os.path.join(csvOutputFilePath + '.csv')
@@ -204,6 +206,29 @@ def computeFeatures(monoAudio, sampleRate):
     return X
 
 
+def addBrownNoise(audioFilePath, BrownNoisePath, snr):
+    x, sr = librosa.core.load(audioFilePath, mono=True)
+    z, sr2 = librosa.core.load(BrownNoisePath, mono=True) 
+    print('x.sr: ',sr)
+    print('z.sr: ',sr2) 
+    print('x.shape: ',x.shape)
+    print('z.shape: ',z.shape)
+    
+    while z.shape[0] < x.shape[0]:  # loop in case noise is shorter than
+        z = np.concatenate((z, z), axis=0)
+    z = z[0: x.shape[0]]
+    print('z.shape2: ',z.shape)
+    rms_z = np.sqrt(np.mean(np.power(z, 2)))
+    rms_x = np.sqrt(np.mean(np.power(x, 2)))
+    snr_linear = 10 ** (snr / 20.0)
+    snr_linear_factor = rms_x / rms_z / snr_linear
+    y = x + z * snr_linear_factor
+    rms_y = np.sqrt(np.mean(np.power(y, 2)))
+    y = y * rms_x / rms_y 
+    print('y.shape: ',y.shape)
+    return y
+
+
 def computeFeaturesV2(arrayAudio, sampleRate):
     currentFileFeatures = c_f.calculate_features(arrayAudio, sampleRate, False)
     #print(currentFileFeatures)
@@ -211,7 +236,7 @@ def computeFeaturesV2(arrayAudio, sampleRate):
     return currentFileFeatures
 
 
-def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_path, out_audio_feature_path_dirty):
+def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_path, out_audio_feature_path_dirty, dataExt_flag):
     currentFileFeatures = []
     audlist = [ item for item in os.listdir(audioDirectoryPath) if os.path.isfile(os.path.join(audioDirectoryPath, item)) ]
     
@@ -220,12 +245,7 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         print('ROUND: ',i,'/',len(audlist))
         print(audioFile)
         
-        #CURRENT FILE FEATURE
-        audioFilePath = os.path.join(audioDirectoryPath, audioFile)
-        arrayAudio, sampleRate = readWav(audioFilePath)
-        currentFileFeatures = computeFeaturesV2(arrayAudio, sampleRate)
-        
-        #SAVE FILE IN CORRECT DIRECTORY
+        #TAKE CORRECT DIRECTORY PATH
         direc = 'oth'
         if  arrayEmoLabel[i] == 'exc': 
             direc = 'joy' #JOY
@@ -234,17 +254,32 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
         if  arrayEmoLabel[i] == 'sad': 
             direc = 'sad'  
         if  arrayEmoLabel[i] == 'neu': 
-            direc = 'neu'    
-        csvOutputFilePath = os.path.join(out_audio_feature_path, direc)
-        csvOutputFilePath = os.path.join(csvOutputFilePath, audioFile.split('.')[0])
-        saveFeaturecsv(currentFileFeatures, csvOutputFilePath)
+            direc = 'neu'  
         
-        #SAVE DIRTY COPY OF THE FILE FOR DATA EXTENSION
-        dataExt_flag = True
+        #CURRENT FILE FEATURE
+        if dataExt_flag == False:
+            #Compute
+            audioFilePath = os.path.join(audioDirectoryPath, audioFile)
+            arrayAudio, sampleRate = readWav(audioFilePath)
+            currentFileFeatures = computeFeaturesV2(arrayAudio, sampleRate)
+            #Save
+            csvOutputFilePath = os.path.join(out_audio_feature_path, direc)
+            csvOutputFilePath = os.path.join(csvOutputFilePath, audioFile.split('.')[0])
+            saveFeaturecsv(currentFileFeatures, csvOutputFilePath)
+        
+        #SAVE DIRTY COPY OF THE FILE FOR DATA EXTENSION: only for training data
         if dataExt_flag == True:
+            #Mix
+            BrownNoisePath = os.path.join(out_audio_feature_path_dirty, 'BrownNoise.wav')
+            snr = 18   
+            arrayAudio_dirty = addBrownNoise(audioFilePath, BrownNoisePath, float(snr))
+            #Compute
+            currentFileFeatures_dirty = computeFeaturesV2(arrayAudio_dirty, sampleRate)
+            print('sampleRate',sampleRate)
+            #Save
             csvOutputFilePath_dirty = os.path.join(out_audio_feature_path_dirty, direc)
             csvOutputFilePath_dirty = os.path.join(csvOutputFilePath_dirty, audioFile.split('.')[0]+'_dirty')
-            currentFileFeatures_dirty = audio_degrader.main(audioFilePath,['mix,sounds/brown-noise.wav//18'],csvOutputFilePath_dirty)
+            saveFeaturecsv(currentFileFeatures_dirty, csvOutputFilePath_dirty)
         
         currentFileFeatures = []
         i += 1
@@ -256,12 +291,15 @@ if __name__ == '__main__':
     Computer = 'new'
     #Computer = 'old'
     if Computer == 'new':
-        #main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+        #main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
     if Computer == 'old': 
         main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
         #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
         
+    #True compute only feature of BN audio mix
+    dataExt_flag = False
+    
     #SET PATH
     all_wav_path = os.path.join(main_root + '\AllAudioFiles')
     index_file_path =  os.path.join(main_root+'\AllData.txt')
@@ -272,7 +310,7 @@ if __name__ == '__main__':
     arrayFileName, arrayEmoLabel = readDataFile(main_root)
     
     #BUILD AUDIO FEATURE ROUTINE
-    buildAudioFeaturesCsv(arrayEmoLabel, all_wav_path, out_audio_feature_path, out_audio_feature_path_dirty)  
+    buildAudioFeaturesCsv(arrayEmoLabel, all_wav_path, out_audio_feature_path, out_audio_feature_path_dirty, dataExt_flag)  
         
     print('****END')
      
