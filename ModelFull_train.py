@@ -361,7 +361,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     labelLimit = 1300 #720 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
-    n_epoch = 3 #number of epoch 
+    n_epoch = 150 #number of epoch 
     batchSize= 20
     LRateAudio = 0.0001
     
