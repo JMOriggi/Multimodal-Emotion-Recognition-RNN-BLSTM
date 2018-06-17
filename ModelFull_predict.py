@@ -79,7 +79,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
 
 def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
     labelLimit = 170
-    allfile = 1094#(labelLimit*4)#1098
+    allfile = 1098#(labelLimit*4)#1098
     
     expected = np.argmax(expected, axis=1)
     cmUA = confusion_matrix(expected, allPredictionClasses)
@@ -383,7 +383,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     flagLoadModel = 0 #0=model, 1=weight
-    labelLimit = 380 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
+    labelLimit = 384 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
     fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
     nameFileResult = 'PredM-FULL-Label_'+str(labelLimit)
     
