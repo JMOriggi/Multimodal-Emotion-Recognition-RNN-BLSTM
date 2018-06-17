@@ -307,6 +307,7 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     z2 = dot([alpha2, y2], axes=1)
     #Merge step
     mrg = Merge(mode='concat')([z1,z2])
+    '''mrg = Concatenate([z1,z2])'''
     #Dense layer and final output
     refOut = Dense(nb_hidden_units, activation='relu')(mrg)
     output = Dense(nb_classes, activation='softmax')(refOut)

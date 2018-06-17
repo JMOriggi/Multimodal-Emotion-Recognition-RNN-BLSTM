@@ -3,7 +3,7 @@ import os
 import csv
 import operator
 from keras.preprocessing.sequence import pad_sequences
-from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation, Embedding, Merge
+from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation, Embedding, Concatenate, Merge
 from keras.layers.merge import dot
 from keras.models import Model
 from keras.models import Sequential
@@ -293,6 +293,7 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     z2 = dot([alpha2, y2], axes=1)
     #Merge step
     mrg = Merge(mode='concat')([z1,z2])
+    '''mrg = Concatenate([z1,z2])'''
     #Dense layer and final output
     refOut = Dense(nb_hidden_units, activation='relu')(mrg)
     output = Dense(nb_classes, activation='softmax')(refOut)
@@ -312,14 +313,16 @@ def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, n_epoch, dirRes, 
     
     #CHECPOINT
     #OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{val_categorical_accuracy:.2f}.hdf5')
+    #OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{val_categorical_accuracy:.2f}.hdf5')
+    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{categorical_accuracy:.2f}.hdf5')
     try:
         os.remove(OutputWeightsPath)
     except OSError:
         pass
     callbacks_list = [
         #EarlyStopping(monitor='val_loss', patience=Patience, verbose=1, mode='auto'),
-        ModelCheckpoint(filepath=OutputWeightsPath, monitor='val_categorical_accuracy', save_best_only='True', verbose=1, mode='max')
+        #ModelCheckpoint(filepath=OutputWeightsPath, monitor='val_categorical_accuracy', save_best_only='True', verbose=1, mode='max')
+        ModelCheckpoint(filepath=OutputWeightsPath, monitor='categorical_accuracy', save_best_only='True', verbose=1, mode='max')
     ]
     
     #PREPARE ATTENTION ARRAY INPUT:  training and test
@@ -329,7 +332,7 @@ def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, n_epoch, dirRes, 
     
     #FIT MODEL for one epoch on this sequence
     #history = model.fit([u_train, train_Audio, train_Text], train_Y, validation_split=0.20, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
-    history = model.fit([u_train, train_Audio, train_Text], train_Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2)  
+    history = model.fit([u_train, train_Audio, train_Text], train_Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = model
@@ -358,7 +361,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     labelLimit = 1300 #720 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
-    n_epoch = 100 #number of epoch 
+    n_epoch = 3 #number of epoch 
     batchSize= 20
     LRateAudio = 0.0001
     
@@ -408,12 +411,25 @@ if __name__ == '__main__':
     plt.legend(['train', 'test'], loc='upper left')
     # summarize history for loss
     plt.subplot(2, 1, 2)'''
-    plt.plot(history.history['loss'])
+    '''plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('model loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
+    plt.legend(['train', 'test'], loc='upper left')'''
+    plt.subplot(2, 1, 1)
+    plt.plot(history.history['categorical_accuracy'])
+    plt.title('model categorical_accuracy')
+    plt.ylabel('categorical_accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train'], loc='upper left')
+    # summarize history for loss
+    plt.subplot(2, 1, 2)
+    plt.plot(history.history['loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train'], loc='upper left')
     #save it
     OutputImgPath = os.path.join(dirRes, 'Train_History-EvAcc_'+str(evAcc)+'.png')
     plt.savefig(OutputImgPath)
