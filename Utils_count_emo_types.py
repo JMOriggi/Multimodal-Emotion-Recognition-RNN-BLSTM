@@ -1,3 +1,12 @@
+##################################################################
+#
+#This function aim to count the number of sentences grouped for each
+#emotion label class. This function can be run only after that
+#Utils_cluster_data as runned.
+#
+##################################################################
+
+
 import os
 import csv
 import shutil
@@ -79,16 +88,14 @@ def readDataFile(main_root):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    Computer = 'new'
-    #Computer = 'old'
-    if Computer == 'new':
-        #mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
-        mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    if Computer == 'old':    
-        mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-        mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    Computer = 'training'
+    #Computer = 'test'
+    if Computer == 'training':
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    if Computer == 'test':    
+        main_root = os.path.normpath(r'DC:\DATA\POLIMI\----TESI-----\Corpus_Test')
     
-    arrayFileName, arrayEmoLabel = readDataFile(mainRoot) 
+    arrayFileName, arrayEmoLabel = readDataFile(main_root) 
     counter = countLabels(arrayEmoLabel)
     print('V1: ',counter)
     counter = countLabelsV2(arrayEmoLabel)

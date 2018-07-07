@@ -1,3 +1,16 @@
+##################################################################
+#
+#This function aim to reorganize data from the adapted corpus to 
+#prepare it for training and text. It create a txt file with in each
+#line the audiofilename the corresponding emotion label and the 
+#transcription for each sentence. This txt file will be used from
+#training and text version to access more easily all the data involved.
+#Also this function will move all the audio file in one single folder,
+#again to let training and test access files more easily.
+#
+##################################################################
+
+
 import os
 import csv
 import shutil
@@ -21,17 +34,17 @@ def clusterData(Data_path, Out_file_path):
     for session in dirlist:
         print('Parsing: ',session)
         
-        #COMPOSE DIRECTORY PATH FOR THE EMOTION RESULTS FILE FOR THE CURRENT SESSION
+        #COMPOSE DIRECTORY PATH: for emotion labels file of the current session
         directoryEmoPath = os.path.normpath(os.path.join(Data_path, session)+'\EmoEvaluation')
         emolist = [ item for item in os.listdir(directoryEmoPath) if os.path.isfile(os.path.join(directoryEmoPath, item)) ]
         print('Directory Emotion: ',directoryEmoPath)
         
-        #COMPOSE DIRECTORY PATH FOR THE SENTENCE TRANSCRIPTION FILE FOR THE CURRENT SESSION
+        #COMPOSE DIRECTORY PATH: for the transcription file of current session
         directoryText = os.path.normpath(os.path.join(Data_path, session)+'\Transcriptions')
         translist = [ item for item in os.listdir(directoryText) if os.path.isfile(os.path.join(directoryText, item)) ]
         print('Directory Transcription: ',directoryText)
         
-        #PARSE ALL THE FILES AND APPEND IN THE OUTPUT FILE
+        #PARSE ALL THE FILES AND APPEND DATA IN THE OUTPUT FILE
         for file in emolist:
             with open(os.path.join(directoryEmoPath, file), 'r') as inputfile:
                 for lines in inputfile:
@@ -57,6 +70,7 @@ def clusterData(Data_path, Out_file_path):
                         outputfile.writelines(audioName+';'+emoLabel+';'+transcription+'\n')
             inputfile.close()
     outputfile.close()  
+
 
 #MOVE ALL THE AUDIO FILES IN THE MAINROOT IN 1 DIRECTORY    
 def moveCopyAudioFiles(mainRoot, destPath):
@@ -91,11 +105,13 @@ def moveCopyAudioFiles(mainRoot, destPath):
     
 if __name__ == '__main__':
     
-    #SET MAIN ROOT
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    #DEFINE MAIN ROOT
+    Computer = 'training'
+    #Computer = 'test'
+    if Computer == 'training':
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    if Computer == 'test':    
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
     
     #SET PATH
     ZData_path = os.path.join(main_root + '\ZData')

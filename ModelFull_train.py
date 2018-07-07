@@ -361,7 +361,7 @@ if __name__ == '__main__':
     
     #DEFINE PARAMETERS
     labelLimit = 1300 #720 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
-    n_epoch = 150 #number of epoch 
+    n_epoch = 20 #number of epoch 
     batchSize= 20
     LRateAudio = 0.0001
     
@@ -383,7 +383,9 @@ if __name__ == '__main__':
             maxTimestepText = zStep        
             
     #BUILD MODEL
-    model = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1], maxTimestepText, allTextFeature[0].shape[1], LRateAudio)
+    modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
+    model = load_model(modelPath)
+    #model = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1], maxTimestepText, allTextFeature[0].shape[1], LRateAudio)
     SummaryText = 'Att_Model_FULL-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
     
     #MODEL SUMMARY
