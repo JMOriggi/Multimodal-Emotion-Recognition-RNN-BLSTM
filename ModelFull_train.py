@@ -1,93 +1,15 @@
 import numpy as np
 import os
 import csv
-import operator
 from keras.preprocessing.sequence import pad_sequences
-from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation, Embedding, Concatenate, Merge
+from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation, Merge
 from keras.layers.merge import dot
 from keras.models import Model
-from keras.models import Sequential
-from keras.layers import TimeDistributed
-from keras.layers import AveragePooling1D
-from keras.layers import Flatten
-from keras.layers import Masking
 from keras.models import load_model
-from keras.optimizers import SGD, Adam, RMSprop
+from keras.optimizers import RMSprop
 import matplotlib.pyplot as plt
-from sklearn import svm, datasets
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-import itertools
-from keras.utils import np_utils
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 np.seterr(divide='ignore', invalid='ignore')
-
-
-
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm):
-    
-    plt.figure(figsize=(4,7))
-    
-    #NOT NORMALIZED
-    print('Confusion matrix, without normalization')
-    print(cm)
-    plt.subplot(2, 1, 1)
-    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    fmt = 'd'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    
-    #NORMALIZED
-    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    print("Normalized confusion matrix")
-    print(cm)
-    plt.subplot(2, 1, 2)
-    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    fmt = '.2f'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    
-    return plt
-
-
-def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
-    expected = np.argmax(expected, axis=1)
-    cm = confusion_matrix(expected, allPredictionClasses)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
-    
-    OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
-    plt.savefig(OutputImgPath)
-    if flagPlotGraph:
-        plt.show()
-
 
 
 def saveCsv(currentFile, csvOutputFilePath):
@@ -198,56 +120,6 @@ def organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit):
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
-def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
-
-    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
-    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
-    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
-    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
-    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
-    angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
-    sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
-    neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
-    joyLabels, joyFileName = readFeatures(os.path.join(dirLabel, 'joy'), labelLimit)
-    angLabels, angFileName = readFeatures(os.path.join(dirLabel, 'ang'), labelLimit)
-    sadLabels, sadFileName = readFeatures(os.path.join(dirLabel, 'sad'), labelLimit)
-    neuLabels, neuFileName = readFeatures(os.path.join(dirLabel, 'neu'), labelLimit)
-    '''print(allAudioFeature.shape)
-    print(allTextFeature.shape)
-    print(allLabels.shape)'''
-    
-    #BUILD SHUFFLED FEATURE FILES FOR TRAINING
-    allAudioFeature = []
-    allTextFeature = []
-    allFileName = []
-    allLabels = []
-    i = 0
-    while i < labelLimit:
-        allAudioFeature.append(joyAudioFeature[i])
-        allAudioFeature.append(angAudioFeature[i])
-        allAudioFeature.append(sadAudioFeature[i])
-        allAudioFeature.append(neuAudioFeature[i])
-        
-        allTextFeature.append(joyTextFeature[i])
-        allTextFeature.append(angTextFeature[i])
-        allTextFeature.append(sadTextFeature[i])
-        allTextFeature.append(neuTextFeature[i])
-        
-        allFileName.append(joyFileName[i])
-        allFileName.append(angFileName[i])
-        allFileName.append(sadFileName[i])
-        allFileName.append(neuFileName[i])
-        
-        allLabels.append(joyLabels[i])
-        allLabels.append(angLabels[i])
-        allLabels.append(sadLabels[i])
-        allLabels.append(neuLabels[i])
-        
-        i +=1
-
-    return allAudioFeature, allTextFeature, allFileName, allLabels
-
-
 def reshapeLSTMInOut(audFeat, label, maxTimestep):
     X = []
     X = np.asarray(audFeat)
@@ -345,14 +217,8 @@ def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, n_epoch, dirRes, 
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    Computer = 'new'
-    #Computer = 'old'
-    if Computer == 'new':
-        mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    if Computer == 'old':        
-        mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -401,8 +267,7 @@ if __name__ == '__main__':
     modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
     model.save(modelPath, overwrite=True)
     
-    #VISUALIZE HISTORY
-    # summarize history for accuracy
+    #VISUALIZE HISTORY: plot val_acc, val_loss and acc, loss
     plt.figure(figsize=(5,8))
     '''plt.subplot(2, 1, 1)
     plt.plot(history.history['categorical_accuracy'])

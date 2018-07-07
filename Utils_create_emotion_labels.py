@@ -1,3 +1,16 @@
+##################################################################
+#
+#This function aim to reorganize data from the adapted corpus to 
+#prepare it for training and text. It create a txt file with in each
+#line the audiofilename the corresponding emotion label and the 
+#transcription for each sentence. This txt file will be used from
+#training and text version to access more easily all the data involved.
+#Also this function will move all the audio file in one single folder,
+#again to let training and test access files more easily.
+#
+##################################################################
+
+
 import os
 import csv
 import shutil
@@ -88,11 +101,13 @@ def saveEncLabelcsv(emoEncoded, arrayFileName, main_root, emoFolder):
 
 if __name__ == '__main__':
     
-    #SET MAIN ROOT
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull') 
+    #DEFINE MAIN ROOT
+    Computer = 'training'
+    #Computer = 'test'
+    if Computer == 'training':
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    if Computer == 'test':    
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test') 
      
     #READ DATAFILE AND BUILD ARRAYS
     arrayFileName, arrayEmoLabel = readDataFile(main_root)

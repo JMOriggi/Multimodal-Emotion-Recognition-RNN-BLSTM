@@ -1,93 +1,14 @@
 import numpy as np
 import os
 import csv
-import operator
 from keras.preprocessing.sequence import pad_sequences
-from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation,Embedding
+from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
 from keras.layers.merge import dot
 from keras.models import Model
-from keras.models import Sequential
-from keras.layers import TimeDistributed
-from keras.layers import AveragePooling1D
-from keras.layers import Flatten
-from keras.layers import Masking
-from keras.models import load_model
-from keras.optimizers import SGD, Adam, RMSprop
+from keras.optimizers import RMSprop
 import matplotlib.pyplot as plt
-from sklearn import svm, datasets
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-import itertools
-from keras.utils import np_utils
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 np.seterr(divide='ignore', invalid='ignore')
-
-
-
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm):
-    
-    plt.figure(figsize=(4,7))
-    
-    #NOT NORMALIZED
-    print('Confusion matrix, without normalization')
-    print(cm)
-    plt.subplot(2, 1, 1)
-    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    fmt = 'd'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    
-    #NORMALIZED
-    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    print("Normalized confusion matrix")
-    print(cm)
-    plt.subplot(2, 1, 2)
-    plt.imshow(cm, interpolation='nearest', cmap=cmap.Blues)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    fmt = '.2f'
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    
-    return plt
-
-
-def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
-    expected = np.argmax(expected, axis=1)
-    cm = confusion_matrix(expected, allPredictionClasses)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
-    
-    OutputImgPath = os.path.join(dirRes, nameFileResult+'_CM.png')
-    plt.savefig(OutputImgPath)
-    if flagPlotGraph:
-        plt.show()
-
 
 
 def saveCsv(currentFile, csvOutputFilePath):
@@ -195,7 +116,6 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
 
 def reshapeLSTMInOut(audFeat, label, maxTimestep):
-    X = []
     X = np.asarray(audFeat)
     X = pad_sequences(X, maxlen=maxTimestep, dtype='float32')
     Y = np.asarray(label)
@@ -229,33 +149,9 @@ def buildBLTSM(maxTimestep, numFeatures, LRate):
     # Get posterior probability for each emotional class
     output = Dense(nb_classes, activation='softmax')(z)
     model = Model(inputs=[input_attention, input_feature], outputs=output)
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=LRate, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    #model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=LRate, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy'])
+    #model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001), metrics=['categorical_accuracy']) 
     
-    #MODELLO BASE SEMPLICE
-    '''modelText = Sequential()
-    modelText.add(Bidirectional(LSTM(128, return_sequences=False), input_shape=(maxTimestep, numFeatures)))
-    modelText.add(Dropout(0.5))
-    modelText.add(Dense(512, activation='relu'))
-    modelText.add(Dense(4, activation='softmax'))
-    modelText.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    '''
-    
-    ''''model = Sequential()
-    model.add(TimeDistributed(Dense(128, activation='relu'), input_shape=(maxTimestep, numFeatures)))
-    model.add(Bidirectional(LSTM(128, return_sequences=False)))
-    #model.add(Dense(512, activation='relu'))
-    model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.000001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    '''
-    
-    '''model = Sequential()
-    model.add(Bidirectional(LSTM(128, return_sequences=True, dropout=0.5), input_shape=(maxTimestep, numFeatures)))
-    model.add(AveragePooling1D())
-    model.add(Flatten())
-    model.add(Dense(4, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-    '''
     return model
 
 
@@ -295,14 +191,8 @@ def trainBLSTM(model, Features, Labels, n_epoch, dirRes, maxTimestep, batchSize,
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    Computer = 'new'
-    #Computer = 'old'
-    if Computer == 'new':
-        mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    if Computer == 'old':        
-        mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')

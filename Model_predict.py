@@ -4,23 +4,12 @@ import csv
 import operator
 from keras.layers.merge import dot
 from keras.models import Model
-from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation, Concatenate
-from keras.layers import TimeDistributed
-from keras.layers import AveragePooling1D
-from keras.layers import Flatten
+from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
 from keras.preprocessing.sequence import pad_sequences
-from keras.models import Sequential
-from keras.layers import LSTM
-from keras.layers import Bidirectional
 from keras.models import load_model
-from keras.optimizers import SGD, Adam, RMSprop
+from keras.optimizers import RMSprop
 import matplotlib.pyplot as plt
-from sklearn import svm, datasets
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-from keras.utils import np_utils
 import itertools
 np.seterr(divide='ignore', invalid='ignore')
 
@@ -246,41 +235,6 @@ def reshapeLSTMInOut(Feat, label, maxTimestep):
     Y = Y.reshape(len(Y), 4)
     
     return X, Y
-
-
-def mergePrediction(allPredictionAudio, allPredictionText, expected):
-    
-    allPredictionClasses = []
-    
-    for i in range(len(allPredictionAudio)):
-        #AVERAGE BETWEEN 2 PREDICTION
-        yhat = (allPredictionAudio[i]+allPredictionText[i])/2
-        
-        Pindex, Pvalue = max(enumerate(yhat), key=operator.itemgetter(1))
-        allPredictionClasses.append(Pindex)
-        
-        print('Audio pred: ', allPredictionAudio[i], ' Text pred: ', allPredictionText[i])
-        print('Pred after merge: ', yhat)
-        print('Expected: ', expected[i])
-        
-    return allPredictionClasses
- 
-
-def mergeWithReferee(refModel, yhatAudio, yhatText, expected):
-    
-    allPredictionClasses = []
-    
-    #PREDICT
-    yhat = refModel.predict([yhatAudio,yhatText])         
-    for i in range(len(yhat)):
-        Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
-        allPredictionClasses.append(Pindex)
-        
-        '''print('Audio pred: ', yhatAudio[i], ' Text pred: ', yhatText[i])
-        print('Pred after merge: ', yhat[i])
-        print('Expected: ', expected[i])'''
-        
-    return allPredictionClasses
  
  
 def predictFromModel(model, inputTest, Labels, maxTimestep):
@@ -317,16 +271,9 @@ def predictFromModel(model, inputTest, Labels, maxTimestep):
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    Computer = 'new'
-    #Computer = 'old'
-    if Computer == 'new':
-        mainRootModelFile = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
-        dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    if Computer == 'old':    
-        mainRootModelFile = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-        mainRoot = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-        dirRes = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+    mainRootModelFile = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
     dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
@@ -341,8 +288,7 @@ if __name__ == '__main__':
     OutputWeightsPathText = os.path.join(dirRes, 'weightsT-improvement-71-0.65.hdf5')  
     
     #DEFINE PARAMETERS
-    mergingType = 1 #0=simple merge, 1=referee merge
-    modelType = 2 #0=OnlyAudio, 1=OnlyText, 2=Audio&Text
+    modelType = 1 #0=OnlyAudio, 1=OnlyText
     flagLoadModelAudio = 1 #0=model, 1=weight
     flagLoadModelText = 1 #0=model, 1=weight
     labelLimit = 170 #Number of each emotion label file to process
@@ -367,13 +313,13 @@ if __name__ == '__main__':
     #LOAD MODEL OR WIEGHTS FOR AUDIO AND TEXT MODEL
     #Audio
     if flagLoadModelAudio == 0:
-            model_Audio = load_model(mainRootModelAudio) 
+        model_Audio = load_model(mainRootModelAudio) 
     else:    
         model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
         model_Audio.load_weights(OutputWeightsPathAudio)
     #Text
     if flagLoadModelText == 0:
-            model_Text = load_model(mainRootModelText)   
+        model_Text = load_model(mainRootModelText)   
     else:
         model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
         model_Text.load_weights(OutputWeightsPathText) 
@@ -383,14 +329,6 @@ if __name__ == '__main__':
         allPredictionClasses, allPrediction, expected, yhat = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
     if modelType == 1:
         allPredictionClasses, allPrediction, expected, yhat = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
-    if modelType == 2: 
-        allPredictionClassesAudio, allPredictionAudio, expected, yhatAudio = predictFromModel(model_Audio, allAudioFeature, allLabels, maxTimestepAudio)
-        allPredictionClassesText, allPredictionText, expected, yhatText = predictFromModel(model_Text, allTextFeature, allLabels, maxTimestepText)
-        if mergingType == 0:
-            allPredictionClasses = mergePrediction(allPredictionAudio, allPredictionText, expected)
-        if mergingType == 1:
-            refModel = load_model(mainRootModelReferee) 
-            allPredictionClasses = mergeWithReferee(refModel, yhatAudio, yhatText, expected)
         
     
     #PREDICT & SAVE

@@ -1,12 +1,10 @@
 ##################################################################
 #
-#This function aim to reorganize data from the adapted corpus to 
-#prepare it for training and text. It create a txt file with in each
-#line the audiofilename the corresponding emotion label and the 
-#transcription for each sentence. This txt file will be used from
-#training and text version to access more easily all the data involved.
-#Also this function will move all the audio file in one single folder,
-#again to let training and test access files more easily.
+#This function aim to compute and save audio features from audio
+#wav files. 2 version of computing features have been implemented.
+#The currently used and the better version, is V2. All features 
+#extracted from an audio file will be saved in a csv file and  
+#grouped by emotion class.
 #
 ##################################################################
 
