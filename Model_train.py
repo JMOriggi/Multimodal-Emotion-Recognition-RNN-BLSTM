@@ -1,3 +1,12 @@
+##################################################################
+#
+#This function aim to count the number of sentences grouped for each
+#emotion label class. This function can be run only after that
+#Utils_cluster_data as runned.
+#
+##################################################################
+
+
 import numpy as np
 import os
 import csv
@@ -71,7 +80,7 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
     sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
     neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
-    joyTextFeature, allFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
+    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
     angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
     sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
     neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
@@ -90,26 +99,30 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     allLabels = []
     i = 0
     while i < labelLimit:
-        allAudioFeature.append(joyAudioFeature[i])
-        allAudioFeature.append(angAudioFeature[i])
-        allAudioFeature.append(sadAudioFeature[i])
-        allAudioFeature.append(neuAudioFeature[i])
+        if i < len(joyAudioFeature):
+            allAudioFeature.append(joyAudioFeature[i])
+            allTextFeature.append(joyTextFeature[i])
+            allFileName.append(joyFileName[i])
+            allLabels.append(joyLabels[i])
         
-        allTextFeature.append(joyTextFeature[i])
-        allTextFeature.append(angTextFeature[i])
-        allTextFeature.append(sadTextFeature[i])
-        allTextFeature.append(neuTextFeature[i])
+        if i < len(angAudioFeature):
+            allAudioFeature.append(angAudioFeature[i])
+            allTextFeature.append(angTextFeature[i])
+            allFileName.append(angFileName[i])
+            allLabels.append(angLabels[i])
         
-        allFileName.append(joyFileName[i])
-        allFileName.append(angFileName[i])
-        allFileName.append(sadFileName[i])
-        allFileName.append(neuFileName[i])
+        if i < len(sadAudioFeature):
+            allAudioFeature.append(sadAudioFeature[i])
+            allTextFeature.append(sadTextFeature[i])
+            allFileName.append(sadFileName[i])
+            allLabels.append(sadLabels[i])
         
-        allLabels.append(joyLabels[i])
-        allLabels.append(angLabels[i])
-        allLabels.append(sadLabels[i])
-        allLabels.append(neuLabels[i])
-        
+        if i < len(neuAudioFeature):
+            allAudioFeature.append(neuAudioFeature[i])
+            allTextFeature.append(neuTextFeature[i])
+            allFileName.append(neuFileName[i])
+            allLabels.append(neuLabels[i])
+
         i +=1
 
     return allAudioFeature, allTextFeature, allFileName, allLabels

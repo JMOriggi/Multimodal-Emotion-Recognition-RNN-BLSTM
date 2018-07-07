@@ -1,3 +1,12 @@
+##################################################################
+#
+#This function aim to count the number of sentences grouped for each
+#emotion label class. This function can be run only after that
+#Utils_cluster_data as runned.
+#
+##################################################################
+
+
 import numpy as np
 import os
 import csv
@@ -66,7 +75,7 @@ def readFeatures(DirRoot, labelLimit):
     return allFileFeature, allFileName
 
 
-def organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit):
+def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
     joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
     angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
@@ -232,7 +241,7 @@ if __name__ == '__main__':
     LRateAudio = 0.0001
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
-    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit)
+    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
     #FIND MAX TIMESTEP FOR PADDING AUDIO
     maxTimestepAudio = 0 #500

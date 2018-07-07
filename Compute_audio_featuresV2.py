@@ -1,3 +1,12 @@
+##################################################################
+#
+#This function aim to count the number of sentences grouped for each
+#emotion label class. This function can be run only after that
+#Utils_cluster_data as runned.
+#
+##################################################################
+
+
 import numpy
 from scipy.fftpack import fft
 from scipy.fftpack.realtransforms import dct
