@@ -85,13 +85,6 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
     angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
     sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
     neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
-    joyLabels, joyFileName = readFeatures(os.path.join(dirLabel, 'joy'), labelLimit)
-    angLabels, angFileName = readFeatures(os.path.join(dirLabel, 'ang'), labelLimit)
-    sadLabels, sadFileName = readFeatures(os.path.join(dirLabel, 'sad'), labelLimit)
-    neuLabels, neuFileName = readFeatures(os.path.join(dirLabel, 'neu'), labelLimit)
-    '''print(allAudioFeature.shape)
-    print(allTextFeature.shape)
-    print(allLabels.shape)'''
     
     #BUILD SHUFFLED FEATURE FILES FOR TRAINING
     allAudioFeature = []
@@ -104,33 +97,32 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
             allAudioFeature.append(joyAudioFeature[i])
             allTextFeature.append(joyTextFeature[i])
             allFileName.append(joyFileName[i])
-            allLabels.append(joyLabels[i])
+            allLabels.append([[1,0,0,0]])
         
         if i < len(angAudioFeature):
             allAudioFeature.append(angAudioFeature[i])
             allTextFeature.append(angTextFeature[i])
             allFileName.append(angFileName[i])
-            allLabels.append(angLabels[i])
+            allLabels.append([[0,1,0,0]])
         
         if i < len(sadAudioFeature):
             allAudioFeature.append(sadAudioFeature[i])
             allTextFeature.append(sadTextFeature[i])
             allFileName.append(sadFileName[i])
-            allLabels.append(sadLabels[i])
+            allLabels.append([[0,0,1,0]])
         
         if i < len(neuAudioFeature):
             allAudioFeature.append(neuAudioFeature[i])
             allTextFeature.append(neuTextFeature[i])
             allFileName.append(neuFileName[i])
-            allLabels.append(neuLabels[i])
+            allLabels.append([[0,0,0,1]])
 
         i +=1
-
+    '''print(np.asarray(allLabels).shape)'''   
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
 def reshapeLSTMInOut(audFeat, label, maxTimestep):
-    X = []
     X = np.asarray(audFeat)
     X = pad_sequences(X, maxlen=maxTimestep, dtype='float32')
     Y = np.asarray(label)
@@ -226,7 +218,7 @@ def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, n_epoch, dirRes, 
 if __name__ == '__main__':
     
     #DEFINE MAIN ROOT
-    mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
     dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
     
     #BUILD PATH FOR EACH FEATURE DIR
