@@ -166,7 +166,7 @@ def readFeatures(DirRoot, labelLimit):
     return allFileFeature, allFileName
 
 
-def organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit):
+def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
 
     joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
     angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
@@ -176,13 +176,6 @@ def organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit):
     angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
     sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
     neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
-    joyLabels, joyFileName = readFeatures(os.path.join(dirLabel, 'joy'), labelLimit)
-    angLabels, angFileName = readFeatures(os.path.join(dirLabel, 'ang'), labelLimit)
-    sadLabels, sadFileName = readFeatures(os.path.join(dirLabel, 'sad'), labelLimit)
-    neuLabels, neuFileName = readFeatures(os.path.join(dirLabel, 'neu'), labelLimit)
-    '''print(allAudioFeature.shape)
-    print(allTextFeature.shape)
-    print(allLabels.shape)'''
     
     #BUILD SHUFFLED FEATURE FILES FOR TRAINING
     allAudioFeature = []
@@ -195,28 +188,28 @@ def organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit):
             allAudioFeature.append(joyAudioFeature[i])
             allTextFeature.append(joyTextFeature[i])
             allFileName.append(joyFileName[i])
-            allLabels.append(joyLabels[i])
+            allLabels.append([[1,0,0,0]])
         
         if i < len(angAudioFeature):
             allAudioFeature.append(angAudioFeature[i])
             allTextFeature.append(angTextFeature[i])
             allFileName.append(angFileName[i])
-            allLabels.append(angLabels[i])
+            allLabels.append([[0,1,0,0]])
         
         if i < len(sadAudioFeature):
             allAudioFeature.append(sadAudioFeature[i])
             allTextFeature.append(sadTextFeature[i])
             allFileName.append(sadFileName[i])
-            allLabels.append(sadLabels[i])
+            allLabels.append([[0,0,1,0]])
         
         if i < len(neuAudioFeature):
             allAudioFeature.append(neuAudioFeature[i])
             allTextFeature.append(neuTextFeature[i])
             allFileName.append(neuFileName[i])
-            allLabels.append(neuLabels[i])
+            allLabels.append([[0,0,0,1]])
 
         i +=1
-
+    '''print(np.asarray(allLabels).shape)'''   
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
@@ -330,7 +323,7 @@ if __name__ == '__main__':
     nameFileResult = 'PredW-epoch110-FULL-Label_'+str(labelLimit)
     
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
-    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeaturesV2(dirAudio, dirText, dirLabel, labelLimit)
+    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
     
     #FIND MAX TIMESTEP FOR PADDING
     maxTimestepAudio = 290 #setted with training because no test file is longer than 290
