@@ -1,19 +1,12 @@
 ##################################################################
 #
-#This function aim to reorganize data from the adapted corpus to 
-#prepare it for training and text. It create a txt file with in each
-#line the audiofilename the corresponding emotion label and the 
-#transcription for each sentence. This txt file will be used from
-#training and text version to access more easily all the data involved.
-#Also this function will move all the audio file in one single folder,
-#again to let training and test access files more easily.
+#This function aim to encode emotion label in an array code.
 #
 ##################################################################
 
 
 import os
 import csv
-import shutil
 import numpy as np
 
 

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.io.wavfile import read
 use_pitch = False
 if use_pitch:
-    import pitch
+    import Compute_audio_featuresV2_pitch as pitch
 eps = 0.00000001
 
 

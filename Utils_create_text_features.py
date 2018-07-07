@@ -1,6 +1,15 @@
+##################################################################
+#
+#This function aim to encode all the transcription of audio files,
+#and in this way create the text feature to feed the NN. The 
+#Word2Vec encoding is used to give a vector representation for
+#each word in the text file.
+#
+##################################################################
+
+
 import csv
 import os
-import sys
 import gensim
 import numpy as np
 
@@ -125,11 +134,13 @@ def encodeText(arrayFileName, arrayText, arrayEmoLabel, modelPath):
 
 if __name__ == '__main__':
 
-    #SET ROOT
-    #main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    main_root = os.path.normpath(r'D:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Test_Training')
-    #main_root = os.path.normpath(r'C:\Users\JORIGGI00\Documents\MyDOCs\Corpus_Usefull')
+    #DEFINE MAIN ROOT
+    Computer = 'training'
+    #Computer = 'test'
+    if Computer == 'training':
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+    if Computer == 'test':    
+        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test') 
     
     #SET PATHS
     modelPath = os.path.join(main_root+'\W2V_model\glove_WIKI')
