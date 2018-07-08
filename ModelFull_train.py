@@ -251,7 +251,7 @@ if __name__ == '__main__':
     model.save(modelPath, overwrite=True)
     
     #VISUALIZE HISTORY: plot val_acc, val_loss and acc, loss
-    plt.figure(figsize=(5,8))
+    plt.figure(figsize=(7,10))
     if FlagValSet:
         # summarize history for val_acc
         plt.subplot(2, 1, 1)
