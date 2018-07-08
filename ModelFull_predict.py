@@ -40,6 +40,7 @@ OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-10-0.90.hdf5')
 # --------------------------------------------------------------------------- #
 flagLoadModel = 0 #0=model, 1=weight
 labelLimit = 384 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
+allfile = 1098
 nameFileResult = 'PredW-epoch110-FULL-Label_'+str(labelLimit)
 
 # --------------------------------------------------------------------------- #
@@ -99,8 +100,6 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
 
 
 def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
-    labelLimit = 170
-    allfile = 1098#(labelLimit*4)#1098
     
     expected = np.argmax(expected, axis=1)
     cmUA = confusion_matrix(expected, allPredictionClasses)

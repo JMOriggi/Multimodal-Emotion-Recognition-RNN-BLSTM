@@ -43,7 +43,8 @@ OutputWeightsPathText = os.path.join(dirRes, 'weightsT-improvement-71-0.65.hdf5'
 modelType = 1 #0=OnlyAudio, 1=OnlyText
 flagLoadModelAudio = 1 #0=model, 1=weight
 flagLoadModelText = 1 #0=model, 1=weight
-labelLimit = 170 #Number of each emotion label file to process
+labelLimit = 384 #170 for balanced, 384 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
+allfile = 1098
 nameFileResult = 'PredM_-'+str(modelType)+'-'+'Label_'+str(labelLimit)
 
 # --------------------------------------------------------------------------- #
@@ -99,16 +100,21 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     
-    return plt
+    return plt, cm
 
 
 def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, flagPlotGraph):
-    labelLimit = 170
+    
     expected = np.argmax(expected, axis=1)
-    cm = confusion_matrix(expected, allPredictionClasses)
-    accurancy = (cm[0][0] + cm[1][1] + cm[2][2] + cm[3][3])/(labelLimit*4)
-    print('Accurancy: ',accurancy)
-    plt = plot_confusion_matrix(cm, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
+    cmUA = confusion_matrix(expected, allPredictionClasses)
+    plt, cmWA = plot_confusion_matrix(cmUA, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
+    
+    accurancyUA = (cmUA[0][0] + cmUA[1][1] + cmUA[2][2] + cmUA[3][3])/(allfile)
+    print('Accurancy UA: ',accurancyUA)
+    accurancyWA = (cmWA[0][0] + cmWA[1][1] + cmWA[2][2] + cmWA[3][3])/4
+    print('Accurancy WA: ',accurancyWA)
+    
+    accurancy = max(accurancyUA, accurancyWA)
     
     OutputImgPath = os.path.join(dirRes, nameFileResult+'-Acc_'+str(accurancy)+'-CM.png')
     plt.savefig(OutputImgPath)

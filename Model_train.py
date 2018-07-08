@@ -35,9 +35,9 @@ mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
 # DEFINE PARAMETERS
 # --------------------------------------------------------------------------- #
 modelType = 0 #0=Audio, 1=Text
-labelLimit = 740 #Number of each emotion label file to process
-n_epoch = 200 #number of epoch 
-batchSizeAudio = 30
+labelLimit = 1300 #740 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
+n_epoch = 100 #number of epoch 
+batchSizeAudio = 20
 batchSizeText = 20
 LRateAudio = 0.001
 LRateText = 0.0001
