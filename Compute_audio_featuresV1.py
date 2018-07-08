@@ -1,19 +1,20 @@
 ##################################################################
 #
-#This function aim to count the number of sentences grouped for each
-#emotion label class. This function can be run only after that
-#Utils_cluster_data as runned.
+#This function implements audio features extraction based on the 
+#librosa library. This was the first version of the audio features
+#extraction after replaced by version2. Can be used to test easily
+#other audio features components.
 #
 ##################################################################
 
 
-import os
-import csv
 import numpy as np
-from scipy.io.wavfile import read
 import librosa
 import matplotlib.pyplot as plt
 
+# --------------------------------------------------------------------------- #
+# FUNCTIONS
+# --------------------------------------------------------------------------- #
 
 def compute_features(monoAudio, sampleRate):
     

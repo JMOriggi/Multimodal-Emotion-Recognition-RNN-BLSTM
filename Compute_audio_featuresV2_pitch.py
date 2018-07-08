@@ -1,8 +1,8 @@
 ##################################################################
 #
-#This function aim to count the number of sentences grouped for each
-#emotion label class. This function can be run only after that
-#Utils_cluster_data as runned.
+#This function implements a pitch estimation based on algorithm present
+#on the literature. Used optionally by version2 of the computing 
+#audio features function.
 #
 ##################################################################
 
@@ -44,7 +44,7 @@ def freq_to_bin(f, sr, n_fft):
     return np.round(f/(float(sr)/float(n_fft))).astype('int')
 
 # --------------------------------------------------------------------------- #
-# ppitch
+# ppitch function
 # --------------------------------------------------------------------------- #
 
 def ppitch(y, sr=44100, n_fft=8820, win_length=1024, hop_length=2048, 
@@ -85,18 +85,8 @@ def ppitch(y, sr=44100, n_fft=8820, win_length=1024, hop_length=2048,
         but if npartial=None, use harm_rolloff
       - previously was nearest_multiple+1 # to avoid divide by 0
      """
-
-    # other params FUCKING: (for now)
-    
-    # ------------------------------------------------------------------------- #
-    # go to time-freq
-    # ------------------------------------------------------------------------- #
     
     if_gram, D = librosa.core.ifgram(y, sr=sr, n_fft=n_fft, win_length=win_length, hop_length=hop_length)
-    
-    # ------------------------------------------------------------------------- #
-    # find peaks
-    # ------------------------------------------------------------------------- #
     
     peak_thresh = 1e-3
     

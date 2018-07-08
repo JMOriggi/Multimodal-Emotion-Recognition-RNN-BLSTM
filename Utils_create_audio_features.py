@@ -18,6 +18,23 @@ import matplotlib.pyplot as plt
 import Compute_audio_featuresV1 as c_a_fV1
 import Compute_audio_featuresV2 as c_a_fV2
 
+# --------------------------------------------------------------------------- #
+# DEFINE PATHS
+# --------------------------------------------------------------------------- #
+Mode = 'training'
+#Mode = 'test'
+if Mode == 'training':
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+if Mode == 'test':    
+    main_root = os.path.normpath(r'DC:\DATA\POLIMI\----TESI-----\Corpus_Test')
+all_wav_path = os.path.join(main_root + '\AllAudioFiles')
+index_file_path =  os.path.join(main_root+'\AllData.txt')
+out_audio_feature_path = os.path.join(main_root+'\FeaturesAudio')   
+out_audio_feature_path_dirty = os.path.join(main_root+'\FeaturesAudio\Z_DataExt') 
+    
+# --------------------------------------------------------------------------- #
+# FUNCTIONS
+# --------------------------------------------------------------------------- #
 
 def saveFeaturecsv(currentFileFeatures, csvOutputFilePath):
     csvOutputFilePath = os.path.join(csvOutputFilePath + '.csv')
@@ -31,7 +48,7 @@ def saveFeaturecsv(currentFileFeatures, csvOutputFilePath):
     f.close()
 
 
-def readDataFile(main_root):
+def readDataFile():
     index_file_path =  os.path.join(main_root+'\AllData.txt')
     #Audio File Names
     with open(index_file_path, 'r') as AllDatafile:
@@ -145,26 +162,12 @@ def buildAudioFeaturesCsv(arrayEmoLabel, audioDirectoryPath, out_audio_feature_p
     
     
 if __name__ == '__main__':
-    
-    #DEFINE MAIN ROOT
-    Computer = 'training'
-    #Computer = 'test'
-    if Computer == 'training':
-        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    if Computer == 'test':    
-        main_root = os.path.normpath(r'DC:\DATA\POLIMI\----TESI-----\Corpus_Test')
         
     #True compute only feature of BN audio mix
     dataExt_flag = False
     
-    #SET PATH
-    all_wav_path = os.path.join(main_root + '\AllAudioFiles')
-    index_file_path =  os.path.join(main_root+'\AllData.txt')
-    out_audio_feature_path = os.path.join(main_root+'\FeaturesAudio')   
-    out_audio_feature_path_dirty = os.path.join(main_root+'\FeaturesAudio\Z_DataExt') 
-    
     #READ DATAFILE AND BUILD ARRAYS
-    arrayFileName, arrayEmoLabel = readDataFile(main_root)
+    arrayFileName, arrayEmoLabel = readDataFile()
     
     buildAudioFeaturesCsv(arrayEmoLabel, all_wav_path, out_audio_feature_path, out_audio_feature_path_dirty, dataExt_flag)  
         

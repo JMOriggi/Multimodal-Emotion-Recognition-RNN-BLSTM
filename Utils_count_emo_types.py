@@ -12,6 +12,19 @@ import csv
 import shutil
 import numpy as np
 
+# --------------------------------------------------------------------------- #
+# DEFINE PATHS
+# --------------------------------------------------------------------------- #
+Mode = 'training'
+#Mode = 'test'
+if Mode == 'training':
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+if Mode == 'test':    
+    main_root = os.path.normpath(r'DC:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    
+# --------------------------------------------------------------------------- #
+# FUNCTIONS
+# --------------------------------------------------------------------------- #
 
 def countLabels(arrayEmoLabel):
     counter = np.array([[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]])
@@ -86,14 +99,6 @@ def readDataFile(main_root):
 
 
 if __name__ == '__main__':
-    
-    #DEFINE MAIN ROOT
-    Computer = 'training'
-    #Computer = 'test'
-    if Computer == 'training':
-        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    if Computer == 'test':    
-        main_root = os.path.normpath(r'DC:\DATA\POLIMI\----TESI-----\Corpus_Test')
     
     arrayFileName, arrayEmoLabel = readDataFile(main_root) 
     counter = countLabels(arrayEmoLabel)

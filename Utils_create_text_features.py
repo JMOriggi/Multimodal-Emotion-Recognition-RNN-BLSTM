@@ -10,12 +10,28 @@
 
 import csv
 import os
-import gensim
+import gensim #Se errore pip install gensim==3.0
 import numpy as np
 
+# --------------------------------------------------------------------------- #
+# DEFINE PATHS
+# --------------------------------------------------------------------------- #
+Mode = 'training'
+#Mode = 'test'
+if Mode == 'training':
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+if Mode == 'test':    
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+modelPath = os.path.join(main_root+'\W2V_model\glove_WIKI')
+index_file_path =  os.path.join(main_root+'\AllData.txt')
+out_text_feature_path = os.path.join(main_root+'\FeaturesText')  
+  
+# --------------------------------------------------------------------------- #
+# FUNCTIONS
+# --------------------------------------------------------------------------- #
 
-def saveFeaturecsv(featureEncoded, arrayFileName, dir_root, emoFolder):
-    out_csv_labels_path = os.path.join(dir_root, emoFolder)
+def saveFeaturecsv(featureEncoded, arrayFileName, emoFolder):
+    out_csv_labels_path = os.path.join(out_text_feature_path, emoFolder)
     i = 0
     
     while i < len(featureEncoded):
@@ -35,7 +51,7 @@ def saveFeaturecsv(featureEncoded, arrayFileName, dir_root, emoFolder):
         i += 1
 
 
-def readData(index_file_path):
+def readData():
     #Audio File Names
     with open(index_file_path, 'r') as AllDatafile:
         X = [line.strip() for line in AllDatafile] 
@@ -81,12 +97,12 @@ def get_text_bynary(text, model, notFoundCounter, notFoundedWord):
     return encodedText, notFoundCounter, notFoundedWord
 
 
-def encodeText(arrayFileName, arrayText, arrayEmoLabel, modelPath):
+def encodeText(arrayFileName, arrayText, arrayEmoLabel):
     
     #SET MODEL AND PARAMETERS
     notFoundCounter = 0
     notFoundedWord = []
-    model = gensim.models.Word2Vec.load(modelPath)#Se errore pip install gensim==3.0
+    model = gensim.models.Word2Vec.load(modelPath)
     joyEncoded = []
     sadEncoded = []
     angEncoded = []
@@ -133,30 +149,17 @@ def encodeText(arrayFileName, arrayText, arrayEmoLabel, modelPath):
 
 
 if __name__ == '__main__':
-
-    #DEFINE MAIN ROOT
-    Computer = 'training'
-    #Computer = 'test'
-    if Computer == 'training':
-        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    if Computer == 'test':    
-        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test') 
-    
-    #SET PATHS
-    modelPath = os.path.join(main_root+'\W2V_model\glove_WIKI')
-    index_file_path =  os.path.join(main_root+'\AllData.txt')
-    out_text_feature_path = os.path.join(main_root+'\FeaturesText') 
     
     #READ THE FILE AND BUILD ARRAYS
-    arrayFileName, arrayText, arrayEmoLabel = readData(index_file_path)
+    arrayFileName, arrayText, arrayEmoLabel = readData()
     
     #ENCODE EMOTIONS LABELS
-    joyEncoded, angEncoded, sadEncoded, neuEncoded, joyFileName, angFileName, sadFileName, neuFileName = encodeText(arrayFileName, arrayText, arrayEmoLabel, modelPath)
+    joyEncoded, angEncoded, sadEncoded, neuEncoded, joyFileName, angFileName, sadFileName, neuFileName = encodeText(arrayFileName, arrayText, arrayEmoLabel)
     
     #WRITE CSV FILE
-    saveFeaturecsv(joyEncoded, joyFileName, out_text_feature_path, 'joy')
-    saveFeaturecsv(angEncoded, angFileName, out_text_feature_path, 'ang')
-    saveFeaturecsv(sadEncoded, sadFileName, out_text_feature_path, 'sad')
-    saveFeaturecsv(neuEncoded, neuFileName, out_text_feature_path, 'neu')
+    saveFeaturecsv(joyEncoded, joyFileName, 'joy')
+    saveFeaturecsv(angEncoded, angFileName, 'ang')
+    saveFeaturecsv(sadEncoded, sadFileName, 'sad')
+    saveFeaturecsv(neuEncoded, neuFileName, 'neu')
       
     print('END')   

@@ -1,8 +1,7 @@
 ##################################################################
 #
-#This function aim to count the number of sentences grouped for each
-#emotion label class. This function can be run only after that
-#Utils_cluster_data as runned.
+#This function implements audio features extraction version2. This
+#are the features used to run the NN with the best results.
 #
 ##################################################################
 
@@ -11,12 +10,18 @@ import numpy
 from scipy.fftpack import fft
 from scipy.fftpack.realtransforms import dct
 import matplotlib.pyplot as plt 
-from scipy.io.wavfile import read
+
+# --------------------------------------------------------------------------- #
+# DEFINE PARAMETERS
+# --------------------------------------------------------------------------- #
 use_pitch = False
 if use_pitch:
     import Compute_audio_featuresV2_pitch as pitch
 eps = 0.00000001
 
+# --------------------------------------------------------------------------- #
+# FUNCTIONS
+# --------------------------------------------------------------------------- #
 
 def compute_features(frames, freq, options):
     n = len(frames)

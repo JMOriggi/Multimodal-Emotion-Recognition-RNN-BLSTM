@@ -1,8 +1,7 @@
 ##################################################################
 #
-#This function aim to count the number of sentences grouped for each
-#emotion label class. This function can be run only after that
-#Utils_cluster_data as runned.
+#This function implements a prediction routine to test the previously
+#trained NN. This function works for the audio and text combined NN.
 #
 ##################################################################
 
@@ -22,6 +21,30 @@ from sklearn.metrics import confusion_matrix
 import itertools
 np.seterr(divide='ignore', invalid='ignore')
 
+
+# --------------------------------------------------------------------------- #
+# DEFINE PATHS
+# --------------------------------------------------------------------------- #
+#Mains roots
+mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+#Features paths
+dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
+dirText = os.path.join(mainRoot + '\FeaturesText')
+#Model and weights paths (only one mandatory)
+mainRootModel = os.path.join(dirRes, 'RNN_Model_FULL_saved.h5')
+OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-10-0.90.hdf5')
+
+# --------------------------------------------------------------------------- #
+# DEFINE PARAMETERS
+# --------------------------------------------------------------------------- #
+flagLoadModel = 0 #0=model, 1=weight
+labelLimit = 384 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
+nameFileResult = 'PredW-epoch110-FULL-Label_'+str(labelLimit)
+
+# --------------------------------------------------------------------------- #
+# FUNCTIONS
+# --------------------------------------------------------------------------- #
 
 def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm):
     
@@ -94,51 +117,9 @@ def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, fl
     plt.savefig(OutputImgPath)
     if flagPlotGraph:
         plt.show()
-    
-    
-def statistics(Y, yhat, correctCounter, predEmoCounter):
-    index, value = max(enumerate(Y[0]), key=operator.itemgetter(1))
-    Pindex, Pvalue = max(enumerate(yhat[0]), key=operator.itemgetter(1))
-    '''print('index: ', index, 'value: ', value)
-    print('index: ', Pindex, 'value: ', Pvalue)'''
-    
-    #UPDATE CORRECT COUNTER
-    if index == Pindex:
-        correctCounter[index] += 1
-    
-    #UPDATE PREDICTED EMO COUNTER
-    predEmoCounter[Pindex] += 1
-    
-    return correctCounter, predEmoCounter
 
 
-def saveCsv(currentFile, csvOutputFilePath):
-    csvOutputFilePath = os.path.join(csvOutputFilePath + '.csv')
-    try:
-        os.remove(csvOutputFilePath)
-    except OSError:
-        pass
-    
-    with open(csvOutputFilePath, "w", newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(np.asarray(currentFile))
-    f.close() 
-
-    
-def saveTxt(currentFile, txtOutputFilePath): 
-    txtOutputFilePath = os.path.join(txtOutputFilePath + '.txt') 
-    try:
-        os.remove(txtOutputFilePath)
-    except OSError:
-        pass
-    
-    with open(txtOutputFilePath, 'w') as file:      
-        for item in currentFile:
-            file.write(str(item)+'\n')  
-    file.close() 
-
-
-def readFeatures(DirRoot, labelLimit):
+def readFeatures(DirRoot):
     listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
     allFileFeature = []
     allFileName = []
@@ -166,16 +147,16 @@ def readFeatures(DirRoot, labelLimit):
     return allFileFeature, allFileName
 
 
-def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
+def organizeFeatures():
 
-    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
-    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
-    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
-    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
-    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
-    angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
-    sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
-    neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
+    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'))
+    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'))
+    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'))
+    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'))
+    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'))
+    angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'))
+    sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'))
+    neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'))
     
     #BUILD SHUFFLED FEATURE FILES FOR TRAINING
     allAudioFeature = []
@@ -303,41 +284,21 @@ def predictFromModel(model, inputTestAudio, inputTestText, Labels, maxTimestepAu
     
 if __name__ == '__main__':
     
-    #DEFINE MAIN ROOT
-    mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    
-    #BUILD PATH FOR EACH FEATURE DIR
-    dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
-    dirText = os.path.join(mainRoot + '\FeaturesText')
-    dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    
-    #SET MODELS PATH
-    mainRootModel = os.path.join(dirRes, 'RNN_Model_FULL_saved.h5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-10-0.90.hdf5')
-    
-    #DEFINE PARAMETERS
-    flagLoadModel = 1 #0=model, 1=weight
-    labelLimit = 384 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
-    fileLimit = (labelLimit*4) #number of file trained: len(allAudioFeature) or a number
-    nameFileResult = 'PredW-epoch110-FULL-Label_'+str(labelLimit)
-    
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
-    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
+    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures()
     
     #FIND MAX TIMESTEP FOR PADDING
     maxTimestepAudio = 290 #setted with training because no test file is longer than 290
     maxTimestepText = 85 #text
     
     #MODEL SUMMARY
-    print('Predict of #file: ', fileLimit)
     print('AUDIO Files with #features: ', allAudioFeature[0].shape[1])
     print('AUDIO Max time step: ',maxTimestepAudio)
     print('TEXT Files with #features: ', allTextFeature[0].shape[1])
     print('TEXT Max time step: ',maxTimestepText)
     print('Predict number of each emotion: ', labelLimit)
      
-    #LOAD MODEL OR WIEGHTS FOR AUDIO AND TEXT MODEL
+    #LOAD MODEL OR WIEGHTS
     if flagLoadModel == 0:
         model = load_model(mainRootModel) 
     else:

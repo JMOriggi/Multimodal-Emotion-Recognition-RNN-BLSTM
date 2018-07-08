@@ -1,8 +1,7 @@
 ##################################################################
 #
-#This function aim to count the number of sentences grouped for each
-#emotion label class. This function can be run only after that
-#Utils_cluster_data as runned.
+#This function implements the training of the NN model based on
+#audio and text combined.
 #
 ##################################################################
 
@@ -20,34 +19,36 @@ import matplotlib.pyplot as plt
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 np.seterr(divide='ignore', invalid='ignore')
 
+# --------------------------------------------------------------------------- #
+# DEFINE PATHS
+# --------------------------------------------------------------------------- #
+#Main roots
+mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+#Features directory path
+dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
+dirText = os.path.join(mainRoot + '\FeaturesText')
+#Saved model after training
+modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
 
-def saveCsv(currentFile, csvOutputFilePath):
-    csvOutputFilePath = os.path.join(csvOutputFilePath + '.csv')
-    try:
-        os.remove(csvOutputFilePath)
-    except OSError:
-        pass
+# --------------------------------------------------------------------------- #
+# DEFINE PARAMETERS
+# --------------------------------------------------------------------------- #
+labelLimit = 1300 #720 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
+n_epoch = 100 #number of epoch 
+batchSize= 20
+LRate = 0.0001
+FlagValSet = False #use validation set or not
+FlagEarlyStop = False #use earlystop or not (if true set patience epoch, and validation set will be considered mandatory)
+Patience = 40
+if FlagEarlyStop == True:
+    FlagValSet = True
     
-    with open(csvOutputFilePath, "w", newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(np.asarray(currentFile))
-    f.close() 
+# --------------------------------------------------------------------------- #
+# FUNCTIONS
+# --------------------------------------------------------------------------- #
 
-    
-def saveTxt(currentFile, txtOutputFilePath): 
-    txtOutputFilePath = os.path.join(txtOutputFilePath + '.txt') 
-    try:
-        os.remove(txtOutputFilePath)
-    except OSError:
-        pass
-    
-    with open(txtOutputFilePath, 'w') as file:      
-        for item in currentFile:
-            file.write(str(item)+'\n')  
-    file.close() 
-
-
-def readFeatures(DirRoot, labelLimit):
+def readFeatures(DirRoot):
     listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
     allFileFeature = []
     allFileName = []
@@ -75,16 +76,16 @@ def readFeatures(DirRoot, labelLimit):
     return allFileFeature, allFileName
 
 
-def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
-
-    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'), labelLimit)
-    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'), labelLimit)
-    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'), labelLimit)
-    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'), labelLimit)
-    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'), labelLimit)
-    angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'), labelLimit)
-    sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'), labelLimit)
-    neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'), labelLimit)
+def organizeFeatures():
+    
+    joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'))
+    angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'))
+    sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'))
+    neuAudioFeature, neuFileName = readFeatures(os.path.join(dirAudio, 'neu'))
+    joyTextFeature, joyFileName = readFeatures(os.path.join(dirText, 'joy'))
+    angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'))
+    sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'))
+    neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'))
     
     #BUILD SHUFFLED FEATURE FILES FOR TRAINING
     allAudioFeature = []
@@ -118,7 +119,8 @@ def organizeFeatures(dirAudio, dirText, dirLabel, labelLimit):
             allLabels.append([[0,0,0,1]])
 
         i +=1
-    '''print(np.asarray(allLabels).shape)'''   
+    '''print(np.asarray(allLabels).shape)'''
+        
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
@@ -131,7 +133,7 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
     return X, Y
 
 
-def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesText, LRate):
+def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesText):
     
     nb_lstm_cells = 128
     nb_classes = 4
@@ -165,38 +167,35 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     z1 = dot([alpha1, y1], axes=1)
     z2 = dot([alpha2, y2], axes=1)
     #Merge step
-    mrg = Merge(mode='concat')([z1,z2])
-    '''mrg = Concatenate([z1,z2])'''
+    mrg = Merge(mode='concat')([z1,z2]) #mrg = Concatenate([z1,z2])
     #Dense layer and final output
     refOut = Dense(nb_hidden_units, activation='relu')(mrg)
     output = Dense(nb_classes, activation='softmax')(refOut)
     
     model = Model(inputs=[input_attention, input_featureAudio, input_featureText], outputs=output)
     model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=LRate, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy']) #mean_squared_error #categorical_crossentropy
-
-    
+ 
     return model
 
 
-def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, n_epoch, dirRes, maxTimestepAudio, maxTimestepText, batchSize):    
+def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, maxTimestepAudio, maxTimestepText):    
     
     #RESHAPE TRAIN DATA
     train_Audio, train_Y = reshapeLSTMInOut(allAudioFeature, Labels, maxTimestepAudio)
     train_Text, train_Y = reshapeLSTMInOut(allTextFeature, Labels, maxTimestepText)
     
     #CHECPOINT
-    #OutputWeightsPath = os.path.join(dirRes, 'weights.best.hdf5')
-    #OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{val_categorical_accuracy:.2f}.hdf5')
-    OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{categorical_accuracy:.2f}.hdf5')
-    try:
-        os.remove(OutputWeightsPath)
-    except OSError:
-        pass
-    callbacks_list = [
-        #EarlyStopping(monitor='val_loss', patience=Patience, verbose=1, mode='auto'),
-        #ModelCheckpoint(filepath=OutputWeightsPath, monitor='val_categorical_accuracy', save_best_only='True', verbose=1, mode='max')
-        ModelCheckpoint(filepath=OutputWeightsPath, monitor='categorical_accuracy', save_best_only='True', verbose=1, mode='max')
-    ]
+    if FlagEarlyStop:
+        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{val_categorical_accuracy:.2f}.hdf5')
+        callbacks_list = [
+            EarlyStopping(monitor='val_loss', patience=Patience, verbose=1, mode='auto'),
+            ModelCheckpoint(filepath=OutputWeightsPath, monitor='val_categorical_accuracy', save_best_only='True', verbose=1, mode='max')
+        ]
+    else: 
+        OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{categorical_accuracy:.2f}.hdf5')
+        callbacks_list = [
+            ModelCheckpoint(filepath=OutputWeightsPath, monitor='categorical_accuracy', save_best_only='True', verbose=1, mode='max')
+        ]
     
     #PREPARE ATTENTION ARRAY INPUT:  training and test
     nb_attention_param = 256
@@ -204,8 +203,10 @@ def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, n_epoch, dirRes, 
     u_train = np.full((train_Audio.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #FIT MODEL for one epoch on this sequence
-    #history = model.fit([u_train, train_Audio, train_Text], train_Y, validation_split=0.20, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
-    history = model.fit([u_train, train_Audio, train_Text], train_Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
+    if FlagValSet:
+        history = model.fit([u_train, train_Audio, train_Text], train_Y, validation_split=0.20, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
+    else:
+        history = model.fit([u_train, train_Audio, train_Text], train_Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
         
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = model
@@ -217,23 +218,8 @@ def trainBLSTM(model, allAudioFeature, allTextFeature, Labels, n_epoch, dirRes, 
     
 if __name__ == '__main__':
     
-    #DEFINE MAIN ROOT
-    mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
-    
-    #BUILD PATH FOR EACH FEATURE DIR
-    dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
-    dirText = os.path.join(mainRoot + '\FeaturesText')
-    dirLabel = os.path.join(mainRoot + '\LablesEmotion')
-    
-    #DEFINE PARAMETERS
-    labelLimit = 1300 #720 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
-    n_epoch = 20 #number of epoch 
-    batchSize= 20
-    LRateAudio = 0.0001
-    
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
-    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures(dirAudio, dirText, dirLabel, labelLimit)
+    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures()
     
     #FIND MAX TIMESTEP FOR PADDING AUDIO
     maxTimestepAudio = 0 #500
@@ -250,10 +236,8 @@ if __name__ == '__main__':
             maxTimestepText = zStep        
             
     #BUILD MODEL
-    modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
-    model = load_model(modelPath)
-    #model = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1], maxTimestepText, allTextFeature[0].shape[1], LRateAudio)
-    SummaryText = 'Att_Model_FULL-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
+    model = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1], maxTimestepText, allTextFeature[0].shape[1])
+    SummaryText = 'Att_Model_FULL-RMS-LR_'+str(LRate)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
     
     #MODEL SUMMARY
     model.summary()
@@ -264,40 +248,43 @@ if __name__ == '__main__':
     print('Train of #file: ', labelLimit*4)
     
     #TRAIN & SAVE LSTM: considering one at time
-    model, history, evAcc = trainBLSTM(model, allAudioFeature, allTextFeature, allLabels, n_epoch, dirRes, maxTimestepAudio, maxTimestepText, batchSize)   
-    modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
+    model, history, evAcc = trainBLSTM(model, allAudioFeature, allTextFeature, allLabels, maxTimestepAudio, maxTimestepText)   
     model.save(modelPath, overwrite=True)
     
     #VISUALIZE HISTORY: plot val_acc, val_loss and acc, loss
     plt.figure(figsize=(5,8))
-    '''plt.subplot(2, 1, 1)
-    plt.plot(history.history['categorical_accuracy'])
-    plt.plot(history.history['val_categorical_accuracy'])
-    plt.title('model categorical_accuracy')
-    plt.ylabel('categorical_accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
-    # summarize history for loss
-    plt.subplot(2, 1, 2)'''
-    '''plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.title('model loss')
-    plt.ylabel('loss')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')'''
-    plt.subplot(2, 1, 1)
-    plt.plot(history.history['categorical_accuracy'])
-    plt.title('model categorical_accuracy')
-    plt.ylabel('categorical_accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['train'], loc='upper left')
-    # summarize history for loss
-    plt.subplot(2, 1, 2)
-    plt.plot(history.history['loss'])
-    plt.title('model loss')
-    plt.ylabel('loss')
-    plt.xlabel('epoch')
-    plt.legend(['train'], loc='upper left')
+    if FlagValSet:
+        # summarize history for val_acc
+        plt.subplot(2, 1, 1)
+        plt.plot(history.history['categorical_accuracy'])
+        plt.plot(history.history['val_categorical_accuracy'])
+        plt.title('model categorical_accuracy')
+        plt.ylabel('categorical_accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        # summarize history for val_loss
+        plt.subplot(2, 1, 2)
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+    else:
+        # summarize history for acc and val_acc    
+        plt.subplot(2, 1, 1)
+        plt.plot(history.history['categorical_accuracy'])
+        plt.title('model categorical_accuracy')
+        plt.ylabel('categorical_accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train'], loc='upper left')
+        # summarize history for loss and val_loss
+        plt.subplot(2, 1, 2)
+        plt.plot(history.history['loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train'], loc='upper left')
     #save it
     OutputImgPath = os.path.join(dirRes, 'Train_History-EvAcc_'+str(evAcc)+'.png')
     plt.savefig(OutputImgPath)

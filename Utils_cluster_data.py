@@ -12,35 +12,49 @@
 
 
 import os
-import csv
 import shutil
 import numpy as np
 
+# --------------------------------------------------------------------------- #
+# DEFINE PATHS
+# --------------------------------------------------------------------------- #
+#Main roots
+Computer = 'training'
+#Computer = 'test'
+if Computer == 'training':
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
+if Computer == 'test':    
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
+#Directory paths
+ZData_path = os.path.join(main_root + '\ZData')
+out_file_path =  os.path.join(main_root+'\AllData.txt') 
+audio_file_dest_path = os.path.normpath(main_root+'\AllAudioFiles')
+
 
 #BUILD A TXT FILE WITH ALL THE USEFULL DATA: <audioFileName>;<emo>;<transcriptionText>
-def clusterData(Data_path, Out_file_path):
+def clusterData():
     #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
-    dirlist = [ item for item in os.listdir(Data_path) if os.path.isdir(os.path.join(Data_path, item))]
+    dirlist = [ item for item in os.listdir(ZData_path) if os.path.isdir(os.path.join(ZData_path, item))]
     print('All Sessions',dirlist)
     
     #CREATE OUTPUT DATA FILE: remove if it already exist and recreate it new
     try:
-        os.remove(Out_file_path)
+        os.remove(out_file_path)
     except OSError:
         pass
-    outputfile = open(Out_file_path, 'a')
+    outputfile = open(out_file_path, 'a')
     
     #The output file is placed in the root folder and the content will have the format: AudioFileName, CatOutput, ValOutput.
     for session in dirlist:
         print('Parsing: ',session)
         
         #COMPOSE DIRECTORY PATH: for emotion labels file of the current session
-        directoryEmoPath = os.path.normpath(os.path.join(Data_path, session)+'\EmoEvaluation')
+        directoryEmoPath = os.path.normpath(os.path.join(ZData_path, session)+'\EmoEvaluation')
         emolist = [ item for item in os.listdir(directoryEmoPath) if os.path.isfile(os.path.join(directoryEmoPath, item)) ]
         print('Directory Emotion: ',directoryEmoPath)
         
         #COMPOSE DIRECTORY PATH: for the transcription file of current session
-        directoryText = os.path.normpath(os.path.join(Data_path, session)+'\Transcriptions')
+        directoryText = os.path.normpath(os.path.join(ZData_path, session)+'\Transcriptions')
         translist = [ item for item in os.listdir(directoryText) if os.path.isfile(os.path.join(directoryText, item)) ]
         print('Directory Transcription: ',directoryText)
         
@@ -72,19 +86,19 @@ def clusterData(Data_path, Out_file_path):
     outputfile.close()  
 
 
-#MOVE ALL THE AUDIO FILES IN THE MAINROOT IN 1 DIRECTORY    
-def moveCopyAudioFiles(mainRoot, destPath):
+#MOVE ALL THE AUDIO FILES IN THE main_root IN 1 DIRECTORY    
+def moveCopyAudioFiles():
     print('****Start of method moveAudioFiles')
     
     #SET DESTINATION PATH
-    print('DestPath: ',destPath)
+    print('audio_file_dest_path: ',audio_file_dest_path)
     
     #GET ALL THE SESSIONS DIRECTORY NAME FROM MAIN ROOT
-    sessDirList = [ item for item in os.listdir(mainRoot) if os.path.isdir(os.path.join(mainRoot, item)) and item[0] == 'S']
+    sessDirList = [ item for item in os.listdir(ZData_path) if os.path.isdir(os.path.join(ZData_path, item))]#[ item for item in os.listdir(main_root) if os.path.isdir(os.path.join(main_root, item)) and item[0] == 'S']
     print('All Sessions',sessDirList)
     
     for session in sessDirList:
-        currentAudioDirPath = os.path.normpath(os.path.join(mainRoot, session)+'\Sentences_audio')
+        currentAudioDirPath = os.path.normpath(os.path.join(ZData_path, session)+'\Sentences_audio')
         audioGroupDir = [ item for item in os.listdir(currentAudioDirPath) if os.path.isdir(os.path.join(currentAudioDirPath, item)) ]
 
         print('Inside: ',session)
@@ -95,36 +109,18 @@ def moveCopyAudioFiles(mainRoot, destPath):
             print('Inside audioGroup: ',audioGroup)
                
             for Afile in audlist:
-                print('Moving file: ',Afile)
+                print('Copy file: ',Afile)
                 audioFilePath = os.path.join(currentAudioGroupPath, Afile)
-                shutil.copy(audioFilePath, destPath)
-                #shutil.move(audioFilePath, destPath)
+                shutil.copy(audioFilePath, audio_file_dest_path)
+                #shutil.move(audioFilePath, audio_file_dest_path)
                 
     print('****End of method moveAudioFiles')   
 
     
 if __name__ == '__main__':
     
-    #DEFINE MAIN ROOT
-    Computer = 'training'
-    #Computer = 'test'
-    if Computer == 'training':
-        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-    if Computer == 'test':    
-        main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
-    
-    #SET PATH
-    ZData_path = os.path.join(main_root + '\ZData')
-    out_file_path =  os.path.join(main_root+'\AllData.txt') 
-    audio_file_dest_path = os.path.normpath(main_root+'\AllAudioFiles')  
-    
-    clusterData(ZData_path, out_file_path)  
-    moveCopyAudioFiles(ZData_path, audio_file_dest_path)    
+    clusterData()  
+    moveCopyAudioFiles()    
         
     print('END') 
-        
-        
-        
-        
-        
         
