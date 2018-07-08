@@ -36,7 +36,7 @@ mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
 # --------------------------------------------------------------------------- #
 modelType = 0 #0=Audio, 1=Text
 labelLimit = 1300 #740 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
-n_epoch = 100 #number of epoch 
+n_epoch = 2 #number of epoch 
 batchSizeAudio = 20
 batchSizeText = 20
 LRateAudio = 0.001
@@ -237,15 +237,14 @@ if __name__ == '__main__':
     print('Max time step Audio: ',maxTimestepAudio)
     print('Max time step Text: ',maxTimestepText)
     print('Train number of each emotion: ', labelLimit)
-    print('Train of #file: ', labelLimit*4)
     
     #TRAIN & SAVE LSTM: considering one at time
     if modelType == 0:
-        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, n_epoch, dirRes, maxTimestepAudio, batchSizeAudio, PatienceAudio)
+        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, maxTimestepAudio, batchSizeAudio, PatienceAudio)
         modelPathAudio = os.path.normpath(dirRes + '\RNN_Model_AUDIO_saved.h5')
         model_Audio.save(modelPathAudio, overwrite=True)       
     if modelType == 1:
-        model_Text, history, evAcc = trainBLSTM(model, allTextFeature, allLabels, n_epoch, dirRes, maxTimestepText, batchSizeText, PatienceText)    
+        model_Text, history, evAcc = trainBLSTM(model, allTextFeature, allLabels, maxTimestepText, batchSizeText, PatienceText)    
         modelPathText = os.path.normpath(dirRes + '\RNN_Model_TEXT_saved.h5')
         model_Text.save(modelPathText, overwrite=True)
     

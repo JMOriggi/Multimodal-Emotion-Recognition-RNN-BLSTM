@@ -245,7 +245,6 @@ if __name__ == '__main__':
     print('Max time step Audio: ',maxTimestepAudio)
     print('Max time step Text: ',maxTimestepText)
     print('Train number of each emotion: ', labelLimit)
-    print('Train of #file: ', labelLimit*4)
     
     #TRAIN & SAVE LSTM: considering one at time
     model, history, evAcc = trainBLSTM(model, allAudioFeature, allTextFeature, allLabels, maxTimestepAudio, maxTimestepText)   
