@@ -270,8 +270,8 @@ if __name__ == '__main__':
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures()
     
     #FIND MAX TIMESTEP FOR PADDING
-    maxTimestepAudio = 290 #setted with training because no test file is longer than 290
-    maxTimestepText = 85 #text
+    maxTimestepAudio = 290
+    maxTimestepText = 85
     
     #MODEL SUMMARY
     print('AUDIO Files with #features: ', allAudioFeature[0].shape[1])
