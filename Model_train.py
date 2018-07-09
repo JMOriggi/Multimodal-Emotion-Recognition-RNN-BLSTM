@@ -35,11 +35,11 @@ mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
 # DEFINE PARAMETERS
 # --------------------------------------------------------------------------- #
 modelType = 0 #0=Audio, 1=Text
-labelLimit = 1300 #740 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
-n_epoch = 2 #number of epoch 
+labelLimit = 1324 #740 for balanced, 1324 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
+n_epoch = 100 #number of epoch 
 batchSizeAudio = 20
 batchSizeText = 20
-LRateAudio = 0.001
+LRateAudio = 0.0001
 LRateText = 0.0001
 FlagValSet = False #use validation set or not
 FlagEarlyStop = False #use earlystop or not (if true set patience epoch for audio and text, and validation set will be considered mandatory)
@@ -283,7 +283,7 @@ if __name__ == '__main__':
         plt.xlabel('Epoch')
         plt.legend(['train set'], loc='upper left')
     #save it
-    OutputImgPath = os.path.join(dirRes, 'Train_History-EvAcc_'+str(evAcc)+'.png')
+    OutputImgPath = os.path.join(dirRes, 'Train_Audio-LR.0001-noVal-EvAcc_'+str(evAcc)+'.png')
     plt.savefig(OutputImgPath)
     plt.show()
     
