@@ -10,16 +10,13 @@ import numpy as np
 import os
 import csv
 import operator
-from keras.layers.merge import dot
-from keras.models import Model
-from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
-from keras.optimizers import RMSprop
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import itertools
 np.seterr(divide='ignore', invalid='ignore')
+from Model_train import buildBLTSM as BLSTMModel
 
 # --------------------------------------------------------------------------- #
 # DEFINE PATHS
@@ -46,6 +43,9 @@ flagLoadModelText = 1 #0=model, 1=weight
 labelLimit = 384 #170 for balanced, 384 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
 allfile = 1098
 nameFileResult = 'PredM_-'+str(modelType)+'-'+'Label_'+str(labelLimit)
+#Max timestep used for padding, setted according to the training model (NOT MODIFY)
+maxTimestepAudio = 290
+maxTimestepText = 85
 
 # --------------------------------------------------------------------------- #
 # FUNCTIONS
@@ -107,7 +107,7 @@ def computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, fl
     
     expected = np.argmax(expected, axis=1)
     cmUA = confusion_matrix(expected, allPredictionClasses)
-    plt, cmWA = plot_confusion_matrix(cmUA, ['joy','ang','sad','neu'], title=nameFileResult+'-CM')
+    plt, cmWA = plot_confusion_matrix(cmUA, ['joy','ang','sad','neu'], title='Confusion Matrix')
     
     accurancyUA = (cmUA[0][0] + cmUA[1][1] + cmUA[2][2] + cmUA[3][3])/(allfile)
     print('Accurancy UA: ',accurancyUA)
@@ -197,33 +197,6 @@ def organizeFeatures():
     return allAudioFeature, allTextFeature, allFileName, allLabels
 
 
-def buildBLTSM(maxTimestep, numFeatures):
-    
-    #SET PARAMETERS
-    nb_lstm_cells = 128
-    nb_classes = 4
-    nb_hidden_units = 512
-    
-    #MODEL WITH ATTENTION
-    input_attention = Input(shape=(nb_lstm_cells * 2,))
-    u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
-    input_feature = Input(shape=(maxTimestep,numFeatures))
-    x = Masking(mask_value=0.)(input_feature)
-    x = Dense(nb_hidden_units, activation='relu')(x)
-    x = Dropout(0.5)(x)
-    x = Dense(nb_hidden_units, activation='relu')(x)
-    x = Dropout(0.5)(x)
-    y = Bidirectional(LSTM(nb_lstm_cells, return_sequences=True, dropout=0.5))(x)
-    alpha = dot([u, y], axes=-1)
-    alpha = Activation('softmax')(alpha)
-    z = dot([alpha, y], axes=1)
-    output = Dense(nb_classes, activation='softmax')(z)
-    model = Model(inputs=[input_attention, input_feature], outputs=output)
-    model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0), metrics=['categorical_accuracy'])
-    
-    return model
-
-
 def reshapeLSTMInOut(Feat, label, maxTimestep):
     X = []
     X = np.asarray(Feat)
@@ -269,10 +242,6 @@ if __name__ == '__main__':
     #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
     allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures()
     
-    #FIND MAX TIMESTEP FOR PADDING
-    maxTimestepAudio = 290
-    maxTimestepText = 85
-    
     #MODEL SUMMARY
     print('AUDIO Files with #features: ', allAudioFeature[0].shape[1])
     print('AUDIO Max time step: ',maxTimestepAudio)
@@ -286,14 +255,14 @@ if __name__ == '__main__':
         if flagLoadModelAudio == 0:
             model_Audio = load_model(mainRootModelAudio) 
         else:    
-            model_Audio = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1])
+            model_Audio = BLSTMModel(maxTimestepAudio, allAudioFeature[0].shape[1])
             model_Audio.load_weights(OutputWeightsPathAudio)
     #Text
     if modelType == 1:
         if flagLoadModelText == 0:
             model_Text = load_model(mainRootModelText)   
         else:
-            model_Text = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1])
+            model_Text = BLSTMModel(maxTimestepText, allTextFeature[0].shape[1])
             model_Text.load_weights(OutputWeightsPathText) 
         
     #PREDICT 
