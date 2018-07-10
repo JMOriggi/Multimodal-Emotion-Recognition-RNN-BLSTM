@@ -31,18 +31,18 @@ dirText = os.path.join(mainRoot + '\FeaturesText')
 #Model paths
 mainRootModelAudio = os.path.normpath(dirRes + '\RNN_Model_AUDIO_saved.h5')
 mainRootModelText = os.path.normpath(dirRes + '\RNN_Model_TEXT_saved.h5')
-OutputWeightsPathAudio = os.path.join(dirRes, 'weightsA-improvement-27-0.64.hdf5')
+OutputWeightsPathAudio = os.path.join(dirRes, 'weights-improvement-89-0.64.hdf5')
 OutputWeightsPathText = os.path.join(dirRes, 'weightsT-improvement-71-0.65.hdf5') 
 
 # --------------------------------------------------------------------------- #
 # DEFINE PARAMETERS
 # --------------------------------------------------------------------------- #
-modelType = 1 #0=OnlyAudio, 1=OnlyText
+modelType = 0 #0=OnlyAudio, 1=OnlyText
 flagLoadModelAudio = 1 #0=model, 1=weight
-flagLoadModelText = 1 #0=model, 1=weight
+flagLoadModelText = 0 #0=model, 1=weight
 labelLimit = 384 #170 for balanced, 384 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
 allfile = 1098
-nameFileResult = 'PredM_-'+str(modelType)+'-'+'Label_'+str(labelLimit)
+nameFileResult = 'PredW_e89-'+str(modelType)+'-'+'Label_'+str(labelLimit)
 #Max timestep used for padding, setted according to the training model (NOT MODIFY)
 maxTimestepAudio = 290
 maxTimestepText = 85
@@ -255,14 +255,14 @@ if __name__ == '__main__':
         if flagLoadModelAudio == 0:
             model_Audio = load_model(mainRootModelAudio) 
         else:    
-            model_Audio = BLSTMModel(maxTimestepAudio, allAudioFeature[0].shape[1])
+            model_Audio = BLSTMModel(maxTimestepAudio, allAudioFeature[0].shape[1], 0.0001)
             model_Audio.load_weights(OutputWeightsPathAudio)
     #Text
     if modelType == 1:
         if flagLoadModelText == 0:
             model_Text = load_model(mainRootModelText)   
         else:
-            model_Text = BLSTMModel(maxTimestepText, allTextFeature[0].shape[1])
+            model_Text = BLSTMModel(maxTimestepText, allTextFeature[0].shape[1], 0.0001)
             model_Text.load_weights(OutputWeightsPathText) 
         
     #PREDICT 
