@@ -29,15 +29,15 @@ dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
 dirText = os.path.join(mainRoot + '\FeaturesText')
 #Model and weights paths (only one mandatory)
 mainRootModel = os.path.join(dirRes, 'RNN_Model_FULL_saved.h5')
-OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-150-0.93.hdf5')
+OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-99-0.89.hdf5')
 
 # --------------------------------------------------------------------------- #
 # DEFINE PARAMETERS
 # --------------------------------------------------------------------------- #
-flagLoadModel = 0 #0=model, 1=weight
+flagLoadModel = 1 #0=model, 1=weight
 labelLimit = 384 #170 for balanced, 380 for max [joy 299, ang 170, sad 245, neu 384] TOT 1098
 allfile = 1098
-nameFileResult = 'PredW-epoch110-FULL-Label_'+str(allfile)
+nameFileResult = 'PredW99-FULL-Label_'+str(allfile)
 #Max timestep used for padding, setted according to the training model (NOT MODIFY)
 maxTimestepAudio = 290 
 maxTimestepText = 85 

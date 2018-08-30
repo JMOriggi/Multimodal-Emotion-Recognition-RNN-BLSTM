@@ -15,12 +15,12 @@ import numpy as np
 # --------------------------------------------------------------------------- #
 # DEFINE PATHS
 # --------------------------------------------------------------------------- #
-Mode = 'training'
-#Mode = 'test'
+#Mode = 'training'
+Mode = 'test'
 if Mode == 'training':
     main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
 if Mode == 'test':    
-    main_root = os.path.normpath(r'DC:\DATA\POLIMI\----TESI-----\Corpus_Test')
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
     
 # --------------------------------------------------------------------------- #
 # FUNCTIONS

@@ -39,9 +39,9 @@ labelLimit = 1324 #740 for balanced, 1324 for max [joy 742, ang 933, sad 839, ne
 n_epoch = 100 #number of epoch 
 batchSizeAudio = 20
 batchSizeText = 20
-LRateAudio = 0.001
+LRateAudio = 0.0001
 LRateText = 0.0001
-FlagValSet = False #use validation set or not
+FlagValSet = True #use validation set or not
 FlagEarlyStop = False #use earlystop or not (if true set patience epoch for audio and text, and validation set will be considered mandatory)
 PatienceAudio = 40
 PatienceText = 100
@@ -283,7 +283,7 @@ if __name__ == '__main__':
         plt.xlabel('Epoch')
         plt.legend(['train set'], loc='upper left')
     #save it
-    OutputImgPath = os.path.join(dirRes, 'Train_Audio-LR.0001-noVal-EvAcc_'+str(evAcc)+'.png')
+    OutputImgPath = os.path.join(dirRes, 'Train_text-LR.001-noVal-EvAcc_'+str(evAcc)+'.png')
     plt.savefig(OutputImgPath)
     plt.show()
     
