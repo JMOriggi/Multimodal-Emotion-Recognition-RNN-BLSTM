@@ -5,6 +5,7 @@
 #
 ##################################################################
 
+import operator
 from sklearn.model_selection import StratifiedKFold
 import numpy as np
 import os
@@ -18,6 +19,7 @@ from keras.optimizers import RMSprop
 import matplotlib.pyplot as plt
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 np.seterr(divide='ignore', invalid='ignore')
+import ModelFull_predict as MP
 
 # --------------------------------------------------------------------------- #
 # DEFINE PATHS
@@ -34,10 +36,13 @@ modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
 # --------------------------------------------------------------------------- #
 # DEFINE PARAMETERS
 # --------------------------------------------------------------------------- #
-labelLimit = 200 #740 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
+labelLimit = 100 #740 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
 n_epoch = 2 #number of epoch 
 batchSize= 20
 LRate = 0.0001
+seed = 7
+np.random.seed(seed)
+numb_kfold = 5
 FlagValSet = False #use validation set or not
 FlagEarlyStop = False #use earlystop or not (if true set patience epoch, and validation set will be considered mandatory)
 Patience = 40
@@ -129,10 +134,8 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
     X = pad_sequences(X, maxlen=maxTimestep, dtype='float32')
     Y = np.asarray(label)
     Y = Y.reshape(len(Y), 4)
-    print("X = ")
-    print(np.asarray(X).shape)
-    print("Y = ")
-    print(np.asarray(Y).shape)
+    #print(np.asarray(X).shape)
+    #print(np.asarray(Y).shape)
     
     return X, Y
 
@@ -181,6 +184,26 @@ def buildBLTSM(numFeaturesAudio, numFeaturesText):
  
     return model
 
+def plotTrainHistory(nameFileResult, history, scores): 
+    plt.figure(figsize=(7,10))
+    # summarize history for acc and val_acc    
+    plt.subplot(2, 1, 1)
+    plt.plot(history.history['categorical_accuracy'])
+    plt.title('Model categorical accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['train set'], loc='upper left')
+    # summarize history for loss and val_loss
+    plt.subplot(2, 1, 2)
+    plt.plot(history.history['loss'])
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['train set'], loc='upper left')
+    #save it
+    OutputImgPath = os.path.join(dirRes, nameFileResult+'-Train_History-EvAcc_'+str(scores[1]*100)+'.png')
+    plt.savefig(OutputImgPath)
+    
     
 if __name__ == '__main__':
     
@@ -213,9 +236,6 @@ if __name__ == '__main__':
     print('Train number of each emotion: ', labelLimit)
         
     #KFOLD PARAMS
-    seed = 7
-    np.random.seed(seed)
-    numb_kfold = 10
     kfold = StratifiedKFold(n_splits=numb_kfold, shuffle=False, random_state=seed)
     
     #PREPARE FEATURES
@@ -226,21 +246,53 @@ if __name__ == '__main__':
     u_train = np.full((train_Audio.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #LAUNCH KFOLD VALIDATION
+    out_file_path = os.path.normpath(dirRes + '\Kfold_Results.txt')
+    try:
+        os.remove(out_file_path)
+    except OSError:
+        pass
+    outputfile = open(out_file_path, 'a')
     dim_ar = np.zeros(train_Audio.shape[0])
     cvscores = []
-    i = 1
+    foldIndex = 1
     for train_index, test_index in kfold.split(dim_ar,dim_ar):
-        print("FOLD: ", i,"/",numb_kfold)
-        #print("TRAIN:", train_index, "TEST:", test_index)
+        print("FOLD: ", foldIndex,"/",numb_kfold)
+        #Init Vars
         current_model = model 
         current_u = u_train
-        history = current_model.fit([current_u[train_index], train_Audio[train_index], train_Text[train_index]], train_Y[train_index], batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2)  
-        scores = current_model.evaluate([current_u[test_index], train_Audio[test_index], train_Text[test_index]], train_Y[test_index], verbose=0)
-        print("%s: %.2f%%" % (current_model.metrics_names[1], scores[1]*100))
+        X_A = current_u[train_index]
+        X_B = train_Audio[train_index]
+        X_C = train_Text[train_index]
+        Y = train_Y[train_index]
+        X_A_2 = current_u[test_index]
+        X_B_2 = train_Audio[test_index]
+        X_C_2 = train_Text[test_index]
+        Y_2 = train_Y[test_index]
+        #Train, evaluate and predict current fold
+        history = current_model.fit([X_A, X_B, X_C], Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2)  
+        scores = current_model.evaluate([X_A_2, X_B_2, X_C_2], Y_2, verbose=0)
+        yhat = model.predict([X_A_2, X_B_2, X_C_2])
+        #print and save results
+        allPredictionClasses = []
+        allPrediction = []
+        expected = []
+        for i in range(len(yhat)):
+            Pindex, Pvalue = max(enumerate(yhat[i]), key=operator.itemgetter(1))
+            allPredictionClasses.append(Pindex)
+            allPrediction.append(yhat[i])
+            expected.append(Y_2[i])
+        #PLOT & SAVE
+        nameFileResult = "KFOLD_" + str(foldIndex)
+        MP.computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, False)
+        plotTrainHistory(nameFileResult, history, scores)
         cvscores.append(scores[1] * 100)
+        outputfile.writelines("%s: %.2f%%" % (current_model.metrics_names[1], scores[1]*100)+'\n')
+        print("%s: %.2f%%" % (current_model.metrics_names[1], scores[1]*100))
+        foldIndex=foldIndex+1
         
     print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
-    
+    outputfile.writelines("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores))+'\n')
+    outputfile.close()
     
     print('END')
     
