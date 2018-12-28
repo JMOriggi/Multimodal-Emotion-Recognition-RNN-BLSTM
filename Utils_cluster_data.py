@@ -19,8 +19,10 @@ import numpy as np
 # DEFINE PATHS
 # --------------------------------------------------------------------------- #
 #Main roots
-Computer = 'training'
+Computer = 'All'
 #Computer = 'test'
+if Computer == 'All':
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_All')
 if Computer == 'training':
     main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
 if Computer == 'test':    

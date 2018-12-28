@@ -15,11 +15,13 @@ import numpy as np
 # --------------------------------------------------------------------------- #
 # DEFINE PATHS
 # --------------------------------------------------------------------------- #
-#Mode = 'training'
-Mode = 'test'
-if Mode == 'training':
+Computer = 'All'
+#Computer = 'test'
+if Computer == 'All':
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_All')
+if Computer == 'training':
     main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
-if Mode == 'test':    
+if Computer == 'test':    
     main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Test')
     
 # --------------------------------------------------------------------------- #

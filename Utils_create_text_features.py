@@ -16,8 +16,10 @@ import numpy as np
 # --------------------------------------------------------------------------- #
 # DEFINE PATHS
 # --------------------------------------------------------------------------- #
-Mode = 'training'
+Mode = 'All'
 #Mode = 'test'
+if Mode == 'All':
+    main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_All')
 if Mode == 'training':
     main_root = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_Training')
 if Mode == 'test':    

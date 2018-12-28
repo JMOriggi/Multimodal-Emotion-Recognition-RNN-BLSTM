@@ -35,8 +35,8 @@ mainRootModelText = os.path.normpath(mainRoot + '\RNN_Model_TEXT_saved.h5')
 # DEFINE PARAMETERS
 # --------------------------------------------------------------------------- #
 modelType = 0 #0=Audio, 1=Text
-labelLimit = 1324 #740 for balanced, 1324 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
-n_epoch = 100 #number of epoch 
+labelLimit = 20 #740 for balanced, 1324 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
+n_epoch = 2 #number of epoch 
 batchSizeAudio = 20
 batchSizeText = 20
 LRateAudio = 0.0001
@@ -146,7 +146,7 @@ def buildBLTSM(maxTimestep, numFeatures, LRate):
     input_attention = Input(shape=(nb_lstm_cells * 2,))
     u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
     # Bi-directional Long Short-Term Memory for learning the temporal aggregation
-    input_feature = Input(shape=(maxTimestep,numFeatures))
+    input_feature = Input(shape=(None,numFeatures))
     x = Masking(mask_value=0.)(input_feature)
     x = Dense(nb_hidden_units, activation='relu')(x)
     x = Dropout(0.5)(x)
