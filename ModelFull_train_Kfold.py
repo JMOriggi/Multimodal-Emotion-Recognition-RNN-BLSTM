@@ -256,7 +256,7 @@ if __name__ == '__main__':
     foldIndex = 1
     for train_index, test_index in kfold.split(dim_ar,dim_ar):
         print('\n'+"FOLD: ", foldIndex,"/",numb_kfold)
-        print("TEST: ", test_index)
+        #print("TEST: ", test_index)
         #Init Vars
         model = buildBLTSM(allAudioFeature[0].shape[1], allTextFeature[0].shape[1])
         X_A = u_train[train_index]
