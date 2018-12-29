@@ -36,9 +36,9 @@ modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
 # --------------------------------------------------------------------------- #
 # DEFINE PARAMETERS
 # --------------------------------------------------------------------------- #
-nb_lstm_cells = 64 #128
+nb_lstm_cells = 128 #64 #128
 nb_classes = 4
-nb_hidden_units = 128 #512
+nb_hidden_units = 512 #128 #512
 labelLimit = 1040 #1040 for balanced, 1708 for max [joy 1041, ang 1103, sad 1084, neu 1708] TOT 4936
 n_epoch = 30 #number of epoch 
 batchSize= 20
