@@ -26,7 +26,7 @@ import ModelFull_predict as MP
 # --------------------------------------------------------------------------- #
 #Main roots
 mainRoot = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Corpus_All')
-dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\Recent_Results')
+dirRes = os.path.normpath(r'C:\DATA\POLIMI\----TESI-----\Z_Results\KFOLD')
 #Features directory path
 dirAudio = os.path.join(mainRoot + '\FeaturesAudio')
 dirText = os.path.join(mainRoot + '\FeaturesText')
@@ -39,13 +39,13 @@ modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
 nb_lstm_cells = 64 #128
 nb_classes = 4
 nb_hidden_units = 128 #512
-labelLimit = 100 #740 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
-n_epoch = 2 #number of epoch 
+labelLimit = 1040 #1040 for balanced, 1708 for max [joy 1041, ang 1103, sad 1084, neu 1708] TOT 4936
+n_epoch = 30 #number of epoch 
 batchSize= 20
-LRate = 0.0001
+LRate = 0.001 #0,0001
+numb_kfold = 5
 seed = 7
 np.random.seed(seed)
-numb_kfold = 5
 FlagValSet = False #use validation set or not
 FlagEarlyStop = False #use earlystop or not (if true set patience epoch, and validation set will be considered mandatory)
 Patience = 40
@@ -230,12 +230,12 @@ if __name__ == '__main__':
     #MODEL SUMMARY
     model.summary()
     print(SummaryText)
-    print('Max time step Audio: ',maxTimestepAudio)
-    print('Max time step Text: ',maxTimestepText)
-    print('Train number of each emotion: ', labelLimit)
+    #print('Max time step Audio: ',maxTimestepAudio)
+    #print('Max time step Text: ',maxTimestepText)
+    #print('Train number of each emotion: ', labelLimit)
         
     #KFOLD PARAMS
-    kfold = StratifiedKFold(n_splits=numb_kfold, shuffle=False, random_state=seed)
+    kfold = StratifiedKFold(n_splits=numb_kfold, shuffle=True, random_state=seed)
     
     #PREPARE FEATURES
     train_Audio, train_Y = reshapeLSTMInOut(allAudioFeature, allLabels, maxTimestepAudio)
@@ -256,20 +256,20 @@ if __name__ == '__main__':
     foldIndex = 1
     for train_index, test_index in kfold.split(dim_ar,dim_ar):
         print('\n'+"FOLD: ", foldIndex,"/",numb_kfold)
+        print("TEST: ", test_index)
         #Init Vars
-        current_model = model 
-        current_u = u_train
-        X_A = current_u[train_index]
+        model = buildBLTSM(allAudioFeature[0].shape[1], allTextFeature[0].shape[1])
+        X_A = u_train[train_index]
         X_B = train_Audio[train_index]
         X_C = train_Text[train_index]
         Y = train_Y[train_index]
-        X_A_2 = current_u[test_index]
+        X_A_2 = u_train[test_index]
         X_B_2 = train_Audio[test_index]
         X_C_2 = train_Text[test_index]
         Y_2 = train_Y[test_index]
         #Train, evaluate and predict current fold
-        history = current_model.fit([X_A, X_B, X_C], Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2)  
-        scores = current_model.evaluate([X_A_2, X_B_2, X_C_2], Y_2, verbose=0)
+        history = model.fit([X_A, X_B, X_C], Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2)  
+        scores = model.evaluate([X_A_2, X_B_2, X_C_2], Y_2, verbose=0)
         yhat = model.predict([X_A_2, X_B_2, X_C_2])
         #print and save results
         allPredictionClasses = []
@@ -285,14 +285,14 @@ if __name__ == '__main__':
         MP.computeConfMatrix(allPredictionClasses, expected, dirRes, nameFileResult, False)
         plotTrainHistory(nameFileResult, history, scores)
         cvscores.append(scores[1] * 100)
-        outputfile.writelines("%s: %.2f%%" % (current_model.metrics_names[1], scores[1]*100)+'\n')
-        print("%s: %.2f%%" % (current_model.metrics_names[1], scores[1]*100))
+        outputfile.writelines("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100)+'\n')
+        print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
         foldIndex=foldIndex+1
         
     print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
     outputfile.writelines("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores))+'\n')
     summary_kfold = "Epoch = "+str(n_epoch)+"  Batch = "+str(batchSize)+"  Labels = "+str(labelLimit)+"  LRate = "+str(LRate)+"  LSTM_Cells = "+str(nb_lstm_cells)+"  Dense_Cells = "+str(nb_hidden_units)+'\n'
-    outputfile.writelines()
+    outputfile.writelines(summary_kfold)
     outputfile.close()
     
     print('END')
