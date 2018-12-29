@@ -36,6 +36,9 @@ modelPath = os.path.normpath(dirRes + '\RNN_Model_FULL_saved.h5')
 # --------------------------------------------------------------------------- #
 # DEFINE PARAMETERS
 # --------------------------------------------------------------------------- #
+nb_lstm_cells = 64 #128
+nb_classes = 4
+nb_hidden_units = 128 #512
 labelLimit = 100 #740 for balanced, 1300 for max [joy 742, ang 933, sad 839, neu 1324] TOT 3838
 n_epoch = 2 #number of epoch 
 batchSize= 20
@@ -141,10 +144,6 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
 
 
 def buildBLTSM(numFeaturesAudio, numFeaturesText):
-    
-    nb_lstm_cells = 128
-    nb_classes = 4
-    nb_hidden_units = 512 #128
         
     #MODEL AUDIO WITH ATTENTION
     #Input attention
@@ -241,8 +240,8 @@ if __name__ == '__main__':
     #PREPARE FEATURES
     train_Audio, train_Y = reshapeLSTMInOut(allAudioFeature, allLabels, maxTimestepAudio)
     train_Text, train_Y = reshapeLSTMInOut(allTextFeature, allLabels, maxTimestepText)
-    nb_attention_param = 256
-    attention_init_value = 1.0 / 256
+    nb_attention_param = nb_lstm_cells * 2
+    attention_init_value = 1.0 / nb_attention_param
     u_train = np.full((train_Audio.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
     
     #LAUNCH KFOLD VALIDATION
@@ -256,7 +255,7 @@ if __name__ == '__main__':
     cvscores = []
     foldIndex = 1
     for train_index, test_index in kfold.split(dim_ar,dim_ar):
-        print("FOLD: ", foldIndex,"/",numb_kfold)
+        print('\n'+"FOLD: ", foldIndex,"/",numb_kfold)
         #Init Vars
         current_model = model 
         current_u = u_train
@@ -292,6 +291,8 @@ if __name__ == '__main__':
         
     print("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores)))
     outputfile.writelines("%.2f%% (+/- %.2f%%)" % (np.mean(cvscores), np.std(cvscores))+'\n')
+    summary_kfold = "Epoch = "+str(n_epoch)+"  Batch = "+str(batchSize)+"  Labels = "+str(labelLimit)+"  LRate = "+str(LRate)+"  LSTM_Cells = "+str(nb_lstm_cells)+"  Dense_Cells = "+str(nb_hidden_units)+'\n'
+    outputfile.writelines()
     outputfile.close()
     
     print('END')
