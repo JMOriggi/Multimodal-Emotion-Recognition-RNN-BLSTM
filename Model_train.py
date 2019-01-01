@@ -56,7 +56,6 @@ def readFeatures(DirRoot):
     listA = [ item for item in os.listdir(DirRoot) if os.path.isfile(os.path.join(DirRoot, item)) ]
     allFileFeature = []
     allFileName = []
-    
     i = 0
     #READ encoded audio Features
     for file in listA:
@@ -66,7 +65,6 @@ def readFeatures(DirRoot):
         for row in datareader:
             data.append([float(val) for val in row])
         Y = np.array([np.array(xi) for xi in data])
-        
         #Append all files feature in an unique array
         allFileFeature.append(Y)
         
@@ -74,14 +72,12 @@ def readFeatures(DirRoot):
             break
         else:
             i += 1
-        
     allFileFeature = np.asarray(allFileFeature)
     
     return allFileFeature, allFileName
 
 
 def organizeFeatures():
-
     joyAudioFeature, joyFileName = readFeatures(os.path.join(dirAudio, 'joy'))
     angAudioFeature, angFileName = readFeatures(os.path.join(dirAudio, 'ang'))
     sadAudioFeature, sadFileName = readFeatures(os.path.join(dirAudio, 'sad'))
@@ -90,7 +86,6 @@ def organizeFeatures():
     angTextFeature, angFileName = readFeatures(os.path.join(dirText, 'ang'))
     sadTextFeature, sadFileName = readFeatures(os.path.join(dirText, 'sad'))
     neuTextFeature, neuFileName = readFeatures(os.path.join(dirText, 'neu'))
-    
     #BUILD SHUFFLED FEATURE FILES FOR TRAINING
     allAudioFeature = []
     allTextFeature = []
@@ -136,8 +131,7 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
     return X, Y
 
 
-def buildBLTSM(maxTimestep, numFeatures, LRate):
-    
+def buildBLTSM(numFeatures, LRate):
     #MODEL WITH ATTENTION
     nb_lstm_cells = 128
     nb_classes = 4
@@ -168,10 +162,8 @@ def buildBLTSM(maxTimestep, numFeatures, LRate):
 
 
 def trainBLSTM(model, Features, Labels, maxTimestep, batchSize, Patience):    
-    
     #RESHAPE TRAIN DATA
     train_X, train_Y = reshapeLSTMInOut(Features, Labels, maxTimestep)
-    
     #CHECPOINT
     if FlagEarlyStop:
         OutputWeightsPath = os.path.join(dirRes, 'weights-improvement-{epoch:02d}-{val_categorical_accuracy:.2f}.hdf5')
@@ -184,18 +176,15 @@ def trainBLSTM(model, Features, Labels, maxTimestep, batchSize, Patience):
         callbacks_list = [
             ModelCheckpoint(filepath=OutputWeightsPath, monitor='categorical_accuracy', save_best_only='True', verbose=1, mode='max')
         ]
-    
     #PREPARE ATTENTION ARRAY INPUT:  training and test
     nb_attention_param = 256
     attention_init_value = 1.0 / 256
     u_train = np.full((train_X.shape[0], nb_attention_param), attention_init_value, dtype=np.float64)
-    
     #FIT MODEL for one epoch on this sequence
     if FlagValSet:
         history = model.fit([u_train, train_X], train_Y, validation_split=0.20, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
     else:
         history = model.fit([u_train, train_X], train_Y, batch_size=batchSize, epochs=n_epoch, shuffle=True, verbose=2, callbacks=callbacks_list)  
-        
     #EVALUATION OF THE BEST VERSION MODEL
     modelEv = model
     scores = modelEv.evaluate([u_train, train_X], train_Y, verbose=0)  
@@ -203,52 +192,8 @@ def trainBLSTM(model, Features, Labels, maxTimestep, batchSize, Patience):
         
     return model, history, scores[1]*100  
 
-    
-if __name__ == '__main__':
-    
-    #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
-    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures()
-    
-    #FIND MAX TIMESTEP FOR PADDING AUDIO
-    maxTimestepAudio = 0 #500
-    for z in allAudioFeature:
-        zStep = np.asarray(z).shape[0]
-        if maxTimestepAudio < zStep:
-            maxTimestepAudio = zStep
-    
-    #FIND MAX TIMESTEP FOR PADDING TEXT
-    maxTimestepText = 0
-    for z in allTextFeature:
-        zStep = np.asarray(z).shape[0]
-        if maxTimestepText < zStep:
-            maxTimestepText = zStep        
-            
-    #BUILD MODEL
-    if modelType == 0:
-        model = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1], LRateAudio)
-        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSizeAudio)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
-    else:
-        model = buildBLTSM(maxTimestepText, allTextFeature[0].shape[1], LRateText)
-        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateText)+'-BatchSize_'+str(batchSizeText)+'-FeatNumb_'+str(allTextFeature[0].shape[1])+'-labelLimit_'+str(labelLimit) 
-    
-    #MODEL SUMMARY
-    model.summary()
-    print(SummaryText)
-    print('Max time step Audio: ',maxTimestepAudio)
-    print('Max time step Text: ',maxTimestepText)
-    print('Train number of each emotion: ', labelLimit)
-    
-    #TRAIN & SAVE LSTM: considering one at time
-    if modelType == 0:
-        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, maxTimestepAudio, batchSizeAudio, PatienceAudio)
-        modelPathAudio = os.path.normpath(dirRes + '\RNN_Model_AUDIO_saved.h5')
-        model_Audio.save(modelPathAudio, overwrite=True)       
-    if modelType == 1:
-        model_Text, history, evAcc = trainBLSTM(model, allTextFeature, allLabels, maxTimestepText, batchSizeText, PatienceText)    
-        modelPathText = os.path.normpath(dirRes + '\RNN_Model_TEXT_saved.h5')
-        model_Text.save(modelPathText, overwrite=True)
-    
-    #VISUALIZE HISTORY
+
+def PlotResults(history):
     plt.figure(figsize=(7,10))
     if FlagValSet:
         # summarize history for val_acc
@@ -282,7 +227,53 @@ if __name__ == '__main__':
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['train set'], loc='upper left')
-    #save it
+
+    
+if __name__ == '__main__':
+    #EXTRACT FEATURES, NAMES, LABELS, AND ORGANIZE THEM IN AN ARRAY
+    allAudioFeature, allTextFeature, allFileName, allLabels = organizeFeatures()
+    
+    #FIND MAX TIMESTEP FOR PADDING AUDIO
+    maxTimestepAudio = 0 #500
+    for z in allAudioFeature:
+        zStep = np.asarray(z).shape[0]
+        if maxTimestepAudio < zStep:
+            maxTimestepAudio = zStep
+    
+    #FIND MAX TIMESTEP FOR PADDING TEXT
+    maxTimestepText = 0
+    for z in allTextFeature:
+        zStep = np.asarray(z).shape[0]
+        if maxTimestepText < zStep:
+            maxTimestepText = zStep        
+            
+    #BUILD MODEL
+    if modelType == 0:
+        model = buildBLTSM(allAudioFeature[0].shape[1], LRateAudio)
+        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateAudio)+'-BatchSize_'+str(batchSizeAudio)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
+    else:
+        model = buildBLTSM(allTextFeature[0].shape[1], LRateText)
+        SummaryText = 'Att_Model_'+str(modelType)+'-RMS-LR_'+str(LRateText)+'-BatchSize_'+str(batchSizeText)+'-FeatNumb_'+str(allTextFeature[0].shape[1])+'-labelLimit_'+str(labelLimit) 
+    
+    #MODEL SUMMARY
+    model.summary()
+    print(SummaryText)
+    print('Max time step Audio: ',maxTimestepAudio)
+    print('Max time step Text: ',maxTimestepText)
+    print('Train number of each emotion: ', labelLimit)
+    
+    #TRAIN & SAVE LSTM: considering one at time
+    if modelType == 0:
+        model_Audio, history, evAcc = trainBLSTM(model, allAudioFeature, allLabels, maxTimestepAudio, batchSizeAudio, PatienceAudio)
+        modelPathAudio = os.path.normpath(dirRes + '\RNN_Model_AUDIO_saved.h5')
+        model_Audio.save(modelPathAudio, overwrite=True)       
+    if modelType == 1:
+        model_Text, history, evAcc = trainBLSTM(model, allTextFeature, allLabels, maxTimestepText, batchSizeText, PatienceText)    
+        modelPathText = os.path.normpath(dirRes + '\RNN_Model_TEXT_saved.h5')
+        model_Text.save(modelPathText, overwrite=True)
+    
+    #PLOT AND SAVE HISTORY
+    PlotResults(history)
     OutputImgPath = os.path.join(dirRes, 'Train_text-LR.001-noVal-EvAcc_'+str(evAcc)+'.png')
     plt.savefig(OutputImgPath)
     plt.show()

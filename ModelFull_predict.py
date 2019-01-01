@@ -250,7 +250,7 @@ if __name__ == '__main__':
     if flagLoadModel == 0:
         model = load_model(mainRootModel) 
     else:
-        model = BLSTMFullModel(maxTimestepAudio, allAudioFeature[0].shape[1], maxTimestepText, allTextFeature[0].shape[1])
+        model = BLSTMFullModel(allAudioFeature[0].shape[1], allTextFeature[0].shape[1])
         model.load_weights(OutputWeightsPath)
         
     #PREDICT  

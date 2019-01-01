@@ -133,7 +133,7 @@ def reshapeLSTMInOut(audFeat, label, maxTimestep):
     return X, Y
 
 
-def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesText):
+def buildBLTSM(numFeaturesAudio, numFeaturesText):
     
     nb_lstm_cells = 128
     nb_classes = 4
@@ -144,8 +144,8 @@ def buildBLTSM(maxTimestepAudio, numFeaturesAudio, maxTimestepText, numFeaturesT
     input_attention = Input(shape=(nb_lstm_cells * 2,))
     u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)
     #Input Audio and Text
-    input_featureAudio = Input(shape=(maxTimestepAudio, numFeaturesAudio))
-    input_featureText = Input(shape=(maxTimestepText, numFeaturesText))
+    input_featureAudio = Input(shape=(None, numFeaturesAudio))
+    input_featureText = Input(shape=(None, numFeaturesText))
     #Both model parallel structure
     x1 = Masking(mask_value=0.)(input_featureText)
     x1 = Dense(nb_hidden_units, activation='relu')(x1)
@@ -236,7 +236,7 @@ if __name__ == '__main__':
             maxTimestepText = zStep        
             
     #BUILD MODEL
-    model = buildBLTSM(maxTimestepAudio, allAudioFeature[0].shape[1], maxTimestepText, allTextFeature[0].shape[1])
+    model = buildBLTSM(allAudioFeature[0].shape[1], allTextFeature[0].shape[1])
     SummaryText = 'Att_Model_FULL-RMS-LR_'+str(LRate)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
     
     #MODEL SUMMARY
