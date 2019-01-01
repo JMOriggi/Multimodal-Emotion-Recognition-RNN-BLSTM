@@ -49,8 +49,8 @@ n_epoch = 35 #number of epoch
 batchSize= 20
 LRate = 0.001 #0,0001
 #BALANCE LABELS AND WEIGHTS: coef1xNumb1=coef2xNumb2
-labelLimit = 1700
-classWeightFlag = True #Se true usa le info sotto per bilanciare le label.
+labelLimit = 1040
+classWeightFlag = False #Se true usa le info sotto per bilanciare le label.
 joyLimit = 1040
 angLimit = 1100
 sadLimit = 1080
@@ -247,7 +247,10 @@ if __name__ == '__main__':
         if maxTimestepText < zStep:
             maxTimestepText = zStep        
     #BUILD MODEL
-    model = buildBLTSM(allAudioFeature[0].shape[1], allTextFeature[0].shape[1])
+    if flagModel == "Solo":
+        model = buildBLTSMSolo(allAudioFeature[0].shape[1])
+    else:
+        model = buildBLTSM(allAudioFeature[0].shape[1], allTextFeature[0].shape[1])
     SummaryText = 'Att_Model_FULL-RMS-LR_'+str(LRate)+'-BatchSize_'+str(batchSize)+'-FeatNumb_'+str(allAudioFeature[0].shape[1])+'-labelLimit_'+str(labelLimit)
     #MODEL SUMMARY
     model.summary()
