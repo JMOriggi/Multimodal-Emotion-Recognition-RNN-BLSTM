@@ -1,13 +1,6 @@
 # Multimodal Audio-Textual Emotion Recognition Neural Network
 
 
-
-
-
-
-# Multimodal Audio-Textual Emotion Recognition Neural Network
-
-
 ## Data
 The IEMOCAP (Interactive emotional dyadic motion capture) database dataset can be downloaded from [IEMOCAP webpage link](https://sail.usc.edu/iemocap/). 
 Since emotions are expressed through a combination of verbal and non-verbal channels, a joint analysis of speech and gestures is required to understand
@@ -21,7 +14,12 @@ to the existing databases in the community for the study and modeling of multimo
  
 ## Overview
 Multimodal Audio-Textual Neural Network for Emotion recognition using IEMOCAP dataset.
-
+An approach for emotion recognition leveraging Neural Networks, which combines audio and text analysis. The purpose of this
+work is to build a system capable of recognising different emotions combining acoustic and textual information, and show that this approach outperforms
+systems based on the separate analysis of these two modalities. As an additional remark, it is worth to mention that our solution does not require sentences
+to be word- or phoneme-aligned with the audio signal in order to be labeled. The proposed model, is built and evaluated on the IEMOCAP
+corpus, which offers realistic audio recording and transcription of sentences with emotional content. The model reaches a test accuracy of 73:5%, while the
+preceding best score of an automatic system, leveraging the same modalities, was 69:7% and human listeners reach 70% (on the four considered emotions).
 Direct link to the master thesis describing the approach code [Thesis link](https://www.politesi.polimi.it/bitstream/10589/143008/3/PATHOSnet.pdf).
 
 
