@@ -21,7 +21,7 @@ An approach for emotion recognition leveraging Neural Networks, which combines a
 work is to build a system capable of recognising different emotions combining acoustic and textual information, and show that this approach outperforms
 systems based on the separate analysis of these two modalities. 
 
-![Alt text](/git-docs/structure2.JPG ) 
+![Alt text](/git-docs/model.JPG ) 
 
 The proposed model, is built and evaluated on the IEMOCAP corpus, which offers realistic audio recording and transcription of sentences with emotional content. The model reaches a test accuracy of 73.5%, while the preceding best score of an automatic system, leveraging the same modalities, was 69.7% and human listeners reach 70% (on the four considered emotions).
 
