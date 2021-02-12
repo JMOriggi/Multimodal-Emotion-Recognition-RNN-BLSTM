@@ -1,4 +1,4 @@
-# Multimodal Audio-Textual Emotion Recognition RNN
+# Multimodal Audio-Textual Emotion Recognition RNN-BLSTM
 
 Since emotions are expressed through a combination of verbal and non-verbal channels, a joint analysis of speech and gestures is required to understand
 expressive human communication.
